@@ -1,0 +1,29 @@
+{
+  "name": "@ecom/search",
+  "version": "1.0.0",
+  "description": "Search microservice - Meilisearch-powered full-text search",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "ts-node-dev --respawn src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "jest --passWithNoTests"
+  },
+  "dependencies": {
+    "@ecom/common": "1.0.0",
+    "express": "^4.21.2",
+    "express-async-errors": "^3.1.1",
+    "express-validator": "^7.2.1",
+    "cors": "^2.8.5",
+    "helmet": "^8.1.0",
+    "dotenv": "^16.5.0",
+    "meilisearch": "^0.48.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.2",
+    "@types/node": "^22.15.0",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.8.3"
+  }
+}
