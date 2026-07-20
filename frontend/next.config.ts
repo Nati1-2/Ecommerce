@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  distDir: '../../../.next-cache-ecommerce',
+  ...(process.env.VERCEL ? {} : { distDir: '../../../.next-cache-ecommerce' }),
   eslint: {
     ignoreDuringBuilds: true,
   },
