@@ -1,8 +1,7 @@
 {
   "framework": "nextjs",
   "installCommand": "npm install --legacy-peer-deps",
-  "buildCommand": "node --max-old-space-size=4096 node_modules/next/dist/bin/next build",
-  "outputDirectory": ".next",
+  "buildCommand": "next build",
   "env": {
     "NODE_OPTIONS": "--max-old-space-size=4096"
   }
