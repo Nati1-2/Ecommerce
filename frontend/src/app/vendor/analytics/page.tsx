@@ -1,8 +1,13 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useQuery } from "@tanstack/react-query";
 import { vendorApi } from "@/services/api/vendorApi";
-import AnalyticsCharts from "@/components/vendor/analytics/AnalyticsCharts";
+
+const AnalyticsCharts = dynamic(() => import("@/components/vendor/analytics/AnalyticsCharts"), {
+  ssr: false,
+  loading: () => <div className="h-96 bg-slate-200 dark:bg-slate-800 rounded-3xl animate-pulse max-w-7xl mx-auto" />,
+});
 
 export default function VendorAnalyticsPage() {
   const { data: analytics, isLoading } = useQuery({

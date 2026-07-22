@@ -13,14 +13,21 @@ const nextConfig: NextConfig = {
   },
   // Disable source maps in production (saves ~300MB RAM during build)
   productionBrowserSourceMaps: false,
+  compress: true,
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production",
+  },
   images: {
+    formats: ["image/avif", "image/webp"],
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: '**',
+        protocol: "https",
+        hostname: "**",
       },
     ],
+    minimumCacheTTL: 60 * 60 * 24 * 7,
   },
+  serverExternalPackages: ["mongoose", "bcryptjs"],
 };
 
 export default nextConfig;

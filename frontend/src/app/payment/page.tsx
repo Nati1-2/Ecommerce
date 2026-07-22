@@ -1,10 +1,10 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { use, useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Lock, HelpCircle, AlertTriangle, ArrowLeft, Loader2 } from "lucide-react";
-import { io } from "socket.io-client";
 
 import { usePaymentStore } from "@/store/paymentStore";
 import { useCheckoutStore } from "@/store/checkoutStore";
@@ -12,12 +12,20 @@ import { useCartStore } from "@/store/cart";
 import { SHIPPING_OPTIONS } from "@/components/Checkout/ShippingMethod";
 
 import CheckoutSteps from "@/components/Payment/CheckoutSteps";
-import PaymentForm from "@/components/Payment/PaymentForm";
 import OrderSummary from "@/components/Payment/OrderSummary";
 import PaymentSecurity from "@/components/Payment/PaymentSecurity";
-import PaymentSuccess from "@/components/Payment/PaymentSuccess";
-import PaymentError from "@/components/Payment/PaymentError";
 import PaymentSkeleton from "@/components/Payment/PaymentSkeleton";
+
+const PaymentForm = dynamic(() => import("@/components/Payment/PaymentForm"), {
+  ssr: false,
+  loading: () => <PaymentSkeleton />,
+});
+const PaymentSuccess = dynamic(() => import("@/components/Payment/PaymentSuccess"), {
+  ssr: false,
+});
+const PaymentError = dynamic(() => import("@/components/Payment/PaymentError"), {
+  ssr: false,
+});
 
 function PaymentContent() {
   const router = useRouter();
@@ -50,27 +58,30 @@ function PaymentContent() {
     setMounted(true);
     resetPaymentState();
 
-    // Socket.IO integration setup
-    const socket = io("http://localhost:3000", {
-      autoConnect: false,
-      reconnectionAttempts: 2,
-    });
+    // Socket.IO integration setup dynamically loaded
+    let socket: any;
+    import("socket.io-client").then(({ io }) => {
+      socket = io(process.env.NEXT_PUBLIC_WS_URL || "http://localhost:8009", {
+        autoConnect: false,
+        reconnectionAttempts: 2,
+      });
 
-    socket.connect();
+      socket.connect();
 
-    socket.on("connect", () => {
-      setSocketStatus("Connected to payment channel");
-    });
+      socket.on("connect", () => {
+        setSocketStatus("Connected to payment channel");
+      });
 
-    socket.on("payment_status", (data: { status: string; message: string }) => {
-      setSocketStatus(data.message);
-      if (data.status === "succeeded") {
-        setPaymentStatus("success");
-      }
+      socket.on("payment_status", (data: { status: string; message: string }) => {
+        setSocketStatus(data.message);
+        if (data.status === "succeeded") {
+          setPaymentStatus("success");
+        }
+      });
     });
 
     return () => {
-      socket.disconnect();
+      if (socket) socket.disconnect();
     };
   }, [resetPaymentState, setPaymentStatus]);
 

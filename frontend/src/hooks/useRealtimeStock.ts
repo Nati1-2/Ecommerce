@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { io } from "socket.io-client";
 import { useInventoryStore } from "@/store/inventoryStore";
 
 /**
@@ -14,27 +13,28 @@ export function useRealtimeStock(productId: string, initialStock: number) {
   const addSocketLog = useInventoryStore((state) => state.addSocketLog);
 
   useEffect(() => {
-    // Create standard socket.io-client instance
-    const socket = io("http://localhost:3000", {
-      autoConnect: false,
-      reconnectionAttempts: 1,
-      timeout: 2000,
-    });
+    let socket: any;
+    import("socket.io-client").then(({ io }) => {
+      socket = io(process.env.NEXT_PUBLIC_WS_URL || "http://localhost:8009", {
+        autoConnect: false,
+        reconnectionAttempts: 1,
+        timeout: 2000,
+      });
 
-    socket.connect();
+      socket.connect();
 
-    // Listen to real-time events from server gateway
-    socket.on("STOCK_UPDATED", (data: { id: string; stock: number; name?: string }) => {
-      if (data.id === productId) {
-        setStock(data.stock);
-        addSocketLog("STOCK_UPDATED", `Stock updated for ${data.name || productId}: ${data.stock} units`);
-      }
-    });
+      socket.on("STOCK_UPDATED", (data: { id: string; stock: number; name?: string }) => {
+        if (data.id === productId) {
+          setStock(data.stock);
+          addSocketLog("STOCK_UPDATED", `Stock updated for ${data.name || productId}: ${data.stock} units`);
+        }
+      });
 
-    socket.on("LOW_STOCK_ALERT", (data: { id: string; stock: number; name?: string }) => {
-      if (data.id === productId) {
-        addSocketLog("LOW_STOCK_ALERT", `ALERT: Low stock warning for ${data.name || productId} (${data.stock} left)`);
-      }
+      socket.on("LOW_STOCK_ALERT", (data: { id: string; stock: number; name?: string }) => {
+        if (data.id === productId) {
+          addSocketLog("LOW_STOCK_ALERT", `ALERT: Low stock warning for ${data.name || productId} (${data.stock} left)`);
+        }
+      });
     });
 
     // Fallback simulation: periodically ticks down stock to mimic real purchases
@@ -56,7 +56,7 @@ export function useRealtimeStock(productId: string, initialStock: number) {
     }, 12000);
 
     return () => {
-      socket.disconnect();
+      if (socket) socket.disconnect();
       clearInterval(simulationInterval);
     };
   }, [productId, initialStock, addSocketLog]);

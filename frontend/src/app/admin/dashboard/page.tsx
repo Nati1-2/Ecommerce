@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useAdminDashboardStore } from "@/store/adminDashboardStore";
 import {
   usePlatformStats,
@@ -16,10 +17,8 @@ import {
 } from "@/hooks/useAdminQuery";
 
 import OverviewCards from "@/components/AdminDashboard/OverviewCards";
-import RevenueChart from "@/components/AdminDashboard/RevenueChart";
 import MarketplaceHealth from "@/components/AdminDashboard/MarketplaceHealth";
 import OrderOverview from "@/components/AdminDashboard/OrderOverview";
-import UserAnalytics from "@/components/AdminDashboard/UserAnalytics";
 import VendorPerformance from "@/components/AdminDashboard/VendorPerformance";
 import ProductPerformance from "@/components/AdminDashboard/ProductPerformance";
 import PaymentOverview from "@/components/AdminDashboard/PaymentOverview";
@@ -28,6 +27,16 @@ import QuickActions from "@/components/AdminDashboard/QuickActions";
 import ActivityTimeline from "@/components/AdminDashboard/ActivityTimeline";
 import DashboardSkeleton from "@/components/AdminDashboard/DashboardSkeleton";
 import { AlertCircle, RefreshCw } from "lucide-react";
+
+// Dynamic imports for chart components
+const RevenueChart = dynamic(() => import("@/components/AdminDashboard/RevenueChart"), {
+  ssr: false,
+  loading: () => <div className="h-80 bg-slate-100 dark:bg-slate-800 rounded-3xl animate-pulse" />,
+});
+const UserAnalytics = dynamic(() => import("@/components/AdminDashboard/UserAnalytics"), {
+  ssr: false,
+  loading: () => <div className="h-80 bg-slate-100 dark:bg-slate-800 rounded-3xl animate-pulse" />,
+});
 
 export default function AdminDashboardPage() {
   const { activeTimeframe, showToast } = useAdminDashboardStore();

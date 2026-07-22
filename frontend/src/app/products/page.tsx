@@ -1,24 +1,31 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { Suspense, useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { motion } from "framer-motion";
 import { ChevronRight, Home, RefreshCw, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 import { fetchProducts, GetProductsParams } from "@/lib/api";
 import { Product } from "@/types";
 import { FilterSidebar, FilterState } from "@/components/ProductListing/FilterSidebar";
-import { FilterDrawer } from "@/components/ProductListing/FilterDrawer";
 import { ProductGrid } from "@/components/ProductListing/ProductGrid";
 import { ProductToolbar } from "@/components/ProductListing/ProductToolbar";
 import { Pagination } from "@/components/ProductListing/Pagination";
-import { QuickViewModal } from "@/components/ProductListing/QuickViewModal";
 import { EmptyState } from "@/components/ProductListing/EmptyState";
 import { ProductGridSkeleton } from "@/components/ProductListing/ProductSkeleton";
-import { ProductCarousel } from "@/components/home/ProductCarousel";
 import { mockRecommendations } from "@/data/mock";
+
+const FilterDrawer = dynamic(() => import("@/components/ProductListing/FilterDrawer").then((mod) => mod.FilterDrawer), {
+  ssr: false,
+});
+const QuickViewModal = dynamic(() => import("@/components/ProductListing/QuickViewModal").then((mod) => mod.QuickViewModal), {
+  ssr: false,
+});
+const ProductCarousel = dynamic(() => import("@/components/home/ProductCarousel").then((mod) => mod.ProductCarousel), {
+  ssr: false,
+});
 
 const BRANDS = ["Apple", "Sony", "Nike", "Samsung", "Dyson"];
 const CATEGORIES = ["Electronics", "Fashion", "Home & Living", "Gaming", "Beauty", "Sports"];
@@ -241,7 +248,7 @@ function ProductListingContent() {
         </div>
       </div>
 
-      {/* ── BOTOM RECOMMENDATIONS ────────────────────────────────────────── */}
+      {/* ── BOTTOM RECOMMENDATIONS ────────────────────────────────────────── */}
       <div className="border-t border-gray-100 bg-[#F5F7FA] mt-12">
         <ProductCarousel
           title="Customers Also Viewed"
@@ -265,7 +272,9 @@ function ProductListingContent() {
       />
 
       {/* Quick View Modal */}
-      <QuickViewModal product={quickViewProduct} onClose={() => setQuickViewProduct(null)} />
+      {quickViewProduct && (
+        <QuickViewModal product={quickViewProduct} onClose={() => setQuickViewProduct(null)} />
+      )}
     </div>
   );
 }

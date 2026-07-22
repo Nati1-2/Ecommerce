@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useAdminAnalyticsStore } from "@/store/adminAnalyticsStore";
 import { useKPIMetrics } from "@/hooks/useAdminAnalyticsQuery";
 
@@ -7,18 +8,45 @@ import AnalyticsHeader from "@/components/AdminAnalytics/AnalyticsHeader";
 import RealtimeMetrics from "@/components/AdminAnalytics/RealtimeMetrics";
 import AnalyticsAlerts from "@/components/AdminAnalytics/AnalyticsAlerts";
 import KPICards from "@/components/AdminAnalytics/KPICards";
-import RevenueChart from "@/components/AdminAnalytics/RevenueChart";
-import SalesAnalytics from "@/components/AdminAnalytics/SalesAnalytics";
-import UserGrowthChart from "@/components/AdminAnalytics/UserGrowthChart";
-import CustomerFunnel from "@/components/AdminAnalytics/CustomerFunnel";
-import VendorPerformance from "@/components/AdminAnalytics/VendorPerformance";
-import ProductPerformance from "@/components/AdminAnalytics/ProductPerformance";
-import CategoryAnalytics from "@/components/AdminAnalytics/CategoryAnalytics";
-import GeoAnalytics from "@/components/AdminAnalytics/GeoAnalytics";
-import MarketingAnalytics from "@/components/AdminAnalytics/MarketingAnalytics";
-import ExportReports from "@/components/AdminAnalytics/ExportReports";
 import AnalyticsSkeleton from "@/components/AdminAnalytics/AnalyticsSkeleton";
 import { AlertCircle, RefreshCw } from "lucide-react";
+
+// Dynamic imports for recharts-dependent components
+const RevenueChart = dynamic(() => import("@/components/AdminAnalytics/RevenueChart"), {
+  ssr: false,
+  loading: () => <div className="h-80 bg-slate-100 dark:bg-slate-800 rounded-3xl animate-pulse" />,
+});
+const SalesAnalytics = dynamic(() => import("@/components/AdminAnalytics/SalesAnalytics"), {
+  ssr: false,
+  loading: () => <div className="h-80 bg-slate-100 dark:bg-slate-800 rounded-3xl animate-pulse" />,
+});
+const UserGrowthChart = dynamic(() => import("@/components/AdminAnalytics/UserGrowthChart"), {
+  ssr: false,
+  loading: () => <div className="h-80 bg-slate-100 dark:bg-slate-800 rounded-3xl animate-pulse" />,
+});
+const CustomerFunnel = dynamic(() => import("@/components/AdminAnalytics/CustomerFunnel"), {
+  ssr: false,
+  loading: () => <div className="h-80 bg-slate-100 dark:bg-slate-800 rounded-3xl animate-pulse" />,
+});
+const VendorPerformance = dynamic(() => import("@/components/AdminAnalytics/VendorPerformance"), {
+  ssr: false,
+});
+const ProductPerformance = dynamic(() => import("@/components/AdminAnalytics/ProductPerformance"), {
+  ssr: false,
+});
+const CategoryAnalytics = dynamic(() => import("@/components/AdminAnalytics/CategoryAnalytics"), {
+  ssr: false,
+  loading: () => <div className="h-80 bg-slate-100 dark:bg-slate-800 rounded-3xl animate-pulse" />,
+});
+const GeoAnalytics = dynamic(() => import("@/components/AdminAnalytics/GeoAnalytics"), {
+  ssr: false,
+});
+const MarketingAnalytics = dynamic(() => import("@/components/AdminAnalytics/MarketingAnalytics"), {
+  ssr: false,
+});
+const ExportReports = dynamic(() => import("@/components/AdminAnalytics/ExportReports"), {
+  ssr: false,
+});
 
 export default function AdminAnalyticsPage() {
   const { data: metrics, isLoading, isError, refetch } = useKPIMetrics();

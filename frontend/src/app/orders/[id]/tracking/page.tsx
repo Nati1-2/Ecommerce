@@ -4,7 +4,6 @@ import { use, useEffect, useState, Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRight, Home, RefreshCw, Star, AlertTriangle, Compass } from "lucide-react";
 import Link from "next/link";
-import { io } from "socket.io-client";
 
 import { fetchTrackingById } from "@/lib/api";
 import { useTrackingStore } from "@/store/trackingStore";
@@ -53,27 +52,30 @@ function TrackingContent({ params }: TrackingPageProps) {
   useEffect(() => {
     setMounted(true);
 
-    // Initialize Socket.IO Client
-    const socket = io("http://localhost:3000", {
-      autoConnect: false,
-      reconnectionAttempts: 2,
-    });
+    // Initialize Socket.IO Client dynamically
+    let socket: any;
+    import("socket.io-client").then(({ io }) => {
+      socket = io(process.env.NEXT_PUBLIC_WS_URL || "http://localhost:8009", {
+        autoConnect: false,
+        reconnectionAttempts: 2,
+      });
 
-    socket.connect();
+      socket.connect();
 
-    socket.on("connect", () => {
-      setSocketStatus("Connected to logistics stream");
-    });
+      socket.on("connect", () => {
+        setSocketStatus("Connected to logistics stream");
+      });
 
-    socket.on("connect_error", () => {
-      setSocketStatus("Logistics gateway unavailable. Sandbox simulation running.");
-    });
+      socket.on("connect_error", () => {
+        setSocketStatus("Logistics gateway unavailable. Sandbox simulation running.");
+      });
 
-    // Listen to real-time order update event payload
-    socket.on("ORDER_STATUS_UPDATED", (data: { orderId: string; status: string; timestamp: string; location: string; description: string }) => {
-      if (data.orderId === orderId) {
-        updateStatus(data.status, data.location, data.timestamp, data.description);
-      }
+      // Listen to real-time order update event payload
+      socket.on("ORDER_STATUS_UPDATED", (data: { orderId: string; status: string; timestamp: string; location: string; description: string }) => {
+        if (data.orderId === orderId) {
+          updateStatus(data.status, data.location, data.timestamp, data.description);
+        }
+      });
     });
 
     // Sandbox Simulation Loop: status shifts every 15s to demonstrate UI transitions in standard showcase environment
@@ -92,7 +94,7 @@ function TrackingContent({ params }: TrackingPageProps) {
     }, 15000);
 
     return () => {
-      socket.disconnect();
+      if (socket) socket.disconnect();
       clearInterval(simTimer);
       resetStore();
     };

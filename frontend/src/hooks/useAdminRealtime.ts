@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { io } from "socket.io-client";
 import { useAdminDashboardStore } from "@/store/adminDashboardStore";
 
 /**
@@ -17,34 +16,37 @@ export function useAdminRealtime() {
   const showToast = useAdminDashboardStore((state) => state.showToast);
 
   useEffect(() => {
-    const socket = io("http://localhost:3000", {
-      autoConnect: false,
-      reconnectionAttempts: 1,
-      timeout: 2000,
-    });
-
-    socket.connect();
-
-    socket.on("NEW_VENDOR", (data: { storeName: string }) => {
-      addNotification({
-        type: "NEW_VENDOR",
-        title: "New Vendor Registration",
-        message: `${data.storeName} submitted verification request`,
-        timestamp: "Just now",
-        severity: "info",
+    let socket: any;
+    import("socket.io-client").then(({ io }) => {
+      socket = io(process.env.NEXT_PUBLIC_WS_URL || "http://localhost:8009", {
+        autoConnect: false,
+        reconnectionAttempts: 1,
+        timeout: 2000,
       });
-      showToast(`New Vendor Registered: ${data.storeName}`, "info");
-    });
 
-    socket.on("LARGE_ORDER", (data: { orderId: string; amount: number }) => {
-      addNotification({
-        type: "LARGE_ORDER",
-        title: "High Value Order",
-        message: `Order #${data.orderId} placed for $${data.amount.toLocaleString()}`,
-        timestamp: "Just now",
-        severity: "success",
+      socket.connect();
+
+      socket.on("NEW_VENDOR", (data: { storeName: string }) => {
+        addNotification({
+          type: "NEW_VENDOR",
+          title: "New Vendor Registration",
+          message: `${data.storeName} submitted verification request`,
+          timestamp: "Just now",
+          severity: "info",
+        });
+        showToast(`New Vendor Registered: ${data.storeName}`, "info");
       });
-      showToast(`High Value Order #${data.orderId}`, "success");
+
+      socket.on("LARGE_ORDER", (data: { orderId: string; amount: number }) => {
+        addNotification({
+          type: "LARGE_ORDER",
+          title: "High Value Order",
+          message: `Order #${data.orderId} placed for $${data.amount.toLocaleString()}`,
+          timestamp: "Just now",
+          severity: "success",
+        });
+        showToast(`High Value Order #${data.orderId}`, "success");
+      });
     });
 
     // Fallback periodic simulation for live demo
@@ -79,7 +81,7 @@ export function useAdminRealtime() {
     }, 15000);
 
     return () => {
-      socket.disconnect();
+      if (socket) socket.disconnect();
       clearInterval(interval);
     };
   }, [addNotification, showToast]);

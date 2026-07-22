@@ -1,15 +1,20 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { vendorApi } from "@/services/api/vendorApi";
 import { useVendorStore } from "@/store/vendorStore";
 import StoreOverviewCard from "@/components/vendor/dashboard/StoreOverviewCard";
 import RevenueCards from "@/components/vendor/dashboard/RevenueCards";
-import SalesChart from "@/components/vendor/dashboard/SalesChart";
 import RecentOrdersTable from "@/components/vendor/dashboard/RecentOrdersTable";
 import TopProductsList from "@/components/vendor/dashboard/TopProductsList";
 import InventoryAlerts from "@/components/vendor/dashboard/InventoryAlerts";
 import { OrderStatus } from "@/types/vendor";
+
+const SalesChart = dynamic(() => import("@/components/vendor/dashboard/SalesChart"), {
+  ssr: false,
+  loading: () => <div className="h-80 bg-slate-200 dark:bg-slate-800 rounded-3xl animate-pulse" />,
+});
 
 export default function VendorDashboardPage() {
   const queryClient = useQueryClient();
