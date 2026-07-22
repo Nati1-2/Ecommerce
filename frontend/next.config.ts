@@ -7,11 +7,6 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Reduce memory usage during build
-  experimental: {
-    cpus: 1, // single worker — cuts peak RAM in half
-  },
-  // Disable source maps in production (saves ~300MB RAM during build)
   productionBrowserSourceMaps: false,
   compress: true,
   compiler: {
@@ -28,6 +23,17 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 60 * 60 * 24 * 7,
   },
   serverExternalPackages: ["mongoose", "bcryptjs"],
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+      };
+    }
+    return config;
+  },
 };
 
 export default nextConfig;
