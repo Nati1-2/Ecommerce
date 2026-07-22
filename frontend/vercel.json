@@ -1,5 +1,5 @@
 {
   "framework": "nextjs",
   "installCommand": "npm install --legacy-peer-deps",
-  "buildCommand": "NODE_OPTIONS='--max-old-space-size=4096' npx next build"
+  "buildCommand": "npx next build"
 }
