@@ -1,13 +1,12 @@
 # Ignore backend microservices — Vercel only deploys the frontend
-services/
-gateway/
-docker-compose.yml
-nginx.conf
-prometheus.yml
+/services/
+/gateway/
+/docker-compose.yml
+/nginx.conf
+/prometheus.yml
 
 # Ignore local build artifacts
-node_modules/
-.next-cache-ecommerce/
+/node_modules/
 
 # Ignore CI/CD configs not needed by Vercel
-.github/
+/.github/
