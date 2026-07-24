@@ -3,20 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "description": "Production-grade E-Commerce Microservices Platform",
-  "workspaces": [
-    "services/common",
-    "gateway",
-    "services/auth",
-    "services/user",
-    "services/product",
-    "services/inventory",
-    "services/cart",
-    "services/order",
-    "services/payment",
-    "services/search",
-    "services/notification",
-    "frontend"
-  ],
   "scripts": {
     "dev:gateway": "npm run dev --workspace=gateway",
     "dev:auth": "npm run dev --workspace=services/auth",

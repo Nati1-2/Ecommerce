@@ -3,3 +3,21 @@
 
 # Ignore CI/CD configs not needed by Vercel
 /.github/
+
+# Ignore backend services (not deployed to Vercel)
+/services/
+/gateway/
+
+# Ignore local configs
+docker-compose*.yml
+*.md
+!README.md
+.env
+.env.local
+.env.*.local
+
+# Ignore IDE/OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

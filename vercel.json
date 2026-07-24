@@ -1,4 +1,16 @@
 {
   "rootDirectory": "frontend",
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "installCommand": "npm install --legacy-peer-deps",
+  "buildCommand": "next build",
+  "build": {
+    "env": {
+      "NODE_OPTIONS": "--max-old-space-size=1024"
+    }
+  },
+  "functions": {
+    "src/app/api/**/*.ts": {
+      "maxDuration": 10
+    }
+  }
 }
