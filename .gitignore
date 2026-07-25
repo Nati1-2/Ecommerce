@@ -20,8 +20,12 @@ out/
 .vercel/
 **/.vercel/
 
-# ── Environment & Secret Files ──
+# ── Environment, Secret & Example Files (Completely Hidden) ──
 .env
+.env*
+*.env*
+.env.example
+**/.env.example
 .env.local
 .env.development.local
 .env.test.local
