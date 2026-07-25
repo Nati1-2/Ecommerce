@@ -33,7 +33,7 @@ Production-grade Product Catalog, Category & Variant management service built wi
 
 ```env
 PORT=8003
-MONGODB_URI=mongodb://admin:password123@localhost:27017/product_db?authSource=admin
+MONGODB_URI=mongodb://127.0.0.1:27017/product_db
 JWT_SECRET=super-secret-jwt-key-2026
 RABBITMQ_URL=amqp://guest:guest@localhost:5672
 CLOUDINARY_URL=cloudinary://api_key:api_secret@cloud_name

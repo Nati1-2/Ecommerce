@@ -31,7 +31,7 @@ Production-grade User Profile & Address Management microservice built with Node.
 
 ```env
 PORT=8002
-MONGODB_URI=mongodb://admin:password123@localhost:27017/user_db?authSource=admin
+MONGODB_URI=mongodb://127.0.0.1:27017/user_db
 JWT_SECRET=super-secret-jwt-key-2026
 AUTH_SERVICE_URL=http://localhost:8001
 RABBITMQ_URL=amqp://guest:guest@localhost:5672

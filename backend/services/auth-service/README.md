@@ -24,7 +24,7 @@ Production-grade Authentication and Identity Management service built with Node.
 
 ```env
 PORT=8001
-MONGODB_URI=mongodb://admin:password123@localhost:27017/auth_db?authSource=admin
+MONGODB_URI=mongodb://127.0.0.1:27017/auth_db
 JWT_SECRET=super-secret-jwt-key-2026
 JWT_REFRESH_SECRET=super-secret-refresh-key-2026
 JWT_EXPIRE=15m
