@@ -5,8 +5,10 @@
 /.github/
 
 # Ignore backend services (not deployed to Vercel)
+/backend/
 /services/
 /gateway/
+/documentation/
 
 # Ignore local configs
 docker-compose*.yml
