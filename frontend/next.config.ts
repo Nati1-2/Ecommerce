@@ -1,29 +1,29 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
-  // ── Build Optimization ──────────────────────────────────────
+  // ── Build & Linting Settings ───────────────────────────────
   eslint: {
     ignoreDuringBuilds: true,
   },
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
 
-  // ── Output: standalone reduces Vercel function size by ~80% ──
+  // ── Output: standalone mode for efficient deployment ───
   output: "standalone",
-  outputFileTracingRoot: __dirname,
+  outputFileTracingRoot: path.join(__dirname, "../"),
 
-  // ── Performance ─────────────────────────────────────────────
+  // ── Performance & Optimizations ────────────────────────────
   productionBrowserSourceMaps: false,
   compress: true,
   compiler: {
     removeConsole: process.env.NODE_ENV === "production",
   },
 
-  // ── Memory: limit CPU & workers for Vercel's 1GB RAM ────────
+  // ── Package Imports Optimization ───────────────────────────
   experimental: {
-    cpus: 1,
-    workerThreads: false,
+    optimizePackageImports: ["lucide-react", "recharts", "framer-motion", "date-fns"],
   },
 
   // ── Images ──────────────────────────────────────────────────
@@ -38,10 +38,10 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 60 * 60 * 24 * 7,
   },
 
-  // ── Server-only packages: exclude from client bundle ────────
+  // ── Server External Packages ───────────────────────────────
   serverExternalPackages: ["mongoose", "bcryptjs", "jsonwebtoken"],
 
-  // ── Webpack: reduce bundle size & memory ────────────────────
+  // ── Webpack Fallbacks ──────────────────────────────────────
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {
@@ -54,47 +54,6 @@ const nextConfig: NextConfig = {
         path: false,
       };
     }
-
-    // Optimize chunk splitting to reduce memory during build
-    if (!isServer) {
-      config.optimization = {
-        ...config.optimization,
-        splitChunks: {
-          ...config.optimization?.splitChunks,
-          chunks: "all",
-          maxInitialRequests: 25,
-          minSize: 20000,
-          cacheGroups: {
-            recharts: {
-              test: /[\\/]node_modules[\\/](recharts|d3-.*)[\\/]/,
-              name: "recharts",
-              chunks: "all",
-              priority: 30,
-            },
-            framerMotion: {
-              test: /[\\/]node_modules[\\/]framer-motion[\\/]/,
-              name: "framer-motion",
-              chunks: "all",
-              priority: 30,
-            },
-            stripe: {
-              test: /[\\/]node_modules[\\/]@stripe[\\/]/,
-              name: "stripe",
-              chunks: "all",
-              priority: 20,
-            },
-            vendor: {
-              test: /[\\/]node_modules[\\/]/,
-              name: "vendor",
-              chunks: "all",
-              priority: 10,
-              reuseExistingChunk: true,
-            },
-          },
-        },
-      };
-    }
-
     return config;
   },
 };

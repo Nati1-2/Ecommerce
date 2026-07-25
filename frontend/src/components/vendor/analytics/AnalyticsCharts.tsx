@@ -76,7 +76,7 @@ export default function AnalyticsCharts({ analytics }: Props) {
                 <XAxis dataKey="category" tick={{ fill: "#94A3B8", fontSize: 11 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fill: "#94A3B8", fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(val) => `$${val / 1000}k`} />
                 <Tooltip
-                  content={({ active, payload }: { active?: boolean; payload?: any[] }) => {
+                  content={({ active, payload }: { active?: boolean; payload?: readonly any[] }) => {
                     if (active && payload && payload.length) {
                       const data = payload[0].payload;
                       return (

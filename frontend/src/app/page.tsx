@@ -1,14 +1,13 @@
-"use client";
 import Hero from "@/components/home/Hero";
 import { CategorySection } from "@/components/home/CategorySection";
 import { ProductGridSection } from "@/components/home/ProductCard";
 import { FlashSale } from "@/components/home/FlashSale";
 import { ProductCarousel } from "@/components/home/ProductCarousel";
-import { useCategories } from "@/hooks/useAdminProductQuery";
 import { PromoBanner } from "@/components/home/PromoBanner";
 import { ReviewsSection } from "@/components/home/ReviewsSection";
 import { Newsletter } from "@/components/home/Newsletter";
 import {
+  mockCategories,
   mockProducts,
   mockFlashSaleProducts,
   mockNewArrivals,
@@ -16,18 +15,20 @@ import {
   mockRecommendations,
   mockReviews,
 } from "@/data/mock";
-// We'll fetch categories dynamically; fallback to mockCategories if needed
+
+export const metadata = {
+  title: "Aura — Premium E-Commerce | Shop Everything You Love",
+  description: "Discover 50,000+ premium products from top brands with fast delivery and secure payments.",
+};
 
 export default function HomePage() {
-  const { data: categories = [], isLoading: categoriesLoading } = useCategories();
-  const cats = categoriesLoading ? [] : categories.length ? categories : [];
   return (
-    <>
+    <main className="min-h-screen">
       {/* 1. Hero */}
       <Hero />
 
       {/* 2. Categories */}
-      <CategorySection categories={cats} />
+      <CategorySection categories={mockCategories} />
 
       {/* 3. Featured Products */}
       <ProductGridSection
@@ -78,6 +79,6 @@ export default function HomePage() {
 
       {/* 10. Newsletter */}
       <Newsletter />
-    </>
+    </main>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState, useEffect, useRef, Suspense } from "react";
 import {
   ShoppingBag, Search, Heart, User, Menu, X, ChevronDown,
@@ -346,7 +347,9 @@ export default function Navbar() {
                   <div className="space-y-4">
                     {cartItems.map((item) => (
                       <div key={item.productId} className="flex gap-3 p-3 bg-gray-50 rounded-xl">
-                        <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded-lg" />
+                        <div className="relative w-16 h-16 shrink-0 rounded-lg overflow-hidden">
+                          <Image src={item.image} alt={item.name} fill sizes="64px" className="object-cover" />
+                        </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-gray-900 truncate">{item.name}</p>
                           <p className="text-sm text-[#007BFF] font-bold mt-0.5">${item.price}</p>

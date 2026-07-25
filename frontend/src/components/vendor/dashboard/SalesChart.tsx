@@ -78,7 +78,7 @@ export default function SalesChart({ data }: Props) {
               tickFormatter={(val) => (current.prefix ? `${current.prefix}${val >= 1000 ? `${(val / 1000).toFixed(0)}k` : val}` : val)}
             />
             <Tooltip
-              content={({ active, payload }: { active?: boolean; payload?: any[] }) => {
+              content={({ active, payload }: { active?: boolean; payload?: readonly any[] }) => {
                 if (active && payload && payload.length) {
                   const item = payload[0].payload as DailyAnalyticsPoint;
                   return (

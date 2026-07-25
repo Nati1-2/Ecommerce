@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { Category } from "@/types";
 
@@ -20,10 +21,12 @@ export function CategoryCard({ category, index }: CategoryCardProps) {
       <Link href={`/products?category=${encodeURIComponent(category.name)}`}>
         <div className="group relative overflow-hidden rounded-2xl cursor-pointer h-36 sm:h-44 border border-gray-100 hover:border-[#007BFF]/30 hover:shadow-lg transition-all duration-300">
           {/* Background image */}
-          <img
+          <Image
             src={category.image}
             alt={category.name}
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-110"
           />
           {/* Gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent" />
