@@ -3,7 +3,7 @@ dotenv.config();
 
 export const config = {
   port: parseInt(process.env.PORT || '8001', 10),
-  mongoUri: process.env.MONGODB_URI || 'mongodb://admin:password123@localhost:27017/auth_db?authSource=admin',
+  mongoUri: process.env.MONGODB_URI || 'mongodb+srv://test1:test1@cluster0.1p6hyl7.mongodb.net/auth_db?retryWrites=true&w=majority',
   jwtSecret: process.env.JWT_SECRET || 'super-secret-jwt-key-2026',
   jwtRefreshSecret: process.env.JWT_REFRESH_SECRET || 'super-secret-refresh-key-2026',
   jwtExpire: process.env.JWT_EXPIRE || '15m',
