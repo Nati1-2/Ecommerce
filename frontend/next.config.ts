@@ -3,7 +3,7 @@ import path from "path";
 
 const nextConfig: NextConfig = {
   // ── File Tracing Root Scope for Monorepo & Vercel ───────────
-  outputFileTracingRoot: path.join(__dirname),
+  outputFileTracingRoot: path.join(__dirname, "../"),
 
   // ── Build & Linting Settings ───────────────────────────────
   eslint: {
@@ -20,9 +20,9 @@ const nextConfig: NextConfig = {
     removeConsole: process.env.NODE_ENV === "production",
   },
 
-  // ── Package Imports Optimization ───────────────────────────
+  // ── Build Optimizations ────────────────────────────────────
   experimental: {
-    optimizePackageImports: ["lucide-react", "recharts", "framer-motion", "date-fns"],
+    cpus: 1,
   },
 
   // ── Images ──────────────────────────────────────────────────

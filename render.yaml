@@ -1,0 +1,67 @@
+services:
+  - type: web
+    name: ecommerce-auth-service
+    env: node
+    rootDir: backend
+    buildCommand: npm install && npm run build --workspace=shared && npm run build --workspace=services/auth-service
+    startCommand: node services/auth-service/dist/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+
+  - type: web
+    name: ecommerce-user-service
+    env: node
+    rootDir: backend
+    buildCommand: npm install && npm run build --workspace=shared && npm run build --workspace=services/user-service
+    startCommand: node services/user-service/dist/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+
+  - type: web
+    name: ecommerce-product-service
+    env: node
+    rootDir: backend
+    buildCommand: npm install && npm run build --workspace=shared && npm run build --workspace=services/product-service
+    startCommand: node services/product-service/dist/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        sync: false
+
+  - type: web
+    name: ecommerce-api-gateway
+    env: node
+    rootDir: backend
+    buildCommand: npm install && npm run build --workspace=shared && npm run build --workspace=api-gateway
+    startCommand: node api-gateway/dist/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        sync: false
+      - key: AUTH_SERVICE_URL
+        fromService:
+          type: web
+          name: ecommerce-auth-service
+          property: host
+      - key: USER_SERVICE_URL
+        fromService:
+          type: web
+          name: ecommerce-user-service
+          property: host
+      - key: PRODUCT_SERVICE_URL
+        fromService:
+          type: web
+          name: ecommerce-product-service
+          property: host

@@ -14,6 +14,9 @@
   "engines": {
     "node": ">=20.0.0"
   },
+  "devDependencies": {
+    "next": "^15.4.1"
+  },
   "author": "",
   "license": "MIT"
 }
