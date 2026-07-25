@@ -1,36 +1,32 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IUser extends Document {
+  name: string;
   email: string;
-  passwordHash: string;
+  password: string;
   role: 'CUSTOMER' | 'VENDOR' | 'ADMIN';
-  isVerified: boolean;
+  isEmailVerified: boolean;
   verificationToken?: string;
-  refreshTokens: Array<{
-    token: string;
-    createdAt: Date;
-    expiresAt: Date;
-    ipAddress?: string;
-  }>;
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
+  refreshToken?: string;
+  status: 'ACTIVE' | 'BLOCKED';
   createdAt: Date;
   updatedAt: Date;
 }
 
 const UserSchema: Schema = new Schema(
   {
-    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-    passwordHash: { type: String, required: true },
+    name: { type: String, required: true, trim: true },
+    email: { type: String, required: true, unique: true, lowercase: true, trim: true, index: true },
+    password: { type: String, required: true },
     role: { type: String, enum: ['CUSTOMER', 'VENDOR', 'ADMIN'], default: 'CUSTOMER' },
-    isVerified: { type: Boolean, default: false },
+    isEmailVerified: { type: Boolean, default: false },
     verificationToken: { type: String },
-    refreshTokens: [
-      {
-        token: { type: String, required: true },
-        createdAt: { type: Date, default: Date.now },
-        expiresAt: { type: Date, required: true },
-        ipAddress: { type: String }
-      }
-    ]
+    resetPasswordToken: { type: String },
+    resetPasswordExpires: { type: Date },
+    refreshToken: { type: String },
+    status: { type: String, enum: ['ACTIVE', 'BLOCKED'], default: 'ACTIVE' }
   },
   { timestamps: true }
 );
