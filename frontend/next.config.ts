@@ -2,8 +2,7 @@ import type { NextConfig } from "next";
 import path from "path";
 
 const nextConfig: NextConfig = {
-  // ── File Tracing Root Scope for Monorepo & Vercel ───────────
-  outputFileTracingRoot: path.join(__dirname, "../"),
+
 
   // ── Build & Linting Settings ───────────────────────────────
   eslint: {
