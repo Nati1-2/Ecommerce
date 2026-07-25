@@ -1,48 +1,78 @@
-# Dependencies
+# ── Node.js & Workspace Dependencies ──
 node_modules/
+**/node_modules/
 .pnp
 .pnp.js
 
-# Build outputs
+# ── Build & Distribution Outputs ──
 dist/
+**/dist/
 build/
+**/build/
 .next/
+**/next/
 out/
+**/out/
+*.tsbuildinfo
+**/*.tsbuildinfo
 
-# Environment
+# ── Vercel Build Artifacts ──
+.vercel/
+**/.vercel/
+
+# ── Environment & Secret Files ──
 .env
 .env.local
-.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+**/.env
+**/.env.local
+**/.env.*.local
 
-# Logs
-logs/
+# ── Logs & Debugging ──
+logs
 *.log
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+pnpm-debug.log*
+**/logs/
+**/*.log
 
-# OS
+# ── Test Coverage & Playwright ──
+coverage/
+**/coverage/
+.nyc_output
+**/playwright-report/
+**/test-results/
+
+# ── Operating System & IDE Files ──
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
-
-# IDE
-.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
 .idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
 *.swp
 *.swo
 
-# Docker
-docker-compose.override.yml
-
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-.venv/
-venv/
-*.egg-info/
-
-# Test
-coverage/
-.nyc_output/
-
-# Misc
-*.tsbuildinfo
+# ── Cache & Temporary Directories ──
+.cache/
+**/.cache/
+.turbo/
+**/.turbo/
+.eslintcache
+.stylelintcache
