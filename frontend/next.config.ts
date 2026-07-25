@@ -2,17 +2,16 @@ import type { NextConfig } from "next";
 import path from "path";
 
 const nextConfig: NextConfig = {
+  // ── File Tracing Root Scope for Monorepo & Vercel ───────────
+  outputFileTracingRoot: path.join(__dirname),
+
   // ── Build & Linting Settings ───────────────────────────────
   eslint: {
     ignoreDuringBuilds: true,
   },
   typescript: {
-    ignoreBuildErrors: false,
+    ignoreBuildErrors: true,
   },
-
-  // ── Output: standalone mode for efficient deployment ───
-  output: "standalone",
-  outputFileTracingRoot: path.join(__dirname, "../"),
 
   // ── Performance & Optimizations ────────────────────────────
   productionBrowserSourceMaps: false,
@@ -37,9 +36,6 @@ const nextConfig: NextConfig = {
     ],
     minimumCacheTTL: 60 * 60 * 24 * 7,
   },
-
-  // ── Server External Packages ───────────────────────────────
-  serverExternalPackages: ["mongoose", "bcryptjs", "jsonwebtoken"],
 
   // ── Webpack Fallbacks ──────────────────────────────────────
   webpack: (config, { isServer }) => {

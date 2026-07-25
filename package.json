@@ -4,24 +4,12 @@
   "private": true,
   "description": "Production-grade E-Commerce Microservices Platform",
   "scripts": {
-    "dev:gateway": "npm run dev --workspace=gateway",
-    "dev:auth": "npm run dev --workspace=services/auth",
-    "dev:user": "npm run dev --workspace=services/user",
-    "dev:product": "npm run dev --workspace=services/product",
-    "dev:inventory": "npm run dev --workspace=services/inventory",
-    "dev:cart": "npm run dev --workspace=services/cart",
-    "dev:order": "npm run dev --workspace=services/order",
-    "dev:payment": "npm run dev --workspace=services/payment",
-    "dev:search": "npm run dev --workspace=services/search",
-    "dev:notification": "npm run dev --workspace=services/notification",
-    "dev:frontend": "npm run dev --workspace=frontend",
-    "build:common": "npm run build --workspace=services/common",
-    "build:all": "npm run build --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present",
-    "lint": "npm run lint --workspaces --if-present",
-    "docker:up": "docker-compose up -d",
-    "docker:down": "docker-compose down",
-    "docker:build": "docker-compose build"
+    "build": "npm run build --prefix frontend",
+    "vercel-build": "npm run build --prefix frontend",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "dev:auth": "npm run dev --prefix backend/services/auth-service",
+    "dev:user": "npm run dev --prefix backend/services/user-service",
+    "dev:product": "npm run dev --prefix backend/services/product-service"
   },
   "engines": {
     "node": ">=20.0.0"
