@@ -18,6 +18,7 @@
     "dev:vendor": "npm run dev --workspace=services/vendor-service",
     "dev:inventory": "npm run dev --workspace=services/inventory-service",
     "dev:order": "npm run dev --workspace=services/order-service",
+    "dev:payment": "npm run dev --workspace=services/payment-service",
     "docker:up": "docker-compose -f docker/docker-compose.yml up -d",
     "docker:down": "docker-compose -f docker/docker-compose.yml down"
   },
