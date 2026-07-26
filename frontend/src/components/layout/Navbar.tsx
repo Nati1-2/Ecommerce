@@ -99,10 +99,13 @@ export default function Navbar() {
             </Link>
 
             {/* Categories dropdown */}
-            <div className="hidden md:block relative" onMouseLeave={() => setCatOpen(false)}>
+            <div
+              className="hidden md:block relative py-2"
+              onMouseEnter={() => setCatOpen(true)}
+              onMouseLeave={() => setCatOpen(false)}
+            >
               <button
-                className="flex items-center gap-1.5 text-sm font-medium text-gray-700 hover:text-[#007BFF] transition-colors py-1"
-                onMouseEnter={() => setCatOpen(true)}
+                className="flex items-center gap-1.5 text-sm font-medium text-gray-700 hover:text-[#007BFF] transition-colors"
                 onClick={() => setCatOpen(!catOpen)}
               >
                 <span>Categories</span>
@@ -112,23 +115,25 @@ export default function Navbar() {
               <AnimatePresence>
                 {catOpen && (
                   <motion.div
-                    initial={{ opacity: 0, y: 8 }}
+                    initial={{ opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 8 }}
-                    transition={{ duration: 0.18 }}
-                    className="absolute top-full left-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden"
+                    exit={{ opacity: 0, y: 4 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute top-full left-0 pt-1 w-56 z-50"
                   >
-                    {categories.map((cat) => (
-                      <Link
-                        key={cat.name}
-                        href={cat.href}
-                        className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#007BFF] transition-colors"
-                        onClick={() => setCatOpen(false)}
-                      >
-                        <cat.icon className="w-4 h-4" />
-                        {cat.name}
-                      </Link>
-                    ))}
+                    <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden py-1">
+                      {categories.map((cat) => (
+                        <Link
+                          key={cat.name}
+                          href={cat.href}
+                          className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#007BFF] transition-colors"
+                          onClick={() => setCatOpen(false)}
+                        >
+                          <cat.icon className="w-4 h-4" />
+                          {cat.name}
+                        </Link>
+                      ))}
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
