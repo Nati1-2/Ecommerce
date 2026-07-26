@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronRight, Home, Sparkles } from "lucide-react";
+import { ChevronRight, Home, ShoppingBag, Heart, LogOut, User } from "lucide-react";
 import Link from "next/link";
 
 import ProfileSidebar, { ProfileTab } from "@/components/Profile/ProfileSidebar";
@@ -16,22 +16,28 @@ import LoginActivity from "@/components/Profile/LoginActivity";
 import PrivacySettings from "@/components/Profile/PrivacySettings";
 import DeleteAccount from "@/components/Profile/DeleteAccount";
 import ProfileSkeleton from "@/components/Profile/ProfileSkeleton";
+import { useAuthStore } from "@/store/auth";
 import { motion, AnimatePresence } from "framer-motion";
 
 function AccountContent() {
   const router = useRouter();
+  const { user, isAuthenticated, logout } = useAuthStore();
   const [activeTab, setActiveTab] = useState<ProfileTab>("overview");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    if (!isAuthenticated) {
+      router.push("/login");
+    }
+  }, [isAuthenticated, router]);
 
   const handleLogout = () => {
-    router.push("/");
+    logout();
+    router.push("/login");
   };
 
-  if (!mounted) {
+  if (!mounted || !isAuthenticated) {
     return <ProfileSkeleton />;
   }
 
@@ -44,21 +50,67 @@ function AccountContent() {
           Home
         </Link>
         <ChevronRight className="w-3 h-3" />
-        <span className="text-gray-500">Account Profile</span>
+        <span className="text-gray-500">My Account</span>
       </nav>
+
+      {/* Account Header Quick Bar */}
+      <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#007BFF] to-blue-600 flex items-center justify-center text-white text-xl font-bold shadow-md shadow-blue-500/20">
+            {user?.email ? user.email.charAt(0).toUpperCase() : <User className="w-7 h-7" />}
+          </div>
+          <div>
+            <h1 className="text-lg font-black text-gray-900">
+              Welcome Back, {user?.email ? user.email.split("@")[0] : "Customer"}
+            </h1>
+            <p className="text-xs text-gray-400 font-medium">{user?.email || "Logged In User"}</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          <Link
+            href="/orders"
+            className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 py-2.5 px-4 bg-gray-50 hover:bg-gray-100 text-gray-700 text-xs font-bold rounded-xl border border-gray-200/80 transition-colors"
+          >
+            <ShoppingBag className="w-4 h-4 text-[#007BFF]" />
+            Order History
+          </Link>
+          <Link
+            href="/wishlist"
+            className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 py-2.5 px-4 bg-gray-50 hover:bg-gray-100 text-gray-700 text-xs font-bold rounded-xl border border-gray-200/80 transition-colors"
+          >
+            <Heart className="w-4 h-4 text-rose-500" />
+            Wishlist
+          </Link>
+          <button
+            onClick={handleLogout}
+            className="inline-flex items-center justify-center gap-2 py-2.5 px-4 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold rounded-xl border border-red-100 transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+            Logout
+          </button>
+        </div>
+      </div>
 
       <div className="flex flex-col md:flex-row gap-8 items-start">
         {/* Left column navigation sidebar */}
         <ProfileSidebar
           activeTab={activeTab}
-          setActiveTab={setActiveTab}
+          setActiveTab={(tab) => {
+            if (tab === "orders") {
+              router.push("/orders");
+            } else if (tab === "wishlist") {
+              router.push("/wishlist");
+            } else {
+              setActiveTab(tab);
+            }
+          }}
           onLogout={handleLogout}
         />
 
         {/* Right column settings panels */}
         <div className="flex-1 w-full min-w-0">
           <AnimatePresence mode="wait">
-
             {activeTab === "overview" && (
               <motion.div
                 key="overview-tab"
@@ -118,32 +170,20 @@ function AccountContent() {
               activeTab !== "security" &&
               activeTab !== "settings" && (
                 <motion.div
-                  key="placeholders"
+                  key="other-tabs"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   className="p-8 border border-gray-100 bg-white rounded-3xl text-center select-none space-y-4 shadow-sm"
                 >
-                  <div className="w-12 h-12 bg-blue-50 text-[#007BFF] rounded-full flex items-center justify-center mx-auto">
-                    <Sparkles className="w-6 h-6 animate-pulse" />
-                  </div>
-                  <div className="space-y-1">
-                    <h3 className="text-base font-black text-gray-900 capitalize">
-                      {activeTab} Management
-                    </h3>
-                    <p className="text-xs text-gray-400 font-semibold max-w-xs mx-auto">
-                      Access these features directly within your core Customer Account Dashboard.
-                    </p>
-                  </div>
-                  <Link
-                    href="/dashboard"
-                    className="inline-block py-2.5 px-5 bg-gray-900 hover:bg-gray-800 text-white font-bold text-xs rounded-xl transition-colors"
-                  >
-                    Open Customer Dashboard
-                  </Link>
+                  <h3 className="text-base font-black text-gray-900 capitalize">
+                    {activeTab} Management
+                  </h3>
+                  <p className="text-xs text-gray-400 font-semibold max-w-xs mx-auto">
+                    Manage your account details and preferences here.
+                  </p>
                 </motion.div>
               )}
-
           </AnimatePresence>
         </div>
       </div>
