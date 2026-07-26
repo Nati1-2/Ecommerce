@@ -7,5 +7,5 @@ export const env = {
   MONGODB_URI: process.env.MONGODB_URI || 'mongodb://localhost:27017/payment_db',
   RABBITMQ_URL: process.env.RABBITMQ_URL || 'amqp://localhost:5672',
   JWT_SECRET: process.env.JWT_SECRET || 'super-secret-ecom-jwt-key',
-  STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || 'sk_test_mock_key'
+  STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder'
 };

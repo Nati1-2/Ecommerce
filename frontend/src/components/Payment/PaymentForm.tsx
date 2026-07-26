@@ -11,8 +11,11 @@ import BillingAddress from "./BillingAddress";
 import { Smartphone, Wallet, Lock, Loader2, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Initialize mock Stripe public key
-const stripePromise = loadStripe("pk_test_51Nz3JGLw2GSwp1PzMOCKKEY1234567890NATI");
+// Initialize Stripe public key
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ||
+    "pk_test_51ThDDICdX0hvCWhczONjNi3TCevUCN7vYmjW5h5KaNeNiyjAAkIG3KL1ZkqSOauu8wIRirZmCuETnr6Xw65tK34T00DDtz8A5O"
+);
 
 interface PaymentFormProps {
   orderId: string;

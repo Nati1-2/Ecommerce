@@ -46,8 +46,8 @@ let mockSettings: SystemSettingsState = {
   },
   payments: {
     stripeEnabled: true,
-    stripePublicKey: "pk_live_51N8xY2Lkd890192A0912384",
-    stripeSecretKey: "sk_live_51N8xY2Lkd890192A0912384_SECRET_MASKED",
+    stripePublicKey: "pk_test_51ThDDICdX0hvCWhczONjNi3TCevUCN7vYmjW5h5KaNeNiyjAAkIG3KL1ZkqSOauu8wIRirZmCuETnr6Xw65tK34T00DDtz8A5O",
+    stripeSecretKey: "sk_test_••••••••••••••••••••••••",
     paypalEnabled: true,
     bankTransferEnabled: true,
     maxTransactionLimit: 50000,
