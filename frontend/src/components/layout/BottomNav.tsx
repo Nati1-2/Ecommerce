@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 const categoryOptions = [
+  { name: "All Products", icon: LayoutGrid, href: "/products", desc: "Browse entire product catalog" },
   { name: "Electronics", icon: Laptop, href: "/products?category=Electronics", desc: "Gadgets, Laptops & Audio" },
   { name: "Fashion", icon: Shirt, href: "/products?category=Fashion", desc: "Apparel, Shoes & Accessories" },
   { name: "Home & Living", icon: Home, href: "/products?category=Home%20%26%20Living", desc: "Decor, Furniture & Kitchen" },

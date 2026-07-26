@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useState, useEffect, useRef, Suspense } from "react";
 import {
   ShoppingBag, Search, Heart, User, Menu, X, ChevronDown,
-  Laptop, Shirt, Home, Gamepad2, Sparkles, Dumbbell, LogIn, Bell,
+  Laptop, Shirt, Home, Gamepad2, Sparkles, Dumbbell, LogIn, Bell, LayoutGrid,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCartStore } from "@/store/cart";
@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation";
 import SearchBar from "@/components/Search/SearchBar";
 
 const categories = [
+  { name: "All Products", icon: LayoutGrid, href: "/products" },
   { name: "Electronics", icon: Laptop, href: "/products?category=Electronics" },
   { name: "Fashion", icon: Shirt, href: "/products?category=Fashion" },
   { name: "Home & Living", icon: Home, href: "/products?category=Home%20%26%20Living" },
