@@ -65,7 +65,14 @@ export async function fetchProducts(params: GetProductsParams): Promise<Products
     const categories = Array.isArray(params.category) ? params.category : [params.category];
     if (categories.length > 0) {
       filtered = filtered.filter((p) =>
-        categories.some((c) => p.category.toLowerCase() === c.toLowerCase())
+        categories.some((c) => {
+          const catName = c.toLowerCase().trim();
+          const prodCat = p.category.toLowerCase().trim();
+          if (catName === "home" || catName === "home-living" || catName === "home & living") {
+            return prodCat.includes("home");
+          }
+          return prodCat === catName || prodCat.includes(catName) || catName.includes(prodCat);
+        })
       );
     }
   }
