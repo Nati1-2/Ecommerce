@@ -53,10 +53,11 @@ app.get('/health', (_req, res) => {
 const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://localhost:8001';
 const USER_SERVICE_URL = process.env.USER_SERVICE_URL || 'http://localhost:8002';
 const PRODUCT_SERVICE_URL = process.env.PRODUCT_SERVICE_URL || 'http://localhost:8003';
-const INVENTORY_SERVICE_URL = process.env.INVENTORY_SERVICE_URL || 'http://localhost:8004';
+const INVENTORY_SERVICE_URL = process.env.INVENTORY_SERVICE_URL || 'http://localhost:8011'; // Offset to avoid conflict
 const CART_SERVICE_URL = process.env.CART_SERVICE_URL || 'http://localhost:8005';
 const ORDER_SERVICE_URL = process.env.ORDER_SERVICE_URL || 'http://localhost:8006';
 const PAYMENT_SERVICE_URL = process.env.PAYMENT_SERVICE_URL || 'http://localhost:8007';
+const VENDOR_SERVICE_URL = process.env.VENDOR_SERVICE_URL || 'http://localhost:8004';
 
 app.use('/api/v1/auth', proxy(AUTH_SERVICE_URL));
 app.use('/api/v1/users', proxy(USER_SERVICE_URL));
@@ -65,6 +66,8 @@ app.use('/api/v1/inventory', proxy(INVENTORY_SERVICE_URL));
 app.use('/api/v1/cart', proxy(CART_SERVICE_URL));
 app.use('/api/v1/orders', proxy(ORDER_SERVICE_URL));
 app.use('/api/v1/payments', proxy(PAYMENT_SERVICE_URL));
+app.use('/api/v1/vendors', proxy(VENDOR_SERVICE_URL));
+app.use('/api/v1/admin/vendors', proxy(VENDOR_SERVICE_URL));
 
 app.listen(PORT, () => {
   console.log(`🚀 API Gateway running on port ${PORT}`);
