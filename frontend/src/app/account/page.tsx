@@ -1,7 +1,7 @@
-import { redirect } from "next/navigation";
+"use client";
 
-export const dynamic = "force-dynamic";
+import ProfilePage from "../profile/page";
 
-export default function AccountRedirectPage() {
-  redirect("/profile");
+export default function AccountPage() {
+  return <ProfilePage />;
 }
