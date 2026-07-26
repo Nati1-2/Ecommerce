@@ -1,8 +1,5 @@
 # Vercel Deployment Fix Tasks
 
-- [x] Create root `vercel.json` with `rootDirectory: "frontend"`
-- [x] Fix `/frontend/vercel.json` (no invalid `outputDirectory`)
-- [x] Remove `@tailwindcss/postcss` from `/frontend/package.json`
-- [x] Verify build locally (Build completed successfully - 43/43 pages compiled)
-
-
+- [x] Fixed root `vercel.json` with conditional directory check (`if [ -d "frontend" ]; then cd frontend; fi`)
+- [x] Created `frontend/vercel.json` without `cd frontend` commands
+- [x] Verified build commands work whether Vercel Root Directory is `.` or `frontend`
