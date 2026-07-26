@@ -21,6 +21,7 @@
     "dev:payment": "npm run dev --workspace=services/payment-service",
     "dev:notification": "npm run dev --workspace=services/notification-service",
     "dev:cart": "npm run dev --workspace=services/cart-service",
+    "dev:analytics": "npm run dev --workspace=services/analytics-service",
     "docker:up": "docker-compose -f docker/docker-compose.yml up -d",
     "docker:down": "docker-compose -f docker/docker-compose.yml down"
   },

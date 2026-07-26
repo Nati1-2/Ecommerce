@@ -57,6 +57,8 @@ const INVENTORY_SERVICE_URL = process.env.INVENTORY_SERVICE_URL || 'http://local
 const CART_SERVICE_URL = process.env.CART_SERVICE_URL || 'http://localhost:8005';
 const ORDER_SERVICE_URL = process.env.ORDER_SERVICE_URL || 'http://localhost:8006';
 const PAYMENT_SERVICE_URL = process.env.PAYMENT_SERVICE_URL || 'http://localhost:8007';
+const NOTIFICATION_SERVICE_URL = process.env.NOTIFICATION_SERVICE_URL || 'http://localhost:8008';
+const ANALYTICS_SERVICE_URL = process.env.ANALYTICS_SERVICE_URL || 'http://localhost:8009';
 const VENDOR_SERVICE_URL = process.env.VENDOR_SERVICE_URL || 'http://localhost:8004';
 
 app.use('/api/v1/auth', proxy(AUTH_SERVICE_URL));
@@ -66,6 +68,8 @@ app.use('/api/v1/inventory', proxy(INVENTORY_SERVICE_URL));
 app.use('/api/v1/cart', proxy(CART_SERVICE_URL));
 app.use('/api/v1/orders', proxy(ORDER_SERVICE_URL));
 app.use('/api/v1/payments', proxy(PAYMENT_SERVICE_URL));
+app.use('/api/v1/notifications', proxy(NOTIFICATION_SERVICE_URL));
+app.use('/api/v1/analytics', proxy(ANALYTICS_SERVICE_URL));
 app.use('/api/v1/vendors', proxy(VENDOR_SERVICE_URL));
 app.use('/api/v1/admin/vendors', proxy(VENDOR_SERVICE_URL));
 

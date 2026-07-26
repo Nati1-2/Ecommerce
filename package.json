@@ -15,7 +15,8 @@
     "dev:order": "npm run dev --prefix backend/services/order-service",
     "dev:payment": "npm run dev --prefix backend/services/payment-service",
     "dev:notification": "npm run dev --prefix backend/services/notification-service",
-    "dev:cart": "npm run dev --prefix backend/services/cart-service"
+    "dev:cart": "npm run dev --prefix backend/services/cart-service",
+    "dev:analytics": "npm run dev --prefix backend/services/analytics-service"
   },
   "engines": {
     "node": ">=20.0.0"
