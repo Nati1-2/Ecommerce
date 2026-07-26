@@ -10,7 +10,8 @@
     "dev:auth": "npm run dev --prefix backend/services/auth-service",
     "dev:user": "npm run dev --prefix backend/services/user-service",
     "dev:product": "npm run dev --prefix backend/services/product-service",
-    "dev:vendor": "npm run dev --prefix backend/services/vendor-service"
+    "dev:vendor": "npm run dev --prefix backend/services/vendor-service",
+    "dev:inventory": "npm run dev --prefix backend/services/inventory-service"
   },
   "engines": {
     "node": ">=20.0.0"
