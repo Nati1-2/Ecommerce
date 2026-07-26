@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  outputFileTracingRoot: path.join(__dirname, "../"),
 
   // ── Performance & Optimizations ────────────────────────────
   productionBrowserSourceMaps: false,
