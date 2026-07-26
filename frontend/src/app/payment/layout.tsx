@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Secure Payment Gateway | Aura Store",
+  title: "Secure Payment Gateway | Nati Store",
   description:
     "Complete your checkout securely with Stripe. Your credit card information is encrypted using 256-bit SSL technology.",
 };

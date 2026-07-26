@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Customer Dashboard | Aura Store",
+  title: "Customer Dashboard | Nati Store",
   description:
     "Manage your profile, view order analytics charts, track logistics shipments, adjust security settings, and check custom reward points.",
 };

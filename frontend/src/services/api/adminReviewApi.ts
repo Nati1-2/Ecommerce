@@ -59,10 +59,10 @@ let mockReviews: AdminReviewModel[] = [
     customerEmail: "cheap_deals@spambot.net",
     customerAvatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80",
     isVerifiedBuyer: false,
-    productName: "Aura Luxury Titanium Smartwatch",
+    productName: "Nati Luxury Titanium Smartwatch",
     productSku: "AUR-SMART",
     productImage: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=150&q=80",
-    vendorStore: "Aura Wearable Tech",
+    vendorStore: "Nati Wearable Tech",
     rating: 1,
     comment: "DONT BUY HERE GO TO WWW.CHEAPWATCHES.NET FOR 90% DISCOUNT CODE FREE SHIPPING!!!!",
     images: [],
@@ -187,7 +187,7 @@ export const adminReviewApi = {
       { productName: "MacBook Pro 16-inch M3 Max", vendorStore: "Apex Tech Labs", rating: 4.9, totalReviews: 1240, salesCount: 3420 },
       { productName: "Quantum Noise Cancelling Headphones", vendorStore: "Quantum Sound", rating: 4.8, totalReviews: 890, salesCount: 4890 },
       { productName: "Hyperion Ergonomic Mesh Chair", vendorStore: "Hyperion Ergo", rating: 4.2, totalReviews: 310, salesCount: 1200 },
-      { productName: "Aura Luxury Smartwatch", vendorStore: "Aura Wearables", rating: 2.4, totalReviews: 85, salesCount: 420 },
+      { productName: "Nati Luxury Smartwatch", vendorStore: "Nati Wearables", rating: 2.4, totalReviews: 85, salesCount: 420 },
     ];
   },
 
@@ -197,7 +197,7 @@ export const adminReviewApi = {
       { vendorStore: "Apex Tech Labs", avgRating: 4.9, totalReviews: 45000, complaintCount: 12, status: "Top Rated" },
       { vendorStore: "Quantum Sound Audio", avgRating: 4.8, totalReviews: 32000, complaintCount: 8, status: "Top Rated" },
       { vendorStore: "Hyperion Ergonomics", avgRating: 4.5, totalReviews: 14000, complaintCount: 24, status: "Good" },
-      { vendorStore: "Aura Wearable Tech", avgRating: 2.8, totalReviews: 1200, complaintCount: 89, status: "Under Warning" },
+      { vendorStore: "Nati Wearable Tech", avgRating: 2.8, totalReviews: 1200, complaintCount: 89, status: "Under Warning" },
     ];
   },
 

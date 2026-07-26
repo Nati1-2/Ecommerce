@@ -91,7 +91,7 @@ let mockVendors: AdminVendorModel[] = [
   },
   {
     id: "v_104",
-    storeName: "Aura Wearable Tech",
+    storeName: "Nati Wearable Tech",
     logo: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=150&q=80",
     banner: "https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?auto=format&fit=crop&w=1200&h=300&q=80",
     ownerName: "David Miller",
@@ -107,7 +107,7 @@ let mockVendors: AdminVendorModel[] = [
     verified: true,
     verificationDetails: { identity: true, business: false, payment: true },
     joinedDate: "2025-01-12",
-    businessName: "Aura Wearables Ltd",
+    businessName: "Nati Wearables Ltd",
     taxId: "EIN-112049832",
     bankAccountLast4: "5521",
     businessLicenseUrl: "https://example.com/docs/license-aura.pdf",

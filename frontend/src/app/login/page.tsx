@@ -87,7 +87,7 @@ export default function LoginPage() {
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 space-y-3 text-center">
         <Link href="/" className="inline-flex items-center gap-1.5 text-3xl font-black text-gray-900 tracking-tight hover:opacity-90 transition-opacity">
-          Aura<span className="text-[#007BFF]">.</span>
+          Nati<span className="text-[#007BFF]">.</span>
         </Link>
         
         <div>
@@ -96,7 +96,7 @@ export default function LoginPage() {
           </h2>
           <p className="text-xs text-gray-400 font-medium mt-1">
             {isRegistering 
-              ? "Join Aura Store for exclusive deals & instant checkout" 
+              ? "Join Nati Store for exclusive deals & instant checkout" 
               : "Sign in to access your orders, wishlist & profile"}
           </p>
         </div>

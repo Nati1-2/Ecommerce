@@ -12,7 +12,7 @@ import { Smartphone, Wallet, Lock, Loader2, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Initialize mock Stripe public key
-const stripePromise = loadStripe("pk_test_51Nz3JGLw2GSwp1PzMOCKKEY1234567890AURA");
+const stripePromise = loadStripe("pk_test_51Nz3JGLw2GSwp1PzMOCKKEY1234567890NATI");
 
 interface PaymentFormProps {
   orderId: string;

@@ -278,7 +278,7 @@ export async function fetchTrackingById(orderId: string): Promise<Tracking> {
       },
       {
         status: "Order Placed",
-        location: "Aura Store Server",
+        location: "Nati Store Server",
         timestamp: "Yesterday, 3:40 PM",
         description: "Order entry successfully completed.",
       },

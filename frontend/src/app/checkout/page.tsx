@@ -96,7 +96,7 @@ export default function CheckoutPage() {
               href="/"
               className="text-base font-black tracking-tight text-gray-900"
             >
-              Aura<span className="text-[#007BFF]">.</span>
+              Nati<span className="text-[#007BFF]">.</span>
             </Link>
           </div>
 

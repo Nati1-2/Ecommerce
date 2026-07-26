@@ -94,8 +94,8 @@ export const useWishlistStore = create<WishlistState>()(
         const newItem: WishlistItem = {
           id: `wish-${Date.now()}`,
           productId: item.productId,
-          name: item.name || "Aura Premium Product",
-          brand: item.brand || "Aura",
+          name: item.name || "Nati Premium Product",
+          brand: item.brand || "Nati",
           image: item.image || "/iphone17.png",
           price: item.price || 99.0,
           oldPrice: item.oldPrice || item.price || 99.0,

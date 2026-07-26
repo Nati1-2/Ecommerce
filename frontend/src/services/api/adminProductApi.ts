@@ -118,12 +118,12 @@ let mockProducts: AdminProductModel[] = [
   {
     id: "prod_1004",
     sku: "AUR-SMART-V3",
-    name: "Aura Luxury Titanium Smartwatch (Reported Flag)",
+    name: "Nati Luxury Titanium Smartwatch (Reported Flag)",
     images: [
       "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80",
     ],
     vendorId: "v_104",
-    vendorStore: "Aura Wearable Tech",
+    vendorStore: "Nati Wearable Tech",
     category: "Fashion",
     price: 49.00,
     msrp: 499.00,
@@ -133,7 +133,7 @@ let mockProducts: AdminProductModel[] = [
     createdAt: "2026-07-12",
     description: "Luxury titanium smartwatch with sapphire crystal glass and cardiac ECG sensor.",
     variants: [{ name: "Strap", options: ["Leather", "Silicone"] }],
-    seoTitle: "Aura Smartwatch - Discounted",
+    seoTitle: "Nati Smartwatch - Discounted",
     seoDescription: "Smartwatch with biometric sensors.",
     qualityCheck: {
       imagesUploaded: true,
@@ -151,9 +151,9 @@ let mockReports: ProductReport[] = [
   {
     id: "rep_501",
     productId: "prod_1004",
-    productName: "Aura Luxury Titanium Smartwatch",
+    productName: "Nati Luxury Titanium Smartwatch",
     productImage: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=150&q=80",
-    vendorStore: "Aura Wearable Tech",
+    vendorStore: "Nati Wearable Tech",
     reason: "Copyright issue",
     reportedBy: "Apple Inc Legal (IP Enforcement)",
     date: "2 hours ago",

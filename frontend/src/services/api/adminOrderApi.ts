@@ -127,12 +127,12 @@ let mockOrders: AdminOrderModel[] = [
     customerAvatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80",
     customerPhone: "+1 (555) 321-9988",
     shippingAddress: "100 Ocean Drive, Miami, FL 33139",
-    vendorStore: "Aura Wearable Tech",
+    vendorStore: "Nati Wearable Tech",
     vendorId: "v_104",
     products: [
       {
         id: "prod_1004",
-        name: "Aura Luxury Titanium Smartwatch",
+        name: "Nati Luxury Titanium Smartwatch",
         image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=150&q=80",
         quantity: 1,
         price: 49.00,
@@ -160,7 +160,7 @@ let mockDisputes: DisputeCase[] = [
     id: "disp_801",
     orderId: "ord_90104",
     customerName: "David Miller",
-    vendorStore: "Aura Wearable Tech",
+    vendorStore: "Nati Wearable Tech",
     complaintReason: "Counterfeit Brand Item Received - Non-functional cardiac sensor",
     customerEvidence: ["https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80"],
     vendorResponse: "Item was shipped in original packaging.",
@@ -244,7 +244,7 @@ export const adminOrderApi = {
       { vendor: "Apex Tech Labs", orders: 8900, revenue: 3450000 },
       { vendor: "Quantum Sound", orders: 7400, revenue: 2150000 },
       { vendor: "Hyperion Ergo", orders: 3900, revenue: 1120000 },
-      { vendor: "Aura Wearables", orders: 310, revenue: 89000 },
+      { vendor: "Nati Wearables", orders: 310, revenue: 89000 },
     ];
   },
 

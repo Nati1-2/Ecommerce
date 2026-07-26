@@ -7,12 +7,12 @@ export default function SupportCard() {
     {
       icon: Phone,
       title: "Call customer support",
-      value: "+1 (800) 555-AURA",
+      value: "+1 (800) 555-NATI",
     },
     {
       icon: Mail,
       title: "Email help desk",
-      value: "support@aurastore.com",
+      value: "support@natistore.com",
     },
     {
       icon: ArrowLeftRight,

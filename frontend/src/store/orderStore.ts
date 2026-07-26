@@ -159,7 +159,7 @@ const initialOrders: Order[] = [
     items: [
       {
         productId: "3",
-        name: "Aura Premium Wireless Charger",
+        name: "Nati Premium Wireless Charger",
         image: "/charger.png",
         quantity: 1,
         price: 89.9,

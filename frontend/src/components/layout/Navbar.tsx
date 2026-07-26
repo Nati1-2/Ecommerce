@@ -90,7 +90,7 @@ export default function Navbar() {
         {/* Top bar */}
         <div className="bg-[#111827] text-white text-xs py-2 text-center hidden md:block">
           <span>🚚 Free shipping on orders over $50 &nbsp;|&nbsp; Use code </span>
-          <span className="font-bold text-[#5AA8FF]">AURA10</span>
+          <span className="font-bold text-[#5AA8FF]">NATI10</span>
           <span> for 10% off your first order</span>
         </div>
 
@@ -107,7 +107,7 @@ export default function Navbar() {
 
             <Link href="/" className="flex items-center gap-1 shrink-0">
               <span className="text-2xl font-black tracking-tight text-[#111827]">
-                Aura<span className="text-[#007BFF]">.</span>
+                Nati<span className="text-[#007BFF]">.</span>
               </span>
             </Link>
 
@@ -263,7 +263,7 @@ export default function Navbar() {
             >
               <div className="flex items-center justify-between p-5 border-b border-gray-100">
                 <span className="text-xl font-black text-[#111827]">
-                  Aura<span className="text-[#007BFF]">.</span>
+                  Nati<span className="text-[#007BFF]">.</span>
                 </span>
                 <button onClick={() => setMobileOpen(false)}>
                   <X className="w-5 h-5 text-gray-500" />

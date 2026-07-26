@@ -15,7 +15,7 @@ export default function RecentlyViewed({ currentProductId, onQuickView }: Recent
 
   useEffect(() => {
     // 1. Get existing viewed product IDs from localStorage
-    const saved = localStorage.getItem("aura-recently-viewed");
+    const saved = localStorage.getItem("nati-recently-viewed");
     let viewedIds: string[] = saved ? JSON.parse(saved) : [];
 
     // Filter viewed IDs to make sure they correspond to active items
@@ -27,7 +27,7 @@ export default function RecentlyViewed({ currentProductId, onQuickView }: Recent
 
     // 2. Add current product to the top of viewed history
     const nextIds = [currentProductId, ...viewedIds.filter((id) => id !== currentProductId)].slice(0, 5);
-    localStorage.setItem("aura-recently-viewed", JSON.stringify(nextIds));
+    localStorage.setItem("nati-recently-viewed", JSON.stringify(nextIds));
   }, [currentProductId]);
 
   if (list.length === 0) return null;

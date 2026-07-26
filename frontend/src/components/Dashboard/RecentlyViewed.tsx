@@ -15,7 +15,7 @@ export default function RecentlyViewed() {
 
   useEffect(() => {
     // Load local storage items
-    const saved = localStorage.getItem("aura-recently-viewed");
+    const saved = localStorage.getItem("nati-recently-viewed");
     if (saved) {
       try {
         const ids: string[] = JSON.parse(saved);
@@ -34,12 +34,12 @@ export default function RecentlyViewed() {
     const updated = items.filter((item) => item.id !== id);
     setItems(updated);
 
-    const saved = localStorage.getItem("aura-recently-viewed");
+    const saved = localStorage.getItem("nati-recently-viewed");
     if (saved) {
       try {
         const ids: string[] = JSON.parse(saved);
         const filtered = ids.filter((i) => i !== id);
-        localStorage.setItem("aura-recently-viewed", JSON.stringify(filtered));
+        localStorage.setItem("nati-recently-viewed", JSON.stringify(filtered));
       } catch (err) {
         // ignore
       }

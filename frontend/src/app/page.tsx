@@ -17,7 +17,7 @@ import {
 } from "@/data/mock";
 
 export const metadata = {
-  title: "Aura — Premium E-Commerce | Shop Everything You Love",
+  title: "Nati — Premium E-Commerce | Shop Everything You Love",
   description: "Discover 50,000+ premium products from top brands with fast delivery and secure payments.",
 };
 

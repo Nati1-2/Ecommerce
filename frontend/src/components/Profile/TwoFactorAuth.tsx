@@ -12,7 +12,7 @@ export default function TwoFactorAuth() {
   const [step, setStep] = useState<"idle" | "setup" | "backup">("idle");
   const [copied, setCopied] = useState(false);
 
-  const backupCodes = ["AURA-1289-4912", "AURA-9823-1102", "AURA-5491-9238", "AURA-7712-4029"];
+  const backupCodes = ["NATI-1289-4912", "NATI-9823-1102", "NATI-5491-9238", "NATI-7712-4029"];
 
   const handleStartSetup = () => {
     setStep("setup");

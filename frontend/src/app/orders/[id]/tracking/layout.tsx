@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Real-time Package Tracking | Aura Store",
+  title: "Real-time Package Tracking | Nati Store",
   description:
     "Track your package delivery milestones in real-time. Follow live distribution transfers, arrival windows, and dispatch alerts.",
 };

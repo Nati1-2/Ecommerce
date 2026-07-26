@@ -78,7 +78,7 @@ export default function ProductFilters({ selectedCount, onBulkApprove, onBulkDel
             <option value="Apex Tech Labs">Apex Tech Labs</option>
             <option value="Quantum Sound Audio">Quantum Sound Audio</option>
             <option value="Hyperion Ergonomics">Hyperion Ergonomics</option>
-            <option value="Aura Wearable Tech">Aura Wearable Tech</option>
+            <option value="Nati Wearable Tech">Nati Wearable Tech</option>
           </select>
 
           {/* Date Filter */}

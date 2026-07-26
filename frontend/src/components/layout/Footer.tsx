@@ -68,7 +68,7 @@ export function Footer() {
           <div className="lg:col-span-2">
             <Link href="/" className="inline-block mb-4">
               <span className="text-3xl font-black text-white tracking-tight">
-                Aura<span className="text-[#007BFF]">.</span>
+                Nati<span className="text-[#007BFF]">.</span>
               </span>
             </Link>
             <p className="text-sm leading-relaxed max-w-xs">
@@ -78,7 +78,7 @@ export function Footer() {
             {/* Contact info */}
             <div className="mt-6 space-y-2.5">
               {[
-                { icon: Mail, text: "support@aura.shop" },
+                { icon: Mail, text: "support@nati.shop" },
                 { icon: Phone, text: "+1 (800) 123-4567" },
                 { icon: MapPin, text: "San Francisco, CA, USA" },
               ].map(({ icon: Icon, text }) => (
@@ -129,7 +129,7 @@ export function Footer() {
       <div className="border-t border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs">
-            © {new Date().getFullYear()} Aura E-Commerce. All rights reserved.
+            © {new Date().getFullYear()} Nati E-Commerce. All rights reserved.
           </p>
 
           {/* Payment icons */}

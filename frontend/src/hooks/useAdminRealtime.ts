@@ -56,7 +56,7 @@ export function useAdminRealtime() {
           {
             type: "NEW_VENDOR" as const,
             title: "New Vendor Registration",
-            message: "Aura Tech Solutions submitted store onboarding application",
+            message: "Nati Tech Solutions submitted store onboarding application",
             severity: "info" as const,
           },
           {

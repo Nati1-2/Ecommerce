@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Secure Checkout | Aura Store",
+  title: "Secure Checkout | Nati Store",
   description:
     "Complete your purchase securely. Fast checkout with multiple payment options, free shipping, and buyer protection.",
 };

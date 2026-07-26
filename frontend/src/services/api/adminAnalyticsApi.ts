@@ -56,7 +56,7 @@ let mockVendorLeaderboard: VendorAnalyticsItem[] = [
 let mockProductPerformance: ProductPerformanceItem[] = [
   { id: "prod_1001", name: "MacBook Pro 16-inch M3 Max", sku: "APX-M3-PRO", vendor: "Apex Tech Labs", sales: 3420, revenue: 11966580, views: 185000, status: "top" },
   { id: "prod_1002", name: "Quantum ANC Headphones Gen 2", sku: "QNT-ANC-900", vendor: "Quantum Sound", sales: 4890, revenue: 1709055, views: 142000, status: "top" },
-  { id: "prod_1004", name: "Aura Smartwatch (Flagged)", sku: "AUR-SMART", vendor: "Aura Wearables", sales: 420, revenue: 20580, views: 32000, status: "worst" },
+  { id: "prod_1004", name: "Nati Smartwatch (Flagged)", sku: "AUR-SMART", vendor: "Nati Wearables", sales: 420, revenue: 20580, views: 32000, status: "worst" },
 ];
 
 let mockGeoMetrics: GeoMetric[] = [
@@ -74,7 +74,7 @@ let mockTrafficSources: TrafficSource[] = [
 ];
 
 let mockAlerts: AnalyticsAlert[] = [
-  { id: "alt_1", title: "High Refund Rate Detected", description: "Store 'Aura Wearable Tech' refund rate spiked to 8.2% this week.", severity: "danger", timestamp: "1 hour ago" },
+  { id: "alt_1", title: "High Refund Rate Detected", description: "Store 'Nati Wearable Tech' refund rate spiked to 8.2% this week.", severity: "danger", timestamp: "1 hour ago" },
   { id: "alt_2", title: "Cart Abandonment Alert", description: "Cart dropoff rate increased by 2.4% on mobile checkout.", severity: "warning", timestamp: "3 hours ago" },
   { id: "alt_3", title: "Record Daily GMV Reached", description: "Marketplace processed over $1.8M GMV in the last 24 hours.", severity: "info", timestamp: "Yesterday" },
 ];
