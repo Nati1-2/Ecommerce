@@ -47,3 +47,4 @@ jobs:
           cd services/auth-service && npm run test || true
           cd ../user-service && npm run test || true
           cd ../product-service && npm run test || true
+          cd ../vendor-service && npm run test || true

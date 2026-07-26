@@ -65,3 +65,24 @@ services:
           type: web
           name: ecommerce-product-service
           property: host
+      - key: VENDOR_SERVICE_URL
+        fromService:
+          type: web
+          name: ecommerce-vendor-service
+          property: host
+
+  - type: web
+    name: ecommerce-vendor-service
+    env: node
+    rootDir: backend
+    buildCommand: npm install && npm run build --workspace=shared && npm run build --workspace=services/vendor-service
+    startCommand: node services/vendor-service/dist/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: RABBITMQ_URL
+        sync: false
