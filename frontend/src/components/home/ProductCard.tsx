@@ -157,3 +157,51 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
     </motion.div>
   );
 }
+
+interface ProductGridSectionProps {
+  title: string;
+  subtitle: string;
+  label: string;
+  products: Product[];
+  viewAllHref: string;
+}
+
+export function ProductGridSection({
+  title,
+  subtitle,
+  label,
+  products,
+  viewAllHref,
+}: ProductGridSectionProps) {
+  return (
+    <section className="py-14 bg-white select-none">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4"
+        >
+          <div>
+            <p className="text-[#007BFF] text-xs font-bold uppercase tracking-widest mb-1">{label}</p>
+            <h2 className="text-2xl sm:text-3xl font-black text-[#111827]">{title}</h2>
+            <p className="text-xs text-gray-400 font-medium mt-1">{subtitle}</p>
+          </div>
+          <Link
+            href={viewAllHref}
+            className="flex items-center gap-1.5 text-xs font-bold text-[#007BFF] hover:gap-2.5 transition-all self-start sm:self-auto"
+          >
+            <span>View All</span>
+            <span>→</span>
+          </Link>
+        </motion.div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {products.slice(0, 8).map((product, index) => (
+            <ProductCard key={product.id} product={product} index={index} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
