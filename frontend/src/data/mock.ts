@@ -15,23 +15,10 @@ export const mockProducts: Product[] = [
     id: "0", name: "Apple iPhone 17 Pro", slug: "iphone-17-pro",
     price: 1199, originalPrice: 1399, discount: 14, rating: 5.0, reviewCount: 942,
     image: "/iphone17.png",
-    images: [
-      "/iphone17.png",
-      "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&q=80",
-      "https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=600&q=80"
-    ],
+    images: ["/iphone17.png", "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&q=80"],
     category: "Electronics", brand: "Apple", badge: "new", inStock: true,
     description: "The next generation of iPhone with A19 Pro chip and integrated Holographic Display.",
-    stock: 5,
-    features: [
-      "A19 Pro chip with next-generation Neural Engine",
-      "6.9-inch always-on Super Retina XDR display",
-      "Titanium alloy chassis design for lightweight durability"
-    ],
-    variants: [
-      { name: "Color", options: [{ value: "Sunset Orange" }, { value: "Titanium Grey" }, { value: "Stellar Black" }] },
-      { name: "Storage", options: [{ value: "128GB", price: 0 }, { value: "256GB", price: 100 }, { value: "512GB", price: 300 }] }
-    ]
+    stock: 5
   },
   {
     id: "1", name: "Apple MacBook Pro M3", slug: "macbook-pro-m3",
@@ -40,8 +27,7 @@ export const mockProducts: Product[] = [
     images: ["https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=600&q=80"],
     category: "Electronics", brand: "Apple", badge: "hot", inStock: true,
     description: "The most powerful MacBook Pro ever with M3 chip.",
-    stock: 8,
-    features: ["Apple M3 Max chip with 16-core CPU", "Liquid Retina XDR display", "Massive battery life up to 22 hours"]
+    stock: 8
   },
   {
     id: "2", name: "Sony WH-1000XM5 Headphones", slug: "sony-xm5",
@@ -117,6 +103,24 @@ export const mockProducts: Product[] = [
     description: "Ultra-warm 700-fill goose down insulated puffer jacket for winter comfort.",
     stock: 9
   },
+  {
+    id: "f4", name: "Converse Chuck Taylor All Star High Top", slug: "converse-chuck-taylor",
+    price: 65, originalPrice: 75, discount: 13, rating: 4.8, reviewCount: 6120,
+    image: "https://images.unsplash.com/photo-1607522370275-f14206abe5d3?w=600&q=80",
+    images: ["https://images.unsplash.com/photo-1607522370275-f14206abe5d3?w=600&q=80"],
+    category: "Fashion", brand: "Nike", badge: "popular", inStock: true,
+    description: "Classic canvas high-top sneakers with rubber toe cap and signature star patch.",
+    stock: 25
+  },
+  {
+    id: "f5", name: "Gucci GG Marmont Leather Belt", slug: "gucci-marmont-belt",
+    price: 490, originalPrice: 550, discount: 11, rating: 4.9, reviewCount: 1890,
+    image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&q=80",
+    images: ["https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&q=80"],
+    category: "Fashion", brand: "Sony", badge: "luxury", inStock: true,
+    description: "Smooth black leather belt with iconic antique brass Double G buckle.",
+    stock: 8
+  },
 
   // ── HOME & LIVING ─────────────────────────────────────────
   {
@@ -154,6 +158,24 @@ export const mockProducts: Product[] = [
     category: "Home & Living", brand: "Samsung", badge: "popular", inStock: true,
     description: "16 million color smart LED light strip compatible with Alexa, Google & Apple HomeKit.",
     stock: 25
+  },
+  {
+    id: "h4", name: "KitchenAid Artisan Stand Mixer 5-Quart", slug: "kitchenaid-stand-mixer",
+    price: 449, originalPrice: 499, discount: 10, rating: 4.9, reviewCount: 8430,
+    image: "https://images.unsplash.com/photo-1594385208974-2e75f8d7bb48?w=600&q=80",
+    images: ["https://images.unsplash.com/photo-1594385208974-2e75f8d7bb48?w=600&q=80"],
+    category: "Home & Living", brand: "Dyson", badge: "bestseller", inStock: true,
+    description: "10-speed tilt-head stand mixer with 5-quart stainless steel bowl and dough hook.",
+    stock: 7
+  },
+  {
+    id: "h5", name: "Ninja Foodi 6-in-1 DualZone Air Fryer", slug: "ninja-foodi-airfryer",
+    price: 179, originalPrice: 220, discount: 18, rating: 4.8, reviewCount: 4920,
+    image: "https://images.unsplash.com/photo-1585515320310-259814833e62?w=600&q=80",
+    images: ["https://images.unsplash.com/photo-1585515320310-259814833e62?w=600&q=80"],
+    category: "Home & Living", brand: "Dyson", badge: "hot", inStock: true,
+    description: "2-basket air fryer allowing you to cook 2 foods, 2 ways, at the same time.",
+    stock: 14
   },
 
   // ── GAMING ────────────────────────────────────────────────
@@ -193,6 +215,24 @@ export const mockProducts: Product[] = [
     description: "Ultra-lightweight 60g wireless esports gaming mouse with HERO 2 sensor.",
     stock: 22
   },
+  {
+    id: "g4", name: "Xbox Series X 1TB Console", slug: "xbox-series-x",
+    price: 499, originalPrice: 549, discount: 9, rating: 4.8, reviewCount: 8910,
+    image: "https://images.unsplash.com/photo-1621259182978-fbf93132d53d?w=600&q=80",
+    images: ["https://images.unsplash.com/photo-1621259182978-fbf93132d53d?w=600&q=80"],
+    category: "Gaming", brand: "Sony", badge: "hot", inStock: true,
+    description: "The fastest, most powerful Xbox ever with 12 teraflops of raw graphic processing power.",
+    stock: 9
+  },
+  {
+    id: "g5", name: "SteelSeries Arctis Nova Pro Wireless", slug: "steelseries-arctis-nova-pro",
+    price: 349, originalPrice: 380, discount: 8, rating: 4.8, reviewCount: 1620,
+    image: "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=600&q=80",
+    images: ["https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=600&q=80"],
+    category: "Gaming", brand: "Sony", badge: "new", inStock: true,
+    description: "Multi-system wireless gaming headset with active noise cancellation & dual battery system.",
+    stock: 12
+  },
 
   // ── BEAUTY ────────────────────────────────────────────────
   {
@@ -231,6 +271,24 @@ export const mockProducts: Product[] = [
     description: "Seductive gourmand floral fragrance with notes of black coffee & vanilla.",
     stock: 14
   },
+  {
+    id: "b5", name: "MAC Matte Lipstick - Ruby Woo", slug: "mac-ruby-woo-lipstick",
+    price: 23, originalPrice: 28, discount: 17, rating: 4.9, reviewCount: 7120,
+    image: "https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=600&q=80",
+    images: ["https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=600&q=80"],
+    category: "Beauty", brand: "Dyson", badge: "bestseller", inStock: true,
+    description: "Iconic vivid blue-red matte finish lipstick with intense color payoff.",
+    stock: 30
+  },
+  {
+    id: "b6", name: "Chanel N°5 Eau de Parfum 100ml", slug: "chanel-no5-edp",
+    price: 175, originalPrice: 195, discount: 10, rating: 4.9, reviewCount: 9240,
+    image: "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=600&q=80",
+    images: ["https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=600&q=80"],
+    category: "Beauty", brand: "Dyson", badge: "luxury", inStock: true,
+    description: "The world's most famous floral aldehyde perfume crafted by Gabrielle Chanel.",
+    stock: 12
+  },
 
   // ── SPORTS ────────────────────────────────────────────────
   {
@@ -268,6 +326,24 @@ export const mockProducts: Product[] = [
     category: "Sports", brand: "Nike", badge: "popular", inStock: true,
     description: "Official NBA leather composite game basketball with high durability tack cover.",
     stock: 25
+  },
+  {
+    id: "s5", name: "Under Armour Tech 2.0 Short Sleeve Tee", slug: "ua-tech-2-shirt",
+    price: 28, originalPrice: 35, discount: 20, rating: 4.7, reviewCount: 4120,
+    image: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=600&q=80",
+    images: ["https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=600&q=80"],
+    category: "Sports", brand: "Nike", badge: "popular", inStock: true,
+    description: "Quick-drying ultra-soft UA Tech moisture-wicking athletic training t-shirt.",
+    stock: 28
+  },
+  {
+    id: "s6", name: "Manduka PRO 6mm Yoga Mat", slug: "manduka-pro-yoga-mat",
+    price: 138, originalPrice: 158, discount: 12, rating: 4.9, reviewCount: 1890,
+    image: "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=600&q=80",
+    images: ["https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=600&q=80"],
+    category: "Sports", brand: "Nike", badge: "bestseller", inStock: true,
+    description: "Ultra-dense 6mm cushioning non-toxic PVC yoga mat with lifetime guarantee.",
+    stock: 14
   }
 ];
 
