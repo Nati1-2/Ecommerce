@@ -15,12 +15,12 @@ import { useRouter } from "next/navigation";
 import SearchBar from "@/components/Search/SearchBar";
 
 const categories = [
-  { name: "Electronics", icon: Laptop, href: "/category/electronics" },
-  { name: "Fashion", icon: Shirt, href: "/category/fashion" },
-  { name: "Home & Living", icon: Home, href: "/category/home" },
-  { name: "Gaming", icon: Gamepad2, href: "/category/gaming" },
-  { name: "Beauty", icon: Sparkles, href: "/category/beauty" },
-  { name: "Sports", icon: Dumbbell, href: "/category/sports" },
+  { name: "Electronics", icon: Laptop, href: "/products?category=Electronics" },
+  { name: "Fashion", icon: Shirt, href: "/products?category=Fashion" },
+  { name: "Home & Living", icon: Home, href: "/products?category=Home%20%26%20Living" },
+  { name: "Gaming", icon: Gamepad2, href: "/products?category=Gaming" },
+  { name: "Beauty", icon: Sparkles, href: "/products?category=Beauty" },
+  { name: "Sports", icon: Dumbbell, href: "/products?category=Sports" },
 ];
 
 export default function Navbar() {
