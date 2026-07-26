@@ -20,6 +20,7 @@ export const publishPaymentCompleted = async (paymentData: {
   paymentId: string;
   orderId: string;
   customerId: string;
+  userId?: string;
   amount: number;
   provider: string;
   transactionId?: string;
@@ -38,6 +39,7 @@ export const publishPaymentFailed = async (paymentData: {
   paymentId: string;
   orderId: string;
   customerId: string;
+  userId?: string;
   amount: number;
   reason: string;
 }): Promise<void> => {
