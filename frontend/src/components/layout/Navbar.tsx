@@ -191,7 +191,7 @@ export default function Navbar() {
 
             {/* Account */}
             <Link
-              href="/profile"
+              href="/account"
               className="hidden md:flex items-center gap-2 ml-1 pl-3 border-l border-gray-200 text-sm font-medium text-gray-700 hover:text-[#007BFF] transition-colors"
             >
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#007BFF] to-[#5AA8FF] flex items-center justify-center">
@@ -272,7 +272,7 @@ export default function Navbar() {
                 ))}
 
                 <div className="mt-6 pt-6 border-t border-gray-100 space-y-2">
-                  <Link href="/profile" className="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 hover:bg-blue-50" onClick={() => setMobileOpen(false)}>
+                  <Link href="/account" className="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 hover:bg-blue-50" onClick={() => setMobileOpen(false)}>
                     <User className="w-5 h-5" />
                     <span className="font-medium">My Account</span>
                   </Link>
