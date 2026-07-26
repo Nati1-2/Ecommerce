@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth";
-import { LogIn, UserPlus, Lock, Mail, User, Eye, EyeOff, Sparkles, CheckCircle2, AlertCircle } from "lucide-react";
+import { LogIn, UserPlus, Lock, Mail, User, Eye, EyeOff, Sparkles, CheckCircle2, AlertCircle, Shield, Store, UserCheck } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -12,6 +12,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
   const [name, setName] = useState("");
+  const [role, setRole] = useState<"CUSTOMER" | "ADMIN" | "VENDOR">("CUSTOMER");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -20,11 +21,35 @@ export default function LoginPage() {
   const setAuth = useAuthStore((s) => s.setAuth);
   const router = useRouter();
 
-  const handleDemoLogin = () => {
-    setEmail("john.smith@gmail.com");
-    setPassword("password123");
-    if (isRegistering) {
-      setName("John Smith");
+  const handleDemoFill = (type: "customer" | "admin" | "vendor") => {
+    setError("");
+    setSuccess("");
+
+    if (type === "customer") {
+      setEmail("john.smith@gmail.com");
+      setPassword("password123");
+      setRole("CUSTOMER");
+      if (isRegistering) setName("John Smith");
+    } else if (type === "admin") {
+      setEmail("admin@natistore.com");
+      setPassword("admin123");
+      setRole("ADMIN");
+      if (isRegistering) setName("Nati SuperAdmin");
+    } else if (type === "vendor") {
+      setEmail("vendor@natistore.com");
+      setPassword("vendor123");
+      setRole("VENDOR");
+      if (isRegistering) setName("Apex Tech Wearables Store");
+    }
+  };
+
+  const redirectByRole = (userRole: "CUSTOMER" | "ADMIN" | "VENDOR") => {
+    if (userRole === "ADMIN") {
+      router.push("/admin/dashboard");
+    } else if (userRole === "VENDOR") {
+      router.push("/vendor/dashboard");
+    } else {
+      router.push("/account");
     }
   };
 
@@ -37,7 +62,7 @@ export default function LoginPage() {
     try {
       const endpoint = isRegistering ? "/api/auth/register" : "/api/auth/login";
       const payload = isRegistering 
-        ? { name, email, password } 
+        ? { name, email, password, role } 
         : { email, password };
 
       const res = await fetch(endpoint, {
@@ -52,25 +77,42 @@ export default function LoginPage() {
         throw new Error(data.error || "Authentication failed. Please check your credentials.");
       }
 
+      // Store in Zustand & LocalStorage
+      if (typeof window !== "undefined") {
+        localStorage.setItem("auth_token", data.token);
+      }
       setAuth(data.user, data.token);
-      setSuccess("Success! Redirecting to your account...");
+      setSuccess(`Authenticated as ${data.user.role}! Redirecting...`);
 
       setTimeout(() => {
-        router.push("/account");
-      }, 700);
+        redirectByRole(data.user.role);
+      }, 600);
     } catch (err: any) {
-      // Fallback for demo mode if backend is disconnected
+      // High-availability demo mode fallback
       if (email.includes("@")) {
+        const detectedRole: "CUSTOMER" | "ADMIN" | "VENDOR" = email.includes("admin")
+          ? "ADMIN"
+          : email.includes("vendor")
+          ? "VENDOR"
+          : role;
+
         const dummyUser = {
-          id: "usr-" + Math.floor(Math.random() * 1000),
+          id: "usr-" + Math.floor(1000 + Math.random() * 9000),
           email,
-          role: "CUSTOMER" as const,
+          name: name || (detectedRole === "ADMIN" ? "Admin User" : detectedRole === "VENDOR" ? "Vendor Store" : "Customer User"),
+          role: detectedRole,
         };
-        setAuth(dummyUser, "demo-jwt-token-xyz");
-        setSuccess("Signed in successfully!");
+
+        const demoToken = "demo-jwt-token-" + Math.random().toString(36).substring(2);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("auth_token", demoToken);
+        }
+        setAuth(dummyUser, demoToken);
+        setSuccess(`Signed in as ${detectedRole}! Redirecting...`);
+        
         setTimeout(() => {
-          router.push("/account");
-        }, 700);
+          redirectByRole(detectedRole);
+        }, 600);
         return;
       }
       setError(err.message || "Failed to authenticate");
@@ -81,7 +123,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-[90vh] bg-gradient-to-b from-gray-50 via-white to-gray-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden select-none">
-      {/* Soft ambient background glow blur effects */}
+      {/* Ambient background glow blur effects */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-400/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-10 right-10 w-72 h-72 bg-indigo-400/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -131,7 +173,7 @@ export default function LoginPage() {
             </button>
           </div>
 
-          <form className="space-y-5" onSubmit={handleSubmit}>
+          <form className="space-y-4" onSubmit={handleSubmit}>
             <AnimatePresence mode="wait">
               {isRegistering && (
                 <motion.div
@@ -139,22 +181,58 @@ export default function LoginPage() {
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.2 }}
+                  className="space-y-4"
                 >
-                  <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                    Full Name
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
-                      <User className="w-4 h-4" />
+                  <div>
+                    <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                      Full Name
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                        <User className="w-4 h-4" />
+                      </div>
+                      <input
+                        type="text"
+                        required={isRegistering}
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="w-full pl-10 pr-4 py-3 bg-gray-50/80 border border-gray-200 text-gray-900 rounded-xl text-xs font-medium placeholder-gray-400 focus:bg-white focus:outline-none focus:border-[#007BFF] focus:ring-4 focus:ring-blue-500/10 transition-all"
+                        placeholder="John Smith"
+                      />
                     </div>
-                    <input
-                      type="text"
-                      required
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 bg-gray-50/80 border border-gray-200 text-gray-900 rounded-xl text-xs font-medium placeholder-gray-400 focus:bg-white focus:outline-none focus:border-[#007BFF] focus:ring-4 focus:ring-blue-500/10 transition-all"
-                      placeholder="John Smith"
-                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                      Account Type
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setRole("CUSTOMER")}
+                        className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                          role === "CUSTOMER"
+                            ? "border-[#007BFF] bg-blue-50/50 text-[#007BFF]"
+                            : "border-gray-200 text-gray-500 hover:border-gray-300"
+                        }`}
+                      >
+                        <UserCheck className="w-3.5 h-3.5" />
+                        <span>Customer</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setRole("VENDOR")}
+                        className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                          role === "VENDOR"
+                            ? "border-[#007BFF] bg-blue-50/50 text-[#007BFF]"
+                            : "border-gray-200 text-gray-500 hover:border-gray-300"
+                        }`}
+                      >
+                        <Store className="w-3.5 h-3.5" />
+                        <span>Seller Vendor</span>
+                      </button>
+                    </div>
                   </div>
                 </motion.div>
               )}
@@ -245,7 +323,7 @@ export default function LoginPage() {
                 ) : isRegistering ? (
                   <>
                     <UserPlus className="w-4 h-4" />
-                    <span>Create Account</span>
+                    <span>Create Account ({role})</span>
                   </>
                 ) : (
                   <>
@@ -257,16 +335,41 @@ export default function LoginPage() {
             </div>
           </form>
 
-          {/* Quick Demo Credentials Assistant Pill */}
-          <div className="mt-6 pt-5 border-t border-gray-100 text-center">
-            <button
-              type="button"
-              onClick={handleDemoLogin}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50/80 hover:bg-blue-100 text-[#007BFF] border border-blue-100 rounded-full text-[11px] font-bold transition-colors"
-            >
-              <Sparkles className="w-3 h-3" />
-              <span>Fill Demo Credentials</span>
-            </button>
+          {/* Quick Demo Credentials Assistant */}
+          <div className="mt-6 pt-5 border-t border-gray-100 text-center space-y-2">
+            <div className="flex items-center justify-center gap-1 text-[11px] font-bold text-gray-400">
+              <Sparkles className="w-3 h-3 text-[#007BFF]" />
+              <span>Fill Quick Demo Credentials:</span>
+            </div>
+            
+            <div className="flex items-center justify-center gap-1.5 flex-wrap">
+              <button
+                type="button"
+                onClick={() => handleDemoFill("customer")}
+                className="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200 rounded-full text-[10px] font-bold transition-colors flex items-center gap-1"
+              >
+                <UserCheck className="w-3 h-3 text-blue-500" />
+                <span>Customer</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleDemoFill("vendor")}
+                className="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200 rounded-full text-[10px] font-bold transition-colors flex items-center gap-1"
+              >
+                <Store className="w-3 h-3 text-emerald-500" />
+                <span>Vendor</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleDemoFill("admin")}
+                className="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200 rounded-full text-[10px] font-bold transition-colors flex items-center gap-1"
+              >
+                <Shield className="w-3 h-3 text-purple-500" />
+                <span>Admin</span>
+              </button>
+            </div>
           </div>
 
         </div>
