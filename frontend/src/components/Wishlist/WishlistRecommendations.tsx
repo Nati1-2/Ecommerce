@@ -15,7 +15,7 @@ export default function WishlistRecommendations() {
     const loadRecommendations = async () => {
       try {
         const res = await fetchProducts({ limit: 4, sort: "popular" });
-        setProducts(res.products);
+        setProducts(res.products || []);
       } catch (error) {
         console.error("Failed to fetch recommendations:", error);
       } finally {
@@ -28,11 +28,11 @@ export default function WishlistRecommendations() {
 
   if (loading) {
     return (
-      <div className="py-12 animate-pulse">
-        <div className="h-8 bg-gray-200 dark:bg-gray-800 w-64 mb-6 rounded-md"></div>
+      <div className="py-8 animate-pulse space-y-4">
+        <div className="h-6 bg-gray-200 w-48 rounded-md" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="aspect-[3/4] bg-gray-200 dark:bg-gray-800 rounded-xl"></div>
+            <div key={i} className="aspect-[3/4] bg-gray-200 rounded-2xl" />
           ))}
         </div>
       </div>
@@ -42,22 +42,22 @@ export default function WishlistRecommendations() {
   if (products.length === 0) return null;
 
   return (
-    <section className="py-12 border-t border-gray-200 dark:border-gray-800 mt-12">
-      <div className="flex items-center space-x-2 mb-8">
-        <Sparkles className="w-6 h-6 text-primary-500" />
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Inspired by your Wishlist
-        </h2>
+    <section className="py-8 border-t border-gray-200/80 space-y-6">
+      <div className="flex items-center space-x-2">
+        <Sparkles className="w-5 h-5 text-[#007BFF]" />
+        <h3 className="text-lg font-black text-gray-900">
+          Recommended For You
+        </h3>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {products.map((product, index) => (
           <motion.div
             key={product.id}
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: index * 0.1 }}
+            transition={{ delay: index * 0.08 }}
           >
             <ProductCard product={product} index={index} viewMode="grid" onQuickView={() => {}} />
           </motion.div>

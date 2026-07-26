@@ -18,18 +18,18 @@ export default function WishlistPage() {
   }, []);
 
   if (!isMounted) {
-    return null; // or a loading skeleton
+    return null;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#0B0F19] pt-24 pb-12 transition-colors duration-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50/60 py-8 select-none">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         <WishlistHeader />
 
         {items.length > 0 ? (
           <>
             <WishlistToolbar />
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
               <div className="lg:col-span-1">
                 <WishlistCollections />
               </div>
