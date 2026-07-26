@@ -13,7 +13,8 @@
     "dev:vendor": "npm run dev --prefix backend/services/vendor-service",
     "dev:inventory": "npm run dev --prefix backend/services/inventory-service",
     "dev:order": "npm run dev --prefix backend/services/order-service",
-    "dev:payment": "npm run dev --prefix backend/services/payment-service"
+    "dev:payment": "npm run dev --prefix backend/services/payment-service",
+    "dev:notification": "npm run dev --prefix backend/services/notification-service"
   },
   "engines": {
     "node": ">=20.0.0"
