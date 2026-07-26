@@ -33,6 +33,7 @@ export default function Navbar() {
   const setCartDrawerOpen = useCartStore((s) => s.setCartDrawerOpen);
   const [searchQuery, setSearchQuery] = useState("");
   const searchRef = useRef<HTMLInputElement>(null);
+  const catRef = useRef<HTMLDivElement>(null);
 
   const cartItems = useCartStore((s) => s.items);
   const totalItems = useCartStore((s) => s.totalItems)();
@@ -56,6 +57,17 @@ export default function Navbar() {
   useEffect(() => {
     if (searchOpen) searchRef.current?.focus();
   }, [searchOpen]);
+
+  // Click outside to close categories dropdown
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (catRef.current && !catRef.current.contains(e.target as Node)) {
+        setCatOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Close mobile menu on resize
   useEffect(() => {
@@ -98,14 +110,11 @@ export default function Navbar() {
               </span>
             </Link>
 
-            {/* Categories dropdown */}
-            <div
-              className="hidden md:block relative py-2"
-              onMouseEnter={() => setCatOpen(true)}
-              onMouseLeave={() => setCatOpen(false)}
-            >
+            {/* Categories dropdown (Click-to-Toggle) */}
+            <div ref={catRef} className="hidden md:block relative">
               <button
-                className="flex items-center gap-1.5 text-sm font-medium text-gray-700 hover:text-[#007BFF] transition-colors"
+                type="button"
+                className="flex items-center gap-1.5 text-sm font-medium text-gray-700 hover:text-[#007BFF] transition-colors py-2 px-3 rounded-xl hover:bg-gray-50"
                 onClick={() => setCatOpen(!catOpen)}
               >
                 <span>Categories</span>
@@ -115,25 +124,23 @@ export default function Navbar() {
               <AnimatePresence>
                 {catOpen && (
                   <motion.div
-                    initial={{ opacity: 0, y: 4 }}
+                    initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 4 }}
+                    exit={{ opacity: 0, y: 6 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute top-full left-0 pt-1 w-56 z-50"
+                    className="absolute top-full left-0 mt-1 w-56 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden py-1 z-50"
                   >
-                    <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden py-1">
-                      {categories.map((cat) => (
-                        <Link
-                          key={cat.name}
-                          href={cat.href}
-                          className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#007BFF] transition-colors"
-                          onClick={() => setCatOpen(false)}
-                        >
-                          <cat.icon className="w-4 h-4" />
-                          {cat.name}
-                        </Link>
-                      ))}
-                    </div>
+                    {categories.map((cat) => (
+                      <Link
+                        key={cat.name}
+                        href={cat.href}
+                        className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#007BFF] transition-colors"
+                        onClick={() => setCatOpen(false)}
+                      >
+                        <cat.icon className="w-4 h-4" />
+                        {cat.name}
+                      </Link>
+                    ))}
                   </motion.div>
                 )}
               </AnimatePresence>
