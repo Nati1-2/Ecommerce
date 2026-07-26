@@ -9,6 +9,10 @@ const app: Express = express();
 
 app.use(helmet());
 app.use(cors({ origin: true, credentials: true }));
+
+// Express raw body middleware for Stripe Webhook Signature Verification
+app.use('/api/v1/payments/webhook', express.raw({ type: 'application/json' }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());

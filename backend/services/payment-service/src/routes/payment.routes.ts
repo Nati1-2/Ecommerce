@@ -5,10 +5,14 @@ import { requireRole } from '../middleware/role.middleware.js';
 
 const router = Router();
 
-// Public Webhook callback endpoint (No JWT Auth)
-router.post('/webhook', PaymentController.handleWebhook);
+// Public Webhook callback endpoint for Stripe (signature verification handled in controller)
+router.post('/webhook', PaymentController.handleStripeWebhook);
+
+// Public / Protected payment verification by order ID
+router.get('/verify/:orderId', PaymentController.getPaymentByOrderId);
 
 // Protected routes (JWT Auth required)
+router.post('/checkout-session', authenticateToken, PaymentController.createCheckoutSession);
 router.post('/create-intent', authenticateToken, PaymentController.createIntent);
 router.get('/order/:orderId', authenticateToken, PaymentController.getPaymentByOrderId);
 

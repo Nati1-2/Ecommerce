@@ -1,6 +1,8 @@
 import { Payment, IPayment, PaymentProvider } from '../models/Payment.js';
 import { publishPaymentCompleted, publishPaymentFailed } from '../events/payment.publisher.js';
+import { StripeService, CreateCheckoutSessionParams } from './stripe.service.js';
 import { logger } from '../utils/logger.js';
+import Stripe from 'stripe';
 
 export interface CreatePaymentIntentPayload {
   orderId: string;
@@ -22,12 +24,105 @@ export class PaymentService {
   }
 
   /**
+   * Initializes Stripe Checkout Session & creates local PENDING payment record
+   */
+  public static async createStripeCheckoutSession(params: CreateCheckoutSessionParams): Promise<{ checkoutUrl: string | null; sessionId: string; payment: IPayment }> {
+    const session = await StripeService.createCheckoutSession(params);
+    
+    let payment = await Payment.findOne({ orderId: params.orderId });
+    if (!payment) {
+      payment = await Payment.create({
+        paymentId: this.generatePaymentId(),
+        orderId: params.orderId,
+        customerId: params.userId,
+        userId: params.userId,
+        amount: params.amount,
+        currency: (params.currency || 'USD').toUpperCase(),
+        provider: 'STRIPE',
+        status: 'PENDING',
+        stripeSessionId: session.id
+      });
+    } else {
+      payment.stripeSessionId = session.id;
+      payment.provider = 'STRIPE';
+      await payment.save();
+    }
+
+    return {
+      checkoutUrl: session.url,
+      sessionId: session.id,
+      payment
+    };
+  }
+
+  /**
+   * Handles verified Stripe Webhook Events
+   */
+  public static async handleStripeWebhookEvent(event: Stripe.Event): Promise<IPayment | null> {
+    logger.info(`Processing Stripe Webhook Event: ${event.type}`);
+
+    switch (event.type) {
+      case 'checkout.session.completed': {
+        const session = event.data.object as Stripe.Checkout.Session;
+        const orderId = session.client_reference_id || session.metadata?.orderId;
+        const paymentIntentId = typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id;
+        
+        if (!orderId) {
+          logger.warn(`Stripe session ${session.id} missing orderId metadata.`);
+          return null;
+        }
+
+        return this.processWebhook({
+          event: event.type,
+          transactionId: paymentIntentId || session.id,
+          orderId,
+          status: 'COMPLETED',
+          stripeSessionId: session.id,
+          stripePaymentIntentId: paymentIntentId
+        });
+      }
+
+      case 'payment_intent.succeeded': {
+        const intent = event.data.object as Stripe.PaymentIntent;
+        const orderId = intent.metadata?.orderId;
+        if (!orderId) return null;
+
+        return this.processWebhook({
+          event: event.type,
+          transactionId: intent.id,
+          orderId,
+          status: 'COMPLETED',
+          stripePaymentIntentId: intent.id
+        });
+      }
+
+      case 'payment_intent.payment_failed': {
+        const intent = event.data.object as Stripe.PaymentIntent;
+        const orderId = intent.metadata?.orderId;
+        if (!orderId) return null;
+
+        return this.processWebhook({
+          event: event.type,
+          transactionId: intent.id,
+          orderId,
+          status: 'FAILED',
+          failureReason: intent.last_payment_error?.message || 'Payment intent failed',
+          stripePaymentIntentId: intent.id
+        });
+      }
+
+      default:
+        logger.info(`Unhandled Stripe event type: ${event.type}`);
+        return null;
+    }
+  }
+
+  /**
    * Initializes a payment intent (Idempotent)
    */
   public static async createPaymentIntent(payload: CreatePaymentIntentPayload): Promise<IPayment> {
-    const { orderId, customerId, amount, currency = 'USD', provider = 'MOCK', idempotencyKey } = payload;
+    const { orderId, customerId, amount, currency = 'USD', provider = 'STRIPE', idempotencyKey } = payload;
 
-    // Check for existing payment using idempotency key or orderId
     if (idempotencyKey) {
       const existingKeyPayment = await Payment.findOne({ idempotencyKey });
       if (existingKeyPayment) {
@@ -47,6 +142,7 @@ export class PaymentService {
       paymentId,
       orderId,
       customerId,
+      userId: customerId,
       amount,
       currency,
       provider,
@@ -59,7 +155,7 @@ export class PaymentService {
   }
 
   /**
-   * Processes asynchronous gateway webhooks (Stripe / PayPal / Mock)
+   * Processes asynchronous gateway webhooks and publishes RabbitMQ events
    */
   public static async processWebhook(payload: {
     event: string;
@@ -67,8 +163,10 @@ export class PaymentService {
     orderId: string;
     status: 'COMPLETED' | 'FAILED';
     failureReason?: string;
+    stripeSessionId?: string;
+    stripePaymentIntentId?: string;
   }): Promise<IPayment> {
-    const { transactionId, orderId, status, failureReason } = payload;
+    const { transactionId, orderId, status, failureReason, stripeSessionId, stripePaymentIntentId } = payload;
 
     let payment = await Payment.findOne({ orderId });
     if (!payment) {
@@ -77,14 +175,17 @@ export class PaymentService {
         paymentId: this.generatePaymentId(),
         orderId,
         customerId: 'unknown-customer',
+        userId: 'unknown-customer',
         amount: 0,
         currency: 'USD',
-        provider: 'MOCK',
+        provider: 'STRIPE',
         status: 'PENDING'
       });
     }
 
     payment.transactionId = transactionId;
+    if (stripeSessionId) payment.stripeSessionId = stripeSessionId;
+    if (stripePaymentIntentId) payment.stripePaymentIntentId = stripePaymentIntentId;
     payment.rawWebhookPayload = payload;
 
     if (status === 'COMPLETED') {
@@ -97,6 +198,7 @@ export class PaymentService {
         paymentId: payment.paymentId,
         orderId: payment.orderId,
         customerId: payment.customerId,
+        userId: payment.userId || payment.customerId,
         amount: payment.amount,
         provider: payment.provider,
         transactionId: payment.transactionId
@@ -112,6 +214,7 @@ export class PaymentService {
         paymentId: payment.paymentId,
         orderId: payment.orderId,
         customerId: payment.customerId,
+        userId: payment.userId || payment.customerId,
         amount: payment.amount,
         reason: payment.failureReason
       });
@@ -128,7 +231,7 @@ export class PaymentService {
   }
 
   /**
-   * Processes a refund for a completed payment
+   * Processes a refund for a completed payment via Stripe API & DB
    */
   public static async refundPayment(paymentId: string, reason: string): Promise<IPayment> {
     const payment = await Payment.findOne({ paymentId });
@@ -138,6 +241,10 @@ export class PaymentService {
 
     if (payment.status !== 'COMPLETED') {
       throw new Error(`Cannot refund payment ${paymentId} because status is ${payment.status}`);
+    }
+
+    if (payment.stripePaymentIntentId && payment.provider === 'STRIPE') {
+      await StripeService.refundPayment(payment.stripePaymentIntentId, payment.amount, reason);
     }
 
     payment.status = 'REFUNDED';

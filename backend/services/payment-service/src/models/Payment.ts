@@ -7,6 +7,9 @@ export interface IPayment extends Document {
   paymentId: string;
   orderId: string;
   customerId: string;
+  userId?: string;
+  stripeSessionId?: string;
+  stripePaymentIntentId?: string;
   amount: number;
   currency: string;
   provider: PaymentProvider;
@@ -24,12 +27,15 @@ const PaymentSchema = new Schema<IPayment>({
   paymentId: { type: String, required: true, unique: true, index: true },
   orderId: { type: String, required: true, index: true },
   customerId: { type: String, required: true, index: true },
+  userId: { type: String, index: true },
+  stripeSessionId: { type: String, index: true },
+  stripePaymentIntentId: { type: String, index: true },
   amount: { type: Number, required: true, min: 0 },
   currency: { type: String, required: true, default: 'USD' },
   provider: {
     type: String,
     enum: ['STRIPE', 'PAYPAL', 'MOCK'],
-    default: 'MOCK',
+    default: 'STRIPE',
     required: true
   },
   status: {
