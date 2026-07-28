@@ -9,19 +9,11 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  outputFileTracingRoot: path.join(__dirname, "../"),
+  outputFileTracingRoot: path.resolve(__dirname, "../"),
 
   // ── Performance & Optimizations ────────────────────────────
   productionBrowserSourceMaps: false,
   compress: true,
-  compiler: {
-    removeConsole: process.env.NODE_ENV === "production",
-  },
-
-  // ── Build Optimizations ────────────────────────────────────
-  experimental: {
-    cpus: 1,
-  },
 
   // ── Images ──────────────────────────────────────────────────
   images: {

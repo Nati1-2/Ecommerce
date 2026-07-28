@@ -21,27 +21,6 @@ export default function LoginPage() {
   const setAuth = useAuthStore((s) => s.setAuth);
   const router = useRouter();
 
-  const handleDemoFill = (type: "customer" | "admin" | "vendor") => {
-    setError("");
-    setSuccess("");
-
-    if (type === "customer") {
-      setEmail("john.smith@gmail.com");
-      setPassword("password123");
-      setRole("CUSTOMER");
-      if (isRegistering) setName("John Smith");
-    } else if (type === "admin") {
-      setEmail("admin@natistore.com");
-      setPassword("admin123");
-      setRole("ADMIN");
-      if (isRegistering) setName("Nati SuperAdmin");
-    } else if (type === "vendor") {
-      setEmail("vendor@natistore.com");
-      setPassword("vendor123");
-      setRole("VENDOR");
-      if (isRegistering) setName("Apex Tech Wearables Store");
-    }
-  };
 
   const redirectByRole = (userRole: "CUSTOMER" | "ADMIN" | "VENDOR") => {
     if (userRole === "ADMIN") {
