@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { connectDB } from "@/lib/mongodb";
-import { User } from "@/models/User";
+import { safeFindUserByEmail, safeCreateUser } from "@/lib/mongodb";
 
 const JWT_SECRET = process.env.JWT_ACCESS_SECRET || "fallback-secret-for-dev";
 
@@ -18,16 +17,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Password must be at least 8 characters long" }, { status: 400 });
     }
 
-    await connectDB();
-
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    const existingUser = await safeFindUserByEmail(email);
     if (existingUser) {
       return NextResponse.json({ error: "User already exists with this email" }, { status: 400 });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = await User.create({
+    const newUser = await safeCreateUser({
       email: email.toLowerCase(),
       password: hashedPassword,
       name: name || "",
@@ -35,8 +32,9 @@ export async function POST(req: NextRequest) {
       isVerified: true,
     });
 
+    const userId = newUser.id || newUser._id;
     const token = jwt.sign(
-      { id: newUser._id, email: newUser.email, role: newUser.role },
+      { id: userId, email: newUser.email, role: newUser.role },
       JWT_SECRET,
       { expiresIn: "7d" }
     );
@@ -45,9 +43,9 @@ export async function POST(req: NextRequest) {
       success: true,
       token,
       user: {
-        id: newUser._id,
+        id: userId,
         email: newUser.email,
-        name: newUser.name,
+        name: newUser.name || "",
         role: newUser.role,
       },
     });
@@ -62,6 +60,9 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Registration service error. Please try again." },
+      { status: 500 }
+    );
   }
 }

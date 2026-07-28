@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
-import { connectDB } from "@/lib/mongodb";
-import { User } from "@/models/User";
+import { safeFindUserById, safeUpdateUser } from "@/lib/mongodb";
 
 const JWT_SECRET = process.env.JWT_ACCESS_SECRET || "fallback-secret-for-dev";
 
@@ -33,17 +32,15 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized: Invalid or missing token" }, { status: 401 });
     }
 
-    await connectDB();
-
-    const user = await User.findById(decoded.id).select("-password");
+    const user = await safeFindUserById(decoded.id);
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return NextResponse.json({ error: "User profile not found" }, { status: 404 });
     }
 
     return NextResponse.json({
       success: true,
       user: {
-        id: user._id,
+        id: user.id || user._id,
         name: user.name || "",
         email: user.email,
         role: user.role,
@@ -52,11 +49,11 @@ export async function GET(req: NextRequest) {
         address: user.address || "",
         membership: user.membership || "Standard Member ⭐",
         points: user.points ?? 100,
-        isVerified: user.isVerified,
+        isVerified: user.isVerified ?? true,
       },
     });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || "Failed to fetch profile" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to fetch user profile" }, { status: 500 });
   }
 }
 
@@ -70,28 +67,22 @@ export async function PUT(req: NextRequest) {
     const body = await req.json();
     const { name, phone, address, avatar } = body;
 
-    await connectDB();
-
     const updateFields: any = {};
     if (name !== undefined) updateFields.name = name;
     if (phone !== undefined) updateFields.phone = phone;
     if (address !== undefined) updateFields.address = address;
     if (avatar !== undefined) updateFields.avatar = avatar;
 
-    const updatedUser = await User.findByIdAndUpdate(
-      decoded.id,
-      { $set: updateFields },
-      { new: true, runValidators: true }
-    ).select("-password");
+    const updatedUser = await safeUpdateUser(decoded.id, updateFields);
 
     if (!updatedUser) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return NextResponse.json({ error: "User profile not found" }, { status: 404 });
     }
 
     return NextResponse.json({
       success: true,
       user: {
-        id: updatedUser._id,
+        id: updatedUser.id || updatedUser._id,
         name: updatedUser.name || "",
         email: updatedUser.email,
         role: updatedUser.role,
@@ -100,10 +91,10 @@ export async function PUT(req: NextRequest) {
         address: updatedUser.address || "",
         membership: updatedUser.membership || "Standard Member ⭐",
         points: updatedUser.points ?? 100,
-        isVerified: updatedUser.isVerified,
+        isVerified: updatedUser.isVerified ?? true,
       },
     });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || "Failed to update profile" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to update user profile" }, { status: 500 });
   }
 }

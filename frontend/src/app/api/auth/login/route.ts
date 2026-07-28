@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { connectDB } from "@/lib/mongodb";
-import { User } from "@/models/User";
+import { safeFindUserByEmail } from "@/lib/mongodb";
 
 const JWT_SECRET = process.env.JWT_ACCESS_SECRET || "fallback-secret-for-dev";
 
@@ -14,9 +13,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
     }
 
-    await connectDB();
-
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const user = await safeFindUserByEmail(email);
     if (!user || !user.password) {
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
     }
@@ -26,8 +23,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
     }
 
+    const userId = user.id || user._id;
     const token = jwt.sign(
-      { id: user._id, email: user.email, role: user.role },
+      { id: userId, email: user.email, role: user.role },
       JWT_SECRET,
       { expiresIn: "7d" }
     );
@@ -36,9 +34,9 @@ export async function POST(req: NextRequest) {
       success: true,
       token,
       user: {
-        id: user._id,
+        id: userId,
         email: user.email,
-        name: user.name,
+        name: user.name || "",
         role: user.role,
       },
     });
@@ -53,6 +51,9 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Authentication service error. Please try again." },
+      { status: 500 }
+    );
   }
 }
