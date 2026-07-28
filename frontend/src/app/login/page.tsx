@@ -49,8 +49,60 @@ export default function LoginPage() {
     } else if (userRole === "VENDOR") {
       router.push("/vendor/dashboard");
     } else {
-      router.push("/account");
+      router.push("/dashboard");
     }
+  };
+
+  const handleDemoFill = (type: "customer" | "admin" | "vendor") => {
+    setError("");
+    setSuccess("");
+
+    let demoEmail = "";
+    let demoName = "";
+    let demoRole: "CUSTOMER" | "ADMIN" | "VENDOR" = "CUSTOMER";
+
+    if (type === "customer") {
+      demoEmail = "john.smith@gmail.com";
+      demoName = "John Smith";
+      demoRole = "CUSTOMER";
+      setEmail(demoEmail);
+      setPassword("password123");
+      setRole("CUSTOMER");
+      if (isRegistering) setName("John Smith");
+    } else if (type === "admin") {
+      demoEmail = "admin@natistore.com";
+      demoName = "Nati SuperAdmin";
+      demoRole = "ADMIN";
+      setEmail(demoEmail);
+      setPassword("admin123");
+      setRole("ADMIN");
+      if (isRegistering) setName("Nati SuperAdmin");
+    } else if (type === "vendor") {
+      demoEmail = "vendor@natistore.com";
+      demoName = "Apex Tech Wearables Store";
+      demoRole = "VENDOR";
+      setEmail(demoEmail);
+      setPassword("vendor123");
+      setRole("VENDOR");
+      if (isRegistering) setName("Apex Tech Wearables Store");
+    }
+
+    // Explicit Quick Demo Login option: log in directly with demo credentials
+    const dummyUser = {
+      id: "demo-" + type + "-" + Math.floor(1000 + Math.random() * 9000),
+      email: demoEmail,
+      name: demoName,
+      role: demoRole,
+    };
+    const demoToken = "demo-jwt-token-" + Math.random().toString(36).substring(2);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("auth_token", demoToken);
+    }
+    setAuth(dummyUser, demoToken);
+    setSuccess(`Demo session active as ${demoRole}! Redirecting...`);
+    setTimeout(() => {
+      redirectByRole(demoRole);
+    }, 600);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -88,34 +140,8 @@ export default function LoginPage() {
         redirectByRole(data.user.role);
       }, 600);
     } catch (err: any) {
-      // High-availability demo mode fallback
-      if (email.includes("@")) {
-        const detectedRole: "CUSTOMER" | "ADMIN" | "VENDOR" = email.includes("admin")
-          ? "ADMIN"
-          : email.includes("vendor")
-          ? "VENDOR"
-          : role;
-
-        const dummyUser = {
-          id: "usr-" + Math.floor(1000 + Math.random() * 9000),
-          email,
-          name: name || (detectedRole === "ADMIN" ? "Admin User" : detectedRole === "VENDOR" ? "Vendor Store" : "Customer User"),
-          role: detectedRole,
-        };
-
-        const demoToken = "demo-jwt-token-" + Math.random().toString(36).substring(2);
-        if (typeof window !== "undefined") {
-          localStorage.setItem("auth_token", demoToken);
-        }
-        setAuth(dummyUser, demoToken);
-        setSuccess(`Signed in as ${detectedRole}! Redirecting...`);
-        
-        setTimeout(() => {
-          redirectByRole(detectedRole);
-        }, 600);
-        return;
-      }
-      setError(err.message || "Failed to authenticate");
+      // Connect backend login/register strictly — display real backend errors
+      setError(err.message || "Failed to authenticate with backend service.");
     } finally {
       setLoading(false);
     }

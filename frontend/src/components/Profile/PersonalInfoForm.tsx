@@ -9,6 +9,8 @@ import { User, Mail, Phone, Calendar, Loader2, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import axios from "axios";
 
+import { useAuthStore } from "@/store/auth";
+
 const personalInfoSchema = zod.object({
   firstName: zod.string().min(2, "First name must have at least 2 characters"),
   lastName: zod.string().min(2, "Last name must have at least 2 characters"),
@@ -22,6 +24,10 @@ type PersonalInfoFormInput = zod.infer<typeof personalInfoSchema>;
 
 export default function PersonalInfoForm() {
   const { user, setUser } = useProfileStore();
+  const accessToken = useAuthStore((s) => s.accessToken);
+  const authUser = useAuthStore((s) => s.user);
+  const setAuth = useAuthStore((s) => s.setAuth);
+
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -48,18 +54,25 @@ export default function PersonalInfoForm() {
     setSuccess(false);
 
     try {
-      // In production: PUT /users/profile
-      await axios.put("/api/users/profile", data).catch(() => {});
-      
-      // Simulate network save delay
-      await new Promise((r) => setTimeout(r, 1200));
+      const fullName = `${data.firstName} ${data.lastName}`.trim();
+      const token = accessToken || (typeof window !== "undefined" ? localStorage.getItem("auth_token") : null);
+
+      const res = await axios.put(
+        "/api/users/profile",
+        { name: fullName, phone: data.phone },
+        { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+      );
+
+      if (res.data?.user && authUser && token) {
+        setAuth({ ...authUser, name: fullName }, token);
+      }
 
       setUser(data);
       setEditing(false);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
-      console.error(err);
+      console.error("Failed to update profile in backend:", err);
     } finally {
       setLoading(false);
     }

@@ -1,13 +1,35 @@
-"use client";
-
-import { useDashboardStore } from "@/store/dashboardStore";
+import { useEffect, useState } from "react";
+import { useDashboardStore, DashboardOrder } from "@/store/dashboardStore";
+import { useAuthStore } from "@/store/auth";
 import { formatPrice } from "@/lib/utils";
 import Link from "next/link";
 import { Truck, CheckCircle2, RotateCw, AlertTriangle, Eye, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function RecentOrders() {
-  const { orders } = useDashboardStore();
+  const { orders: storeOrders } = useDashboardStore();
+  const { user } = useAuthStore();
+  const [orders, setOrders] = useState<DashboardOrder[]>(storeOrders);
+
+  useEffect(() => {
+    if (user?.id) {
+      fetch(`/api/orders?userId=${user.id}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (Array.isArray(data) && data.length > 0) {
+            const mappedOrders: DashboardOrder[] = data.map((o: any) => ({
+              id: o.orderId || o._id,
+              status: o.status || "Processing",
+              amount: o.totalAmount || o.amount || 0,
+              date: new Date(o.createdAt || Date.now()).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+              itemsCount: o.items?.length || 1,
+            }));
+            setOrders(mappedOrders);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [user]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {

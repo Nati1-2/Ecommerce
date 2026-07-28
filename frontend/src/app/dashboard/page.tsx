@@ -18,20 +18,63 @@ import DashboardSkeleton from "@/components/Dashboard/DashboardSkeleton";
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertCircle, RefreshCw, ShoppingBag } from "lucide-react";
 import Link from "next/link";
+import { useAuthStore } from "@/store/auth";
 
 function DashboardContent() {
   const router = useRouter();
+  const { user: authUser, isAuthenticated, accessToken, logout, setAuth } = useAuthStore();
+  const updateProfile = useDashboardStore((s) => s.updateProfile);
   const [activeTab, setActiveTab] = useState<DashboardTab>("profile");
   const [mounted, setMounted] = useState(false);
   const [error, setError] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+
+    const token = accessToken || (typeof window !== "undefined" ? localStorage.getItem("auth_token") : null);
+
+    if (!isAuthenticated && !token) {
+      router.push("/login");
+      return;
+    }
+
+    // Connect to backend: Fetch user profile
+    if (token) {
+      fetch("/api/users/profile", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error("Failed to load profile");
+          return res.json();
+        })
+        .then((data) => {
+          if (data.user) {
+            updateProfile({
+              id: data.user.id,
+              name: data.user.name || data.user.email.split("@")[0],
+              email: data.user.email,
+              avatar: data.user.avatar || "",
+              membership: data.user.membership || "Standard Member ⭐",
+              points: data.user.points ?? 100,
+            });
+
+            if (authUser) {
+              setAuth({ ...authUser, name: data.user.name, email: data.user.email }, token);
+            }
+          }
+        })
+        .catch((err) => {
+          console.warn("Backend profile load notice:", err.message);
+        });
+    }
+  }, [isAuthenticated, accessToken, router, updateProfile, setAuth, authUser]);
 
   const handleLogout = () => {
-    // Clear user state and redirect
-    router.push("/");
+    logout();
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("auth_token");
+    }
+    router.push("/login");
   };
 
   if (!mounted) {

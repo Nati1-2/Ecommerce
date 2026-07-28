@@ -1,10 +1,17 @@
-"use client";
-
 import { useDashboardStore } from "@/store/dashboardStore";
+import { useAuthStore } from "@/store/auth";
 import { User, Settings, Star } from "lucide-react";
 
 export default function DashboardHeader() {
-  const { user } = useDashboardStore();
+  const { user: dashUser } = useDashboardStore();
+  const { user: authUser } = useAuthStore();
+
+  const user = {
+    name: dashUser?.name || authUser?.name || authUser?.email?.split("@")[0] || "User",
+    email: dashUser?.email || authUser?.email || "user@example.com",
+    avatar: dashUser?.avatar || "",
+    membership: dashUser?.membership || "Standard Member ⭐",
+  };
 
   return (
     <div className="p-6 border border-gray-100 rounded-3xl bg-white shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 select-none">
