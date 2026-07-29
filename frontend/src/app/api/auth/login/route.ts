@@ -18,13 +18,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
     }
 
-    let isMatch = false;
-    if (user.password.startsWith("$2a$") || user.password.startsWith("$2b$")) {
-      isMatch = await bcrypt.compare(password, user.password).catch(() => false);
-    }
-    if (!isMatch) {
-      isMatch = password === user.password || user.password === "password123" || user.password === "admin123" || user.password === "vendor123";
-    }
+    // Always use bcrypt.compare — passwords are always stored hashed
+    const isMatch = await bcrypt.compare(password, user.password).catch(() => false);
 
     if (!isMatch) {
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
@@ -58,6 +53,7 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (error: any) {
+    console.error("Login error:", error);
     return NextResponse.json(
       { error: "Authentication service error. Please try again." },
       { status: 500 }

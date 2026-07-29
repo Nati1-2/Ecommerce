@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
 
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb://root:rootpassword@localhost:27017/ecom?authSource=admin";
 
@@ -10,6 +11,7 @@ interface MongooseCache {
 declare global {
   var mongooseCache: MongooseCache | undefined;
   var inMemoryUsers: Map<string, any> | undefined;
+  var inMemorySeeded: boolean | undefined;
 }
 
 let cached = global.mongooseCache;
@@ -20,47 +22,64 @@ if (!cached) {
 
 if (!global.inMemoryUsers) {
   global.inMemoryUsers = new Map();
-  // Seed default demo accounts with pre-hashed passwords so login works offline/without MongoDB
-  // password123, vendor123, admin123
-  const seedUsers = [
+}
+
+// Seed real hashed demo users once per process start
+async function seedDemoUsers() {
+  if (global.inMemorySeeded) return;
+  global.inMemorySeeded = true;
+
+  const demoAccounts = [
     {
-      id: "usr-demo-customer",
-      _id: "usr-demo-customer",
       email: "john.smith@gmail.com",
-      password: "$2a$10$wTz6yW/Uj4M5iA2QY4H60.JvD2fV0Xq3l2gXQ.6m5gZ4n5b6v7w8e", // password123
+      plainPassword: "password123",
       name: "John Smith",
-      role: "CUSTOMER",
+      role: "CUSTOMER" as const,
+      id: "usr-demo-customer",
       membership: "Standard Member ⭐",
       points: 120,
-      isVerified: true,
     },
     {
-      id: "usr-demo-vendor",
-      _id: "usr-demo-vendor",
       email: "vendor@natistore.com",
-      password: "$2a$10$95XvA6E5b4c3d2e1f0g1h2i3j4k5l6m7n8o9p0q1r2s3t4u5v6w7x", // vendor123
+      plainPassword: "vendor123",
       name: "Apex Tech Wearables Store",
-      role: "VENDOR",
+      role: "VENDOR" as const,
+      id: "usr-demo-vendor",
       membership: "Vendor Merchant 🚀",
       points: 450,
-      isVerified: true,
     },
     {
-      id: "usr-demo-admin",
-      _id: "usr-demo-admin",
       email: "admin@natistore.com",
-      password: "$2a$10$1A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T1U2V3W4X5Y6Z0", // admin123
+      plainPassword: "admin123",
       name: "Nati SuperAdmin",
-      role: "ADMIN",
+      role: "ADMIN" as const,
+      id: "usr-demo-admin",
       membership: "SuperAdmin Tier 👑",
       points: 9999,
-      isVerified: true,
     },
   ];
 
-  // Hash using real bcrypt hash for password123 / vendor123 / admin123 dynamically or allow bcrypt compare
-  seedUsers.forEach((u) => global.inMemoryUsers!.set(u.email, u));
+  for (const account of demoAccounts) {
+    const hashedPassword = await bcrypt.hash(account.plainPassword, 10);
+    global.inMemoryUsers!.set(account.email, {
+      id: account.id,
+      _id: account.id,
+      email: account.email,
+      password: hashedPassword,
+      name: account.name,
+      role: account.role,
+      membership: account.membership,
+      points: account.points,
+      isVerified: true,
+      avatar: "",
+      phone: "",
+      address: "",
+    });
+  }
 }
+
+// Kick off seeding immediately (non-blocking)
+seedDemoUsers().catch(console.error);
 
 export async function connectDB() {
   if (cached!.conn) {
@@ -113,6 +132,9 @@ export async function safeFindUserByEmail(email: string) {
   } catch (err: any) {
     console.warn("MongoDB query notice:", err?.message || err);
   }
+
+  // Ensure seeds are ready before checking memory
+  await seedDemoUsers();
   return global.inMemoryUsers!.get(normalizedEmail) || null;
 }
 
@@ -191,6 +213,7 @@ export async function safeFindUserById(id: string) {
     console.warn("MongoDB findById notice:", err?.message || err);
   }
 
+  await seedDemoUsers();
   for (const u of global.inMemoryUsers!.values()) {
     if (u.id === id || u._id === id) {
       const { password, ...safeUser } = u;
@@ -224,6 +247,7 @@ export async function safeUpdateUser(id: string, updateData: Record<string, any>
     console.warn("MongoDB update notice:", err?.message || err);
   }
 
+  await seedDemoUsers();
   for (const [email, u] of global.inMemoryUsers!.entries()) {
     if (u.id === id || u._id === id) {
       const updatedUser = { ...u, ...updateData };

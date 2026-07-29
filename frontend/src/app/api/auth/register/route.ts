@@ -7,10 +7,14 @@ const JWT_SECRET = process.env.JWT_ACCESS_SECRET || "fallback-secret-for-dev";
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, password, name, role } = await req.json();
+    const { email, password, name } = await req.json();
 
     if (!email || !password) {
       return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
+    }
+
+    if (!name || name.trim().length < 2) {
+      return NextResponse.json({ error: "Full name is required (minimum 2 characters)" }, { status: 400 });
     }
 
     if (password.length < 8) {
@@ -19,16 +23,17 @@ export async function POST(req: NextRequest) {
 
     const existingUser = await safeFindUserByEmail(email);
     if (existingUser) {
-      return NextResponse.json({ error: "User already exists with this email" }, { status: 400 });
+      return NextResponse.json({ error: "An account with this email already exists" }, { status: 400 });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Always register as CUSTOMER — role cannot be set from client
     const newUser = await safeCreateUser({
-      email: email.toLowerCase(),
+      email: email.toLowerCase().trim(),
       password: hashedPassword,
-      name: name || "",
-      role: role || "CUSTOMER",
+      name: name.trim(),
+      role: "CUSTOMER",
       isVerified: true,
     });
 
@@ -60,6 +65,7 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (error: any) {
+    console.error("Register error:", error);
     return NextResponse.json(
       { error: "Registration service error. Please try again." },
       { status: 500 }

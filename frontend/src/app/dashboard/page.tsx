@@ -23,10 +23,10 @@ import { useAuthStore } from "@/store/auth";
 function DashboardContent() {
   const router = useRouter();
   const { user: authUser, isAuthenticated, accessToken, logout, setAuth } = useAuthStore();
-  const updateProfile = useDashboardStore((s) => s.updateProfile);
+  const { updateProfile } = useDashboardStore();
   const [activeTab, setActiveTab] = useState<DashboardTab>("profile");
   const [mounted, setMounted] = useState(false);
-  const [error, setError] = useState(false);
+  const [profileLoaded, setProfileLoaded] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -38,36 +38,70 @@ function DashboardContent() {
       return;
     }
 
-    // Connect to backend: Fetch user profile
-    if (token) {
+    // If user has a valid JWT token (not a demo-jwt token), fetch real profile from backend
+    if (token && !token.startsWith("demo-jwt-token-")) {
       fetch("/api/users/profile", {
         headers: { Authorization: `Bearer ${token}` },
       })
         .then((res) => {
-          if (!res.ok) throw new Error("Failed to load profile");
+          if (!res.ok) throw new Error(`Profile fetch failed: ${res.status}`);
           return res.json();
         })
         .then((data) => {
           if (data.user) {
+            // Update dashboard store with real backend user data
             updateProfile({
               id: data.user.id,
               name: data.user.name || data.user.email.split("@")[0],
               email: data.user.email,
               avatar: data.user.avatar || "",
               membership: data.user.membership || "Standard Member ⭐",
-              points: data.user.points ?? 100,
+              points: data.user.points ?? 0,
             });
 
-            if (authUser) {
-              setAuth({ ...authUser, name: data.user.name, email: data.user.email }, token);
-            }
+            // Also sync auth store
+            setAuth(
+              {
+                id: data.user.id,
+                email: data.user.email,
+                role: data.user.role,
+                name: data.user.name,
+              } as any,
+              token
+            );
+            setProfileLoaded(true);
           }
         })
         .catch((err) => {
-          console.warn("Backend profile load notice:", err.message);
+          console.warn("Profile load failed:", err.message);
+          // Fallback: use auth store data if backend fails
+          if (authUser) {
+            updateProfile({
+              id: authUser.id,
+              name: (authUser as any).name || authUser.email?.split("@")[0] || "User",
+              email: authUser.email,
+              avatar: "",
+              membership: "Standard Member ⭐",
+              points: 0,
+            });
+          }
+          setProfileLoaded(true);
         });
+    } else if (authUser) {
+      // Demo session or already have user in store — use it
+      updateProfile({
+        id: authUser.id,
+        name: (authUser as any).name || authUser.email?.split("@")[0] || "User",
+        email: authUser.email,
+        avatar: "",
+        membership: "Standard Member ⭐",
+        points: 0,
+      });
+      setProfileLoaded(true);
+    } else {
+      setProfileLoaded(true);
     }
-  }, [isAuthenticated, accessToken, router, updateProfile, setAuth, authUser]);
+  }, []); // Only run once on mount
 
   const handleLogout = () => {
     logout();
@@ -77,44 +111,21 @@ function DashboardContent() {
     router.push("/login");
   };
 
-  if (!mounted) {
+  if (!mounted || !profileLoaded) {
     return <DashboardSkeleton />;
-  }
-
-  if (error) {
-    return (
-      <div className="max-w-md mx-auto py-16 px-6 text-center select-none space-y-6">
-        <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto border border-red-100">
-          <AlertCircle className="w-8 h-8 stroke-[2px]" />
-        </div>
-        <div className="space-y-2">
-          <h2 className="text-xl font-black text-gray-900">Unable to load dashboard</h2>
-          <p className="text-xs text-gray-400 font-semibold leading-relaxed">
-            There was a connection issue loading your account details. Please try reloading the page.
-          </p>
-        </div>
-        <button
-          onClick={() => setError(false)}
-          className="w-full max-w-xs py-3 px-5 bg-[#007BFF] hover:bg-blue-600 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/10 flex items-center justify-center gap-1.5 transition-colors mx-auto"
-        >
-          <RefreshCw className="w-3.5 h-3.5" />
-          Retry Connection
-        </button>
-      </div>
-    );
   }
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <div className="flex flex-col md:flex-row gap-8 items-start">
-        {/* Left column sidebar navigation */}
+        {/* Sidebar navigation */}
         <DashboardSidebar
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           onLogout={handleLogout}
         />
 
-        {/* Right column dashboard panels content */}
+        {/* Main content */}
         <div className="flex-1 w-full min-w-0">
           <AnimatePresence mode="wait">
             {activeTab === "profile" && (
@@ -126,13 +137,9 @@ function DashboardContent() {
                 transition={{ duration: 0.25 }}
                 className="space-y-8"
               >
-                {/* Header Profile card */}
                 <DashboardHeader onEditProfile={() => setActiveTab("settings")} />
-
-                {/* Quick stats numeric row */}
                 <StatsCard />
 
-                {/* Grid Analytics and recent orders */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                   <div className="lg:col-span-2 space-y-6">
                     <OrderChart />
@@ -147,39 +154,85 @@ function DashboardContent() {
                   </div>
                 </div>
 
-                {/* Personalized suggestions product carousels */}
                 <div className="border-t border-gray-100 pt-8">
                   <RecommendationCarousel />
                 </div>
               </motion.div>
             )}
 
-            {/* Other tabs conditional placeholder views */}
-            {activeTab !== "profile" && (
+            {activeTab === "orders" && (
+              <motion.div
+                key="orders-tab"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.25 }}
+                className="space-y-6"
+              >
+                <div className="p-6 border border-gray-100 bg-white rounded-3xl shadow-sm">
+                  <h2 className="text-base font-black text-gray-900 mb-4">My Orders</h2>
+                  <RecentOrders onViewAll={undefined} />
+                </div>
+              </motion.div>
+            )}
+
+            {activeTab === "addresses" && (
+              <motion.div
+                key="addresses-tab"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.25 }}
+                className="space-y-6"
+              >
+                <div className="p-6 border border-gray-100 bg-white rounded-3xl shadow-sm">
+                  <h2 className="text-base font-black text-gray-900 mb-4">Delivery Addresses</h2>
+                  <AddressPreview onManage={undefined} />
+                </div>
+              </motion.div>
+            )}
+
+            {activeTab === "settings" && (
+              <motion.div
+                key="settings-tab"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.25 }}
+                className="space-y-6"
+              >
+                <div className="p-6 border border-gray-100 bg-white rounded-3xl shadow-sm">
+                  <h2 className="text-base font-black text-gray-900 mb-4">Security Settings</h2>
+                  <SecurityCard onManage={undefined} />
+                </div>
+              </motion.div>
+            )}
+
+            {!["profile", "orders", "addresses", "settings"].includes(activeTab) && (
               <motion.div
                 key="other-tabs"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.25 }}
-                className="p-8 border border-gray-100 bg-white rounded-3xl text-center select-none space-y-4 shadow-sm"
+                className="p-10 border border-gray-100 bg-white rounded-3xl text-center select-none space-y-4 shadow-sm"
               >
-                <div className="w-12 h-12 bg-blue-50 text-[#007BFF] rounded-full flex items-center justify-center mx-auto">
-                  <ShoppingBag className="w-6 h-6" />
+                <div className="w-14 h-14 bg-blue-50 text-[#007BFF] rounded-2xl flex items-center justify-center mx-auto">
+                  <ShoppingBag className="w-7 h-7" />
                 </div>
                 <div className="space-y-1">
                   <h3 className="text-base font-black text-gray-900 capitalize">
-                    {activeTab} Management
+                    {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
                   </h3>
                   <p className="text-xs text-gray-400 font-semibold max-w-xs mx-auto">
-                    Configure your saved details, track historical alerts, and manage payment options directly.
+                    This section is coming soon. Your data will appear here shortly.
                   </p>
                 </div>
                 <button
                   onClick={() => setActiveTab("profile")}
                   className="py-2.5 px-4 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 font-bold text-xs rounded-xl transition-colors"
                 >
-                  Return to Dashboard Overview
+                  ← Back to Dashboard
                 </button>
               </motion.div>
             )}
