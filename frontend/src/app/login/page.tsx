@@ -32,41 +32,43 @@ export default function LoginPage() {
     }
   };
 
-  const handleDemoFill = (type: "customer" | "admin" | "vendor") => {
+  const handleDemoFill = (type: "customer" | "admin" | "vendor", fillOnly: boolean = false) => {
     setError("");
     setSuccess("");
 
     let demoEmail = "";
     let demoName = "";
     let demoRole: "CUSTOMER" | "ADMIN" | "VENDOR" = "CUSTOMER";
+    let demoPass = "";
 
     if (type === "customer") {
       demoEmail = "john.smith@gmail.com";
       demoName = "John Smith";
       demoRole = "CUSTOMER";
-      setEmail(demoEmail);
-      setPassword("password123");
-      setRole("CUSTOMER");
-      if (isRegistering) setName("John Smith");
+      demoPass = "password123";
     } else if (type === "admin") {
       demoEmail = "admin@natistore.com";
       demoName = "Nati SuperAdmin";
       demoRole = "ADMIN";
-      setEmail(demoEmail);
-      setPassword("admin123");
-      setRole("ADMIN");
-      if (isRegistering) setName("Nati SuperAdmin");
+      demoPass = "admin123";
     } else if (type === "vendor") {
       demoEmail = "vendor@natistore.com";
       demoName = "Apex Tech Wearables Store";
       demoRole = "VENDOR";
-      setEmail(demoEmail);
-      setPassword("vendor123");
-      setRole("VENDOR");
-      if (isRegistering) setName("Apex Tech Wearables Store");
+      demoPass = "vendor123";
     }
 
-    // Explicit Quick Demo Login option: log in directly with demo credentials
+    setEmail(demoEmail);
+    setPassword(demoPass);
+    setRole(demoRole);
+    if (isRegistering) setName(demoName);
+
+    if (fillOnly) {
+      setSuccess(`Autofilled credentials for ${demoName} (${demoRole}). Click submit to test backend authentication!`);
+      return;
+    }
+
+    // Direct Instant Demo Login option: log in immediately with demo session
     const dummyUser = {
       id: "demo-" + type + "-" + Math.floor(1000 + Math.random() * 9000),
       email: demoEmail,
@@ -341,39 +343,72 @@ export default function LoginPage() {
           </form>
 
           {/* Quick Demo Credentials Assistant */}
-          <div className="mt-6 pt-5 border-t border-gray-100 text-center space-y-2">
-            <div className="flex items-center justify-center gap-1 text-[11px] font-bold text-gray-400">
-              <Sparkles className="w-3 h-3 text-[#007BFF]" />
-              <span>Fill Quick Demo Credentials:</span>
+          <div className="mt-6 pt-5 border-t border-gray-100 space-y-3">
+            <div className="flex items-center justify-between text-[11px] font-bold text-gray-500">
+              <span className="flex items-center gap-1">
+                <Sparkles className="w-3.5 h-3.5 text-[#007BFF]" />
+                Demo Testing Options:
+              </span>
+              <span className="text-[10px] text-gray-400 font-normal">Click to test instantly or fill form</span>
             </div>
             
-            <div className="flex items-center justify-center gap-1.5 flex-wrap">
-              <button
-                type="button"
-                onClick={() => handleDemoFill("customer")}
-                className="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200 rounded-full text-[10px] font-bold transition-colors flex items-center gap-1"
-              >
-                <UserCheck className="w-3 h-3 text-blue-500" />
-                <span>Customer</span>
-              </button>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="space-y-1">
+                <button
+                  type="button"
+                  onClick={() => handleDemoFill("customer", false)}
+                  className="w-full py-1.5 px-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-[10px] font-bold transition-all flex items-center justify-center gap-1 shadow-sm"
+                  title="Instant login as Customer"
+                >
+                  <UserCheck className="w-3 h-3 text-blue-600" />
+                  <span>Demo Customer</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDemoFill("customer", true)}
+                  className="w-full py-0.5 text-[9px] font-semibold text-gray-400 hover:text-gray-600 text-center block"
+                >
+                  Autofill form
+                </button>
+              </div>
 
-              <button
-                type="button"
-                onClick={() => handleDemoFill("vendor")}
-                className="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200 rounded-full text-[10px] font-bold transition-colors flex items-center gap-1"
-              >
-                <Store className="w-3 h-3 text-emerald-500" />
-                <span>Vendor</span>
-              </button>
+              <div className="space-y-1">
+                <button
+                  type="button"
+                  onClick={() => handleDemoFill("vendor", false)}
+                  className="w-full py-1.5 px-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-[10px] font-bold transition-all flex items-center justify-center gap-1 shadow-sm"
+                  title="Instant login as Vendor"
+                >
+                  <Store className="w-3 h-3 text-emerald-600" />
+                  <span>Demo Vendor</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDemoFill("vendor", true)}
+                  className="w-full py-0.5 text-[9px] font-semibold text-gray-400 hover:text-gray-600 text-center block"
+                >
+                  Autofill form
+                </button>
+              </div>
 
-              <button
-                type="button"
-                onClick={() => handleDemoFill("admin")}
-                className="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200 rounded-full text-[10px] font-bold transition-colors flex items-center gap-1"
-              >
-                <Shield className="w-3 h-3 text-purple-500" />
-                <span>Admin</span>
-              </button>
+              <div className="space-y-1">
+                <button
+                  type="button"
+                  onClick={() => handleDemoFill("admin", false)}
+                  className="w-full py-1.5 px-2 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-xl text-[10px] font-bold transition-all flex items-center justify-center gap-1 shadow-sm"
+                  title="Instant login as Admin"
+                >
+                  <Shield className="w-3 h-3 text-purple-600" />
+                  <span>Demo Admin</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDemoFill("admin", true)}
+                  className="w-full py-0.5 text-[9px] font-semibold text-gray-400 hover:text-gray-600 text-center block"
+                >
+                  Autofill form
+                </button>
+              </div>
             </div>
           </div>
 
