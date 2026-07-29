@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth";
-import { LogIn, UserPlus, Lock, Mail, User, Eye, EyeOff, Sparkles, CheckCircle2, AlertCircle, Shield, Store, UserCheck, ArrowRight } from "lucide-react";
+import { LogIn, UserPlus, Lock, Mail, User, Eye, EyeOff, Sparkles, CheckCircle2, AlertCircle, Shield, Store, UserCheck } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -132,40 +132,40 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#07090E] text-slate-100 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden select-none font-sans">
-      {/* Premium ambient glows */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#007BFF]/10 rounded-full blur-[150px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-500/10 rounded-full blur-[150px] pointer-events-none" />
+    <div className="min-h-screen bg-gradient-to-b from-[#F9FAFC] via-[#FFFFFF] to-[#F9FAFC] text-slate-800 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden select-none font-sans">
+      {/* Soft background glow blurs */}
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#007BFF]/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 space-y-4 text-center">
-        <Link href="/" className="inline-flex items-center gap-1.5 text-4xl font-extrabold text-white tracking-tight hover:opacity-90 transition-opacity">
-          Nati<span className="text-[#007BFF] font-black">.</span>
+      <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 space-y-3 text-center">
+        <Link href="/" className="inline-flex items-center gap-1.5 text-3xl font-black text-gray-900 tracking-tight hover:opacity-90 transition-opacity">
+          Nati<span className="text-[#007BFF]">.</span>
         </Link>
         
         <div>
-          <h2 className="text-2xl font-black text-white tracking-tight">
+          <h2 className="text-2xl font-black text-gray-900 tracking-tight">
             {isRegistering ? "Create your account" : "Welcome back"}
           </h2>
-          <p className="text-xs text-slate-400 mt-1.5">
+          <p className="text-xs text-gray-400 mt-1">
             {isRegistering 
-              ? "Join Nati Store for exclusive deals & premium shopping" 
-              : "Sign in to access your dashboard, orders & wishlist"}
+              ? "Join Nati Store for exclusive deals & instant checkout" 
+              : "Sign in to access your orders, wishlist & profile"}
           </p>
         </div>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10">
-        <div className="bg-[#0C0F17]/85 backdrop-blur-2xl py-9 px-8 shadow-2xl shadow-black/80 rounded-[2rem] sm:px-10 border border-slate-800/80">
+        <div className="bg-white/95 backdrop-blur-xl py-9 px-8 shadow-xl shadow-gray-200/50 rounded-[2rem] sm:px-10 border border-gray-100/90">
           
           {/* Segmented Tab Switcher */}
-          <div className="flex bg-[#121926]/90 p-1.5 rounded-2xl mb-7 border border-slate-800/50">
+          <div className="flex bg-gray-100/80 p-1.5 rounded-2xl mb-7 border border-gray-200/50">
             <button
               type="button"
               onClick={() => { setIsRegistering(false); setError(""); setSuccess(""); }}
               className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all duration-300 ${
                 !isRegistering 
-                  ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/20" 
-                  : "text-slate-400 hover:text-white"
+                  ? "bg-white text-gray-950 shadow-sm shadow-gray-300/30" 
+                  : "text-gray-500 hover:text-gray-950"
               }`}
             >
               Sign In
@@ -175,8 +175,8 @@ export default function LoginPage() {
               onClick={() => { setIsRegistering(true); setError(""); setSuccess(""); }}
               className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all duration-300 ${
                 isRegistering 
-                  ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/20" 
-                  : "text-slate-400 hover:text-white"
+                  ? "bg-white text-gray-950 shadow-sm shadow-gray-300/30" 
+                  : "text-gray-500 hover:text-gray-950"
               }`}
             >
               Register
@@ -194,11 +194,11 @@ export default function LoginPage() {
                   className="space-y-4 overflow-hidden"
                 >
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">
                       Full Name
                     </label>
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
                         <User className="w-4 h-4" />
                       </div>
                       <input
@@ -206,14 +206,14 @@ export default function LoginPage() {
                         required={isRegistering}
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 bg-[#151D2F]/50 border border-slate-800 text-white rounded-xl text-xs font-medium placeholder-slate-500 focus:bg-[#151D2F]/80 focus:outline-none focus:border-[#007BFF] focus:ring-4 focus:ring-blue-500/10 transition-all duration-200"
+                        className="w-full pl-10 pr-4 py-3 bg-gray-50/80 border border-gray-200 text-gray-950 rounded-xl text-xs font-semibold placeholder-gray-400 focus:bg-white focus:outline-none focus:border-[#007BFF] focus:ring-4 focus:ring-blue-500/10 transition-all duration-200"
                         placeholder="John Smith"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">
                       Account Type
                     </label>
                     <div className="grid grid-cols-2 gap-3">
@@ -222,11 +222,11 @@ export default function LoginPage() {
                         onClick={() => setRole("CUSTOMER")}
                         className={`p-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all duration-200 ${
                           role === "CUSTOMER"
-                            ? "border-[#007BFF] bg-[#007BFF]/10 text-white"
-                            : "border-slate-800 text-slate-400 hover:border-slate-700 hover:text-white"
+                            ? "border-[#007BFF] bg-blue-50/40 text-[#007BFF]"
+                            : "border-gray-200 text-gray-500 hover:border-gray-300"
                         }`}
                       >
-                        <UserCheck className="w-3.5 h-3.5 text-[#007BFF]" />
+                        <UserCheck className="w-3.5 h-3.5" />
                         <span>Customer</span>
                       </button>
 
@@ -235,11 +235,11 @@ export default function LoginPage() {
                         onClick={() => setRole("VENDOR")}
                         className={`p-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all duration-200 ${
                           role === "VENDOR"
-                            ? "border-[#007BFF] bg-[#007BFF]/10 text-white"
-                            : "border-slate-800 text-slate-400 hover:border-slate-700 hover:text-white"
+                            ? "border-[#007BFF] bg-blue-50/40 text-[#007BFF]"
+                            : "border-gray-200 text-gray-500 hover:border-gray-300"
                         }`}
                       >
-                        <Store className="w-3.5 h-3.5 text-[#007BFF]" />
+                        <Store className="w-3.5 h-3.5" />
                         <span>Seller Vendor</span>
                       </button>
                     </div>
@@ -249,11 +249,11 @@ export default function LoginPage() {
             </AnimatePresence>
 
             <div>
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
+              <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">
                 Email Address
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
                   <Mail className="w-4 h-4" />
                 </div>
                 <input
@@ -261,15 +261,15 @@ export default function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-[#151D2F]/50 border border-slate-800 text-white rounded-xl text-xs font-medium placeholder-slate-500 focus:bg-[#151D2F]/80 focus:outline-none focus:border-[#007BFF] focus:ring-4 focus:ring-blue-500/10 transition-all duration-200"
+                  className="w-full pl-10 pr-4 py-3 bg-gray-50/80 border border-gray-200 text-gray-950 rounded-xl text-xs font-semibold placeholder-gray-400 focus:bg-white focus:outline-none focus:border-[#007BFF] focus:ring-4 focus:ring-blue-500/10 transition-all duration-200"
                   placeholder="name@example.com"
                 />
               </div>
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest">
                   Password
                 </label>
                 {!isRegistering && (
@@ -279,7 +279,7 @@ export default function LoginPage() {
                 )}
               </div>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
                   <Lock className="w-4 h-4" />
                 </div>
                 <input
@@ -287,13 +287,13 @@ export default function LoginPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-10 py-3 bg-[#151D2F]/50 border border-slate-800 text-white rounded-xl text-xs font-medium placeholder-slate-500 focus:bg-[#151D2F]/80 focus:outline-none focus:border-[#007BFF] focus:ring-4 focus:ring-blue-500/10 transition-all duration-200"
+                  className="w-full pl-10 pr-10 py-3 bg-gray-50/80 border border-gray-200 text-gray-950 rounded-xl text-xs font-semibold placeholder-gray-400 focus:bg-white focus:outline-none focus:border-[#007BFF] focus:ring-4 focus:ring-blue-500/10 transition-all duration-200"
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-white transition-colors"
+                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -304,7 +304,7 @@ export default function LoginPage() {
               <motion.div
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex items-center gap-2 text-red-400 text-xs font-semibold bg-red-950/20 p-3.5 rounded-xl border border-red-900/50"
+                className="flex items-center gap-2 text-red-600 text-xs font-semibold bg-red-50 p-3.5 rounded-xl border border-red-100"
               >
                 <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
                 <span>{error}</span>
@@ -315,7 +315,7 @@ export default function LoginPage() {
               <motion.div
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex items-center gap-2 text-emerald-400 text-xs font-semibold bg-emerald-950/20 p-3.5 rounded-xl border border-emerald-900/50"
+                className="flex items-center gap-2 text-emerald-700 text-xs font-semibold bg-emerald-50 p-3.5 rounded-xl border border-emerald-100"
               >
                 <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-500" />
                 <span>{success}</span>
@@ -326,7 +326,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl shadow-lg shadow-blue-500/10 text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-blue-500/20 disabled:opacity-50 transition-all duration-200"
+                className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl shadow-lg shadow-blue-500/15 text-xs font-bold text-white bg-[#007BFF] hover:bg-blue-600 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-blue-500/20 disabled:opacity-50 transition-all duration-200"
               >
                 {loading ? (
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -346,9 +346,9 @@ export default function LoginPage() {
           </form>
 
           {/* Quick Demo Credentials Assistant */}
-          <div className="mt-8 pt-6 border-t border-slate-800/80 text-center space-y-3">
-            <div className="flex items-center justify-center gap-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-              <Sparkles className="w-3.5 h-3.5 text-[#007BFF] animate-pulse" />
+          <div className="mt-8 pt-6 border-t border-gray-100 text-center space-y-3">
+            <div className="flex items-center justify-center gap-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+              <Sparkles className="w-3.5 h-3.5 text-[#007BFF]" />
               <span>Fill Quick Demo Account</span>
             </div>
             
@@ -356,7 +356,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => handleDemoFill("customer")}
-                className="px-3.5 py-2 bg-[#121926]/90 hover:bg-[#172032] text-slate-300 hover:text-white border border-slate-800 rounded-xl text-[10px] font-bold transition-all duration-200 flex items-center gap-1.5"
+                className="px-3.5 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 hover:text-gray-900 border border-gray-200 rounded-xl text-[10px] font-bold transition-all duration-200 flex items-center gap-1.5"
               >
                 <UserCheck className="w-3.5 h-3.5 text-blue-500" />
                 <span>Customer</span>
@@ -365,7 +365,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => handleDemoFill("vendor")}
-                className="px-3.5 py-2 bg-[#121926]/90 hover:bg-[#172032] text-slate-300 hover:text-white border border-slate-800 rounded-xl text-[10px] font-bold transition-all duration-200 flex items-center gap-1.5"
+                className="px-3.5 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 hover:text-gray-900 border border-gray-200 rounded-xl text-[10px] font-bold transition-all duration-200 flex items-center gap-1.5"
               >
                 <Store className="w-3.5 h-3.5 text-emerald-500" />
                 <span>Vendor</span>
@@ -374,7 +374,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => handleDemoFill("admin")}
-                className="px-3.5 py-2 bg-[#121926]/90 hover:bg-[#172032] text-slate-300 hover:text-white border border-slate-800 rounded-xl text-[10px] font-bold transition-all duration-200 flex items-center gap-1.5"
+                className="px-3.5 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 hover:text-gray-900 border border-gray-200 rounded-xl text-[10px] font-bold transition-all duration-200 flex items-center gap-1.5"
               >
                 <Shield className="w-3.5 h-3.5 text-purple-500" />
                 <span>Admin</span>
