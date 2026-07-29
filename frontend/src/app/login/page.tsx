@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth";
-import { LogIn, UserPlus, Lock, Mail, User, Eye, EyeOff, Sparkles, CheckCircle2, AlertCircle, Shield, Store, UserCheck } from "lucide-react";
+import { LogIn, UserPlus, Lock, Mail, User, Eye, EyeOff, Sparkles, CheckCircle2, AlertCircle, Shield, Store, UserCheck, Zap } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -132,18 +132,24 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#F9FAFC] via-[#FFFFFF] to-[#F9FAFC] text-slate-800 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden select-none font-sans">
-      {/* Soft background glow blurs */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#007BFF]/5 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none" />
+    <div className="min-h-screen bg-white text-gray-900 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden select-none font-sans">
+      {/* Customer Hero style decorative blurs */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-32 -right-32 w-[520px] h-[520px] bg-orange-500/6 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 -left-40 w-[400px] h-[400px] bg-[#5AA8FF]/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/3 w-[300px] h-[300px] bg-orange-500/4 rounded-full blur-3xl" />
+      </div>
 
-      <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 space-y-3 text-center">
-        <Link href="/" className="inline-flex items-center gap-1.5 text-3xl font-black text-gray-900 tracking-tight hover:opacity-90 transition-opacity">
-          Nati<span className="text-[#007BFF]">.</span>
-        </Link>
+      <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 space-y-4 text-center">
+        {/* Underline accent logo */}
+        <div className="inline-flex flex-col items-center">
+          <Link href="/" className="inline-flex items-center gap-1.5 text-3xl font-black text-[#111827] tracking-tight hover:opacity-90 transition-opacity">
+            Nati<span className="text-[#007BFF]">.</span>
+          </Link>
+        </div>
         
         <div>
-          <h2 className="text-2xl font-black text-gray-900 tracking-tight">
+          <h2 className="text-2xl font-black text-[#111827] tracking-tight">
             {isRegistering ? "Create your account" : "Welcome back"}
           </h2>
           <p className="text-xs text-gray-400 mt-1">
@@ -155,17 +161,17 @@ export default function LoginPage() {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10">
-        <div className="bg-white/95 backdrop-blur-xl py-9 px-8 shadow-xl shadow-gray-200/50 rounded-[2rem] sm:px-10 border border-gray-100/90">
+        <div className="bg-white/95 backdrop-blur-xl py-9 px-8 shadow-xl shadow-gray-200/40 rounded-[2rem] sm:px-10 border border-gray-100">
           
-          {/* Segmented Tab Switcher */}
-          <div className="flex bg-gray-100/80 p-1.5 rounded-2xl mb-7 border border-gray-200/50">
+          {/* Segmented Tab Switcher using Customer dark brand color */}
+          <div className="flex bg-gray-100 p-1.5 rounded-2xl mb-7 border border-gray-200/50">
             <button
               type="button"
               onClick={() => { setIsRegistering(false); setError(""); setSuccess(""); }}
               className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all duration-300 ${
                 !isRegistering 
-                  ? "bg-white text-gray-950 shadow-sm shadow-gray-300/30" 
-                  : "text-gray-500 hover:text-gray-950"
+                  ? "bg-[#111827] text-white shadow-md shadow-gray-900/10" 
+                  : "text-gray-500 hover:text-gray-900"
               }`}
             >
               Sign In
@@ -175,8 +181,8 @@ export default function LoginPage() {
               onClick={() => { setIsRegistering(true); setError(""); setSuccess(""); }}
               className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all duration-300 ${
                 isRegistering 
-                  ? "bg-white text-gray-950 shadow-sm shadow-gray-300/30" 
-                  : "text-gray-500 hover:text-gray-950"
+                  ? "bg-[#111827] text-white shadow-md shadow-gray-900/10" 
+                  : "text-gray-500 hover:text-gray-900"
               }`}
             >
               Register
@@ -194,7 +200,7 @@ export default function LoginPage() {
                   className="space-y-4 overflow-hidden"
                 >
                   <div>
-                    <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">
+                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
                       Full Name
                     </label>
                     <div className="relative">
@@ -206,14 +212,14 @@ export default function LoginPage() {
                         required={isRegistering}
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 bg-gray-50/80 border border-gray-200 text-gray-950 rounded-xl text-xs font-semibold placeholder-gray-400 focus:bg-white focus:outline-none focus:border-[#007BFF] focus:ring-4 focus:ring-blue-500/10 transition-all duration-200"
+                        className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 text-gray-950 rounded-xl text-xs font-semibold placeholder-gray-400 focus:bg-white focus:outline-none focus:border-[#007BFF] focus:ring-4 focus:ring-blue-500/10 transition-all duration-200"
                         placeholder="John Smith"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">
+                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
                       Account Type
                     </label>
                     <div className="grid grid-cols-2 gap-3">
@@ -222,7 +228,7 @@ export default function LoginPage() {
                         onClick={() => setRole("CUSTOMER")}
                         className={`p-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all duration-200 ${
                           role === "CUSTOMER"
-                            ? "border-[#007BFF] bg-blue-50/40 text-[#007BFF]"
+                            ? "border-[#007BFF] bg-[#007BFF]/8 text-[#007BFF]"
                             : "border-gray-200 text-gray-500 hover:border-gray-300"
                         }`}
                       >
@@ -235,7 +241,7 @@ export default function LoginPage() {
                         onClick={() => setRole("VENDOR")}
                         className={`p-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all duration-200 ${
                           role === "VENDOR"
-                            ? "border-[#007BFF] bg-blue-50/40 text-[#007BFF]"
+                            ? "border-[#007BFF] bg-[#007BFF]/8 text-[#007BFF]"
                             : "border-gray-200 text-gray-500 hover:border-gray-300"
                         }`}
                       >
@@ -261,7 +267,7 @@ export default function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-gray-50/80 border border-gray-200 text-gray-950 rounded-xl text-xs font-semibold placeholder-gray-400 focus:bg-white focus:outline-none focus:border-[#007BFF] focus:ring-4 focus:ring-blue-500/10 transition-all duration-200"
+                  className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 text-gray-955 rounded-xl text-xs font-semibold placeholder-gray-400 focus:bg-white focus:outline-none focus:border-[#007BFF] focus:ring-4 focus:ring-blue-500/10 transition-all duration-200"
                   placeholder="name@example.com"
                 />
               </div>
@@ -287,7 +293,7 @@ export default function LoginPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-10 py-3 bg-gray-50/80 border border-gray-200 text-gray-950 rounded-xl text-xs font-semibold placeholder-gray-400 focus:bg-white focus:outline-none focus:border-[#007BFF] focus:ring-4 focus:ring-blue-500/10 transition-all duration-200"
+                  className="w-full pl-10 pr-10 py-3 bg-gray-50 border border-gray-200 text-gray-955 rounded-xl text-xs font-semibold placeholder-gray-400 focus:bg-white focus:outline-none focus:border-[#007BFF] focus:ring-4 focus:ring-blue-500/10 transition-all duration-200"
                   placeholder="••••••••"
                 />
                 <button
@@ -348,7 +354,7 @@ export default function LoginPage() {
           {/* Quick Demo Credentials Assistant */}
           <div className="mt-8 pt-6 border-t border-gray-100 text-center space-y-3">
             <div className="flex items-center justify-center gap-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-              <Sparkles className="w-3.5 h-3.5 text-[#007BFF]" />
+              <Sparkles className="w-3.5 h-3.5 text-[#007BFF] fill-[#007BFF]/10" />
               <span>Fill Quick Demo Account</span>
             </div>
             
@@ -356,27 +362,27 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => handleDemoFill("customer")}
-                className="px-3.5 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 hover:text-gray-900 border border-gray-200 rounded-xl text-[10px] font-bold transition-all duration-200 flex items-center gap-1.5"
+                className="px-3.5 py-2 bg-[#007BFF]/8 hover:bg-[#007BFF]/15 text-[#007BFF] border border-[#007BFF]/20 rounded-xl text-[10px] font-bold transition-all duration-200 flex items-center gap-1.5"
               >
-                <UserCheck className="w-3.5 h-3.5 text-blue-500" />
+                <UserCheck className="w-3.5 h-3.5 fill-[#007BFF]" />
                 <span>Customer</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleDemoFill("vendor")}
-                className="px-3.5 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 hover:text-gray-900 border border-gray-200 rounded-xl text-[10px] font-bold transition-all duration-200 flex items-center gap-1.5"
+                className="px-3.5 py-2 bg-[#007BFF]/8 hover:bg-[#007BFF]/15 text-[#007BFF] border border-[#007BFF]/20 rounded-xl text-[10px] font-bold transition-all duration-200 flex items-center gap-1.5"
               >
-                <Store className="w-3.5 h-3.5 text-emerald-500" />
+                <Store className="w-3.5 h-3.5 fill-[#007BFF]" />
                 <span>Vendor</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleDemoFill("admin")}
-                className="px-3.5 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 hover:text-gray-900 border border-gray-200 rounded-xl text-[10px] font-bold transition-all duration-200 flex items-center gap-1.5"
+                className="px-3.5 py-2 bg-[#007BFF]/8 hover:bg-[#007BFF]/15 text-[#007BFF] border border-[#007BFF]/20 rounded-xl text-[10px] font-bold transition-all duration-200 flex items-center gap-1.5"
               >
-                <Shield className="w-3.5 h-3.5 text-purple-500" />
+                <Shield className="w-3.5 h-3.5 fill-[#007BFF]" />
                 <span>Admin</span>
               </button>
             </div>
