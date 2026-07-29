@@ -67,31 +67,6 @@ export default function LoginPage() {
 
     const normalizedEmail = email.toLowerCase().trim();
 
-    const demoAccount = DEMO_ACCOUNTS[normalizedEmail as keyof typeof DEMO_ACCOUNTS];
-    if (demoAccount && !isRegistering) {
-      if (demoAccount.password !== password) {
-        setError("Invalid email or password. Please try again.");
-        setLoading(false);
-        return;
-      }
-
-      const demoUser = {
-        id: "usr-" + Math.floor(1000 + Math.random() * 9000),
-        email: normalizedEmail,
-        name: demoAccount.name,
-        role: demoAccount.role,
-      };
-
-      const demoToken = "demo-jwt-token-" + Math.random().toString(36).substring(2);
-      if (typeof window !== "undefined") {
-        localStorage.setItem("auth_token", demoToken);
-      }
-      setAuth(demoUser, demoToken);
-      setSuccess(`Signed in as ${demoAccount.role}! Redirecting...`);
-      setTimeout(() => redirectByRole(demoAccount.role), 600);
-      return;
-    }
-
     try {
       const endpoint = isRegistering ? "/api/auth/register" : "/api/auth/login";
       const payload = isRegistering 
@@ -120,6 +95,34 @@ export default function LoginPage() {
         throw new Error(data.error);
       }
     } catch (err: any) {
+      // Fallback only if the backend server failed to respond (network error)
+      const isNetworkError = err.message && (err.message.includes("fetch") || err.message.includes("NetworkError"));
+      
+      const demoAccount = DEMO_ACCOUNTS[normalizedEmail as keyof typeof DEMO_ACCOUNTS];
+      if (demoAccount && !isRegistering && isNetworkError) {
+        if (demoAccount.password !== password) {
+          setError("Invalid email or password. Please try again.");
+          setLoading(false);
+          return;
+        }
+
+        const demoUser = {
+          id: "usr-" + Math.floor(1000 + Math.random() * 9000),
+          email: normalizedEmail,
+          name: demoAccount.name,
+          role: demoAccount.role,
+        };
+
+        const demoToken = "demo-jwt-token-" + Math.random().toString(36).substring(2);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("auth_token", demoToken);
+        }
+        setAuth(demoUser, demoToken);
+        setSuccess(`Signed in as ${demoAccount.role}! Redirecting...`);
+        setTimeout(() => redirectByRole(demoAccount.role), 600);
+        return;
+      }
+
       if (err.message && err.message.toLowerCase().includes("invalid")) {
         setError(err.message);
         setLoading(false);
