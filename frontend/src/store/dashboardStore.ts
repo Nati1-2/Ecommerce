@@ -40,45 +40,16 @@ interface DashboardState {
 
 export const useDashboardStore = create<DashboardState>((set) => ({
   user: {
-    id: "usr-948",
-    name: "John Smith",
-    email: "john.smith@gmail.com",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&q=80",
-    membership: "Premium Member ⭐",
-    points: 2400,
+    id: "",
+    name: "",
+    email: "",
+    avatar: "",
+    membership: "Standard Member ⭐",
+    points: 0,
   },
-  wishlistCount: 12,
-  reviewsCount: 8,
-  orders: [
-    {
-      id: "ORD-123456",
-      status: "Shipped",
-      amount: 949.0,
-      date: "July 15, 2026",
-      itemsCount: 1,
-    },
-    {
-      id: "ORD-987654",
-      status: "Delivered",
-      amount: 399.0,
-      date: "June 28, 2026",
-      itemsCount: 2,
-    },
-    {
-      id: "ORD-543210",
-      status: "Processing",
-      amount: 1577.9,
-      date: "July 15, 2026",
-      itemsCount: 2,
-    },
-    {
-      id: "ORD-246810",
-      status: "Cancelled",
-      amount: 89.9,
-      date: "May 12, 2026",
-      itemsCount: 1,
-    },
-  ],
+  wishlistCount: 0,
+  reviewsCount: 0,
+  orders: [],
   notifications: [
     {
       id: "noti-1",

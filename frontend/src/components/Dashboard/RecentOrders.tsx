@@ -7,16 +7,17 @@ import { Truck, CheckCircle2, RotateCw, AlertTriangle, Eye, ArrowRight } from "l
 import { cn } from "@/lib/utils";
 
 export default function RecentOrders() {
-  const { orders: storeOrders } = useDashboardStore();
   const { user } = useAuthStore();
-  const [orders, setOrders] = useState<DashboardOrder[]>(storeOrders);
+  const [orders, setOrders] = useState<DashboardOrder[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (user?.id) {
+      setLoading(true);
       fetch(`/api/orders?userId=${user.id}`)
         .then((res) => res.json())
         .then((data) => {
-          if (Array.isArray(data) && data.length > 0) {
+          if (Array.isArray(data)) {
             const mappedOrders: DashboardOrder[] = data.map((o: any) => ({
               id: o.orderId || o._id,
               status: o.status || "Processing",
@@ -27,7 +28,10 @@ export default function RecentOrders() {
             setOrders(mappedOrders);
           }
         })
-        .catch(() => {});
+        .catch(() => {})
+        .finally(() => setLoading(false));
+    } else {
+      setLoading(false);
     }
   }, [user]);
 
@@ -56,7 +60,15 @@ export default function RecentOrders() {
         </button>
       </div>
 
-      <div className="divide-y divide-gray-100">
+      {orders.length === 0 ? (
+        <div className="py-8 text-center space-y-2">
+          <p className="text-xs text-gray-400 font-semibold">No recent orders found on your backend account.</p>
+          <Link href="/products" className="inline-block text-[11px] font-bold text-[#007BFF] hover:underline">
+            Explore products to place your first order
+          </Link>
+        </div>
+      ) : (
+        <div className="divide-y divide-gray-100">
         {orders.map((order, idx) => {
           const config = getStatusIcon(order.status);
           const StatusIcon = config.icon;
@@ -116,6 +128,7 @@ export default function RecentOrders() {
           );
         })}
       </div>
+      )}
     </div>
   );
 }
