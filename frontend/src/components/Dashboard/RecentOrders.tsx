@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Truck, CheckCircle2, RotateCw, AlertTriangle, Eye, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export default function RecentOrders() {
+export default function RecentOrders({ onViewAll }: { onViewAll?: () => void }) {
   const { user } = useAuthStore();
   const [orders, setOrders] = useState<DashboardOrder[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,7 +54,10 @@ export default function RecentOrders() {
     <div className="p-6 border border-gray-100 rounded-3xl bg-white shadow-sm space-y-4 select-none">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-black text-gray-900">Recent Purchases</h3>
-        <button className="text-[10px] font-bold text-[#007BFF] hover:underline flex items-center gap-1 transition-all">
+        <button
+          onClick={onViewAll}
+          className="text-[10px] font-bold text-[#007BFF] hover:underline flex items-center gap-1 transition-all"
+        >
           View All Orders
           <ArrowRight className="w-3.5 h-3.5" />
         </button>

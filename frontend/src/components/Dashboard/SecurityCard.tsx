@@ -2,7 +2,7 @@
 
 import { ShieldCheck, Lock, CheckCircle, Smartphone, KeyRound } from "lucide-react";
 
-export default function SecurityCard() {
+export default function SecurityCard({ onManage }: { onManage?: () => void }) {
   const securitySteps = [
     {
       label: "Email Verification",
@@ -31,7 +31,10 @@ export default function SecurityCard() {
           <ShieldCheck className="w-4.5 h-4.5 text-gray-400" />
           Security Credentials
         </h3>
-        <button className="text-[10px] font-bold text-[#007BFF] hover:underline">
+        <button
+          onClick={onManage}
+          className="text-[10px] font-bold text-[#007BFF] hover:underline"
+        >
           Manage
         </button>
       </div>

@@ -127,7 +127,7 @@ function DashboardContent() {
                 className="space-y-8"
               >
                 {/* Header Profile card */}
-                <DashboardHeader />
+                <DashboardHeader onEditProfile={() => setActiveTab("settings")} />
 
                 {/* Quick stats numeric row */}
                 <StatsCard />
@@ -136,12 +136,12 @@ function DashboardContent() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                   <div className="lg:col-span-2 space-y-6">
                     <OrderChart />
-                    <RecentOrders />
+                    <RecentOrders onViewAll={() => setActiveTab("orders")} />
                   </div>
 
                   <div className="space-y-6">
-                    <SecurityCard />
-                    <AddressPreview />
+                    <SecurityCard onManage={() => setActiveTab("settings")} />
+                    <AddressPreview onManage={() => setActiveTab("addresses")} />
                     <NotificationPreview />
                     <RecentlyViewed />
                   </div>

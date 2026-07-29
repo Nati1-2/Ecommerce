@@ -3,7 +3,7 @@
 import { useCheckoutStore } from "@/store/checkoutStore";
 import { MapPin, ArrowRight } from "lucide-react";
 
-export default function AddressPreview() {
+export default function AddressPreview({ onManage }: { onManage?: () => void }) {
   const { addresses, selectedAddressId } = useCheckoutStore();
 
   const activeShipping = addresses.find((a) => a.id === selectedAddressId) || addresses[0];
@@ -15,7 +15,10 @@ export default function AddressPreview() {
           <MapPin className="w-4.5 h-4.5 text-gray-400" />
           Default Destination
         </h3>
-        <button className="text-[10px] font-bold text-[#007BFF] hover:underline flex items-center gap-1 transition-all">
+        <button
+          onClick={onManage}
+          className="text-[10px] font-bold text-[#007BFF] hover:underline flex items-center gap-1 transition-all"
+        >
           Manage
           <ArrowRight className="w-3.5 h-3.5" />
         </button>

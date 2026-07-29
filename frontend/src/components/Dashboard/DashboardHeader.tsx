@@ -2,7 +2,7 @@ import { useDashboardStore } from "@/store/dashboardStore";
 import { useAuthStore } from "@/store/auth";
 import { User, Settings, Star } from "lucide-react";
 
-export default function DashboardHeader() {
+export default function DashboardHeader({ onEditProfile }: { onEditProfile?: () => void }) {
   const { user: dashUser } = useDashboardStore();
   const { user: authUser } = useAuthStore();
 
@@ -47,7 +47,10 @@ export default function DashboardHeader() {
       </div>
 
       {/* Profile quick action */}
-      <button className="py-2.5 px-4 bg-gray-50 hover:bg-gray-100 border border-gray-100 text-gray-700 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-colors shrink-0">
+      <button
+        onClick={onEditProfile}
+        className="py-2.5 px-4 bg-gray-50 hover:bg-gray-100 border border-gray-100 text-gray-700 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-colors shrink-0 active:scale-95"
+      >
         <Settings className="w-3.5 h-3.5 text-gray-400" />
         Edit Profile Settings
       </button>
