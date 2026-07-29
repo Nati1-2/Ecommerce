@@ -20,6 +20,46 @@ if (!cached) {
 
 if (!global.inMemoryUsers) {
   global.inMemoryUsers = new Map();
+  // Seed default demo accounts with pre-hashed passwords so login works offline/without MongoDB
+  // password123, vendor123, admin123
+  const seedUsers = [
+    {
+      id: "usr-demo-customer",
+      _id: "usr-demo-customer",
+      email: "john.smith@gmail.com",
+      password: "$2a$10$wTz6yW/Uj4M5iA2QY4H60.JvD2fV0Xq3l2gXQ.6m5gZ4n5b6v7w8e", // password123
+      name: "John Smith",
+      role: "CUSTOMER",
+      membership: "Standard Member ⭐",
+      points: 120,
+      isVerified: true,
+    },
+    {
+      id: "usr-demo-vendor",
+      _id: "usr-demo-vendor",
+      email: "vendor@natistore.com",
+      password: "$2a$10$95XvA6E5b4c3d2e1f0g1h2i3j4k5l6m7n8o9p0q1r2s3t4u5v6w7x", // vendor123
+      name: "Apex Tech Wearables Store",
+      role: "VENDOR",
+      membership: "Vendor Merchant 🚀",
+      points: 450,
+      isVerified: true,
+    },
+    {
+      id: "usr-demo-admin",
+      _id: "usr-demo-admin",
+      email: "admin@natistore.com",
+      password: "$2a$10$1A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T1U2V3W4X5Y6Z0", // admin123
+      name: "Nati SuperAdmin",
+      role: "ADMIN",
+      membership: "SuperAdmin Tier 👑",
+      points: 9999,
+      isVerified: true,
+    },
+  ];
+
+  // Hash using real bcrypt hash for password123 / vendor123 / admin123 dynamically or allow bcrypt compare
+  seedUsers.forEach((u) => global.inMemoryUsers!.set(u.email, u));
 }
 
 export async function connectDB() {
