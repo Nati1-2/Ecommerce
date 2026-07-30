@@ -19,6 +19,7 @@ app.get('/health', (req, res) => {
 });
 
 // Mount Routes
+app.use('/', notificationRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
 
 // Error Middleware

@@ -11,6 +11,7 @@ app.use(helmet());
 app.use(cors({ origin: true, credentials: true }));
 
 // Express raw body middleware for Stripe Webhook Signature Verification
+app.use('/webhook', express.raw({ type: 'application/json' }));
 app.use('/api/v1/payments/webhook', express.raw({ type: 'application/json' }));
 
 app.use(express.json());
@@ -23,6 +24,7 @@ app.get('/health', (req, res) => {
 });
 
 // Mount Routes
+app.use('/', paymentRoutes);
 app.use('/api/v1/payments', paymentRoutes);
 
 // Error Middleware

@@ -19,6 +19,7 @@ app.get('/health', (_req, res) => {
 });
 
 // ── Routes ──
+app.use('/', productRoutes);
 app.use('/categories', categoryRoutes);
 app.use('/api/v1/categories', categoryRoutes);
 

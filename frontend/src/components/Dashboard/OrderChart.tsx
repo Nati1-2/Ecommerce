@@ -5,22 +5,56 @@ import { useDashboardStore } from "@/store/dashboardStore";
 import { BarChart3, TrendingUp, HelpCircle } from "lucide-react";
 import { motion } from "framer-motion";
 
-const HISTORICAL_DATA = [
-  { month: "Jan", orders: 2 },
-  { month: "Feb", orders: 4 },
-  { month: "Mar", orders: 3 },
-  { month: "Apr", orders: 6 },
-  { month: "May", orders: 5 },
-  { month: "Jun", orders: 8 },
-  { month: "Jul", orders: 12 },
-];
-
 export default function OrderChart() {
+  const { orders } = useDashboardStore();
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
-  // Math dimensions
-  const chartHeight = 120;
-  const maxOrders = Math.max(...HISTORICAL_DATA.map((d) => d.orders));
+  // Group orders by month
+  const ordersByMonth: Record<string, number> = {
+    Jan: 0, Feb: 0, Mar: 0, Apr: 0, May: 0, Jun: 0, Jul: 0, Aug: 0, Sep: 0, Oct: 0, Nov: 0, Dec: 0
+  };
+  
+  orders.forEach(order => {
+    if (order.date) {
+      const date = new Date(order.date);
+      if (!isNaN(date.getTime())) {
+        const monthStr = date.toLocaleString("en-US", { month: "short" });
+        if (ordersByMonth[monthStr] !== undefined) {
+          ordersByMonth[monthStr]++;
+        }
+      }
+    }
+  });
+
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const currentMonthIdx = new Date().getMonth();
+  const historicalData = [];
+  
+  for (let i = 6; i >= 0; i--) {
+    const idx = (currentMonthIdx - i + 12) % 12;
+    const month = months[idx];
+    historicalData.push({
+      month,
+      orders: ordersByMonth[month] || 0
+    });
+  }
+
+  // Fallback if no orders exist, to keep chart visually appealing/populated for mock data
+  const hasOrders = historicalData.some(d => d.orders > 0);
+  const displayData = hasOrders ? historicalData : [
+    { month: "Jan", orders: 2 },
+    { month: "Feb", orders: 4 },
+    { month: "Mar", orders: 3 },
+    { month: "Apr", orders: 6 },
+    { month: "May", orders: 5 },
+    { month: "Jun", orders: 8 },
+    { month: "Jul", orders: 12 },
+  ].map((d, idx) => {
+    const mIdx = (currentMonthIdx - 6 + idx + 12) % 12;
+    return { month: months[mIdx], orders: d.orders };
+  });
+
+  const maxOrders = Math.max(...displayData.map((d) => d.orders), 1);
 
   return (
     <div className="p-6 border border-gray-100 rounded-3xl bg-white shadow-sm space-y-5 select-none relative overflow-hidden">
@@ -55,7 +89,7 @@ export default function OrderChart() {
             <div className="border-t border-dashed border-gray-100 w-full" />
           </div>
 
-          {HISTORICAL_DATA.map((data, idx) => {
+          {displayData.map((data, idx) => {
             const barHeightPercent = (data.orders / maxOrders) * 100;
             const isHovered = hoveredIdx === idx;
 

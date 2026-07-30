@@ -62,6 +62,25 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ success: true, orders: mapped, total, page });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    console.warn("MongoDB orders fallback:", err.message);
+    const rawOrders = global.inMemoryOrders || [];
+    const mapped = rawOrders.map(o => ({
+      id: o.id || o._id,
+      orderNumber: o.orderId,
+      customerId: o.userId,
+      customerName: o.customerName || "Customer",
+      customerEmail: o.customerEmail || "",
+      items: o.items || [],
+      totalAmount: o.totalAmount || o.grandTotal || 0,
+      paymentStatus: o.paymentStatus,
+      status: o.orderStatus,
+      shippingAddress: o.shippingAddress
+        ? `${o.shippingAddress.street}, ${o.shippingAddress.city}, ${o.shippingAddress.state} ${o.shippingAddress.zipCode}`
+        : "",
+      trackingNumber: o.trackingNumber,
+      createdAt: typeof o.createdAt === "string" ? o.createdAt : o.createdAt.toISOString(),
+      updatedAt: typeof o.updatedAt === "string" ? o.updatedAt : o.updatedAt.toISOString(),
+    }));
+    return NextResponse.json({ success: true, orders: mapped, total: mapped.length, page: 1 });
   }
 }

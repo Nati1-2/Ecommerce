@@ -7,6 +7,7 @@
     "build": "npm run build --prefix frontend",
     "vercel-build": "npm run build --prefix frontend",
     "dev:frontend": "npm run dev --prefix frontend",
+    "dev:gateway": "npm run dev --prefix backend/api-gateway",
     "dev:auth": "npm run dev --prefix backend/services/auth-service",
     "dev:user": "npm run dev --prefix backend/services/user-service",
     "dev:product": "npm run dev --prefix backend/services/product-service",
@@ -16,7 +17,8 @@
     "dev:payment": "npm run dev --prefix backend/services/payment-service",
     "dev:notification": "npm run dev --prefix backend/services/notification-service",
     "dev:cart": "npm run dev --prefix backend/services/cart-service",
-    "dev:analytics": "npm run dev --prefix backend/services/analytics-service"
+    "dev:analytics": "npm run dev --prefix backend/services/analytics-service",
+    "dev:backend": "node scripts/dev-backend.js"
   },
   "engines": {
     "node": ">=20.0.0"

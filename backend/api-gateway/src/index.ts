@@ -61,17 +61,21 @@ const NOTIFICATION_SERVICE_URL = process.env.NOTIFICATION_SERVICE_URL || 'http:/
 const ANALYTICS_SERVICE_URL = process.env.ANALYTICS_SERVICE_URL || 'http://localhost:8009';
 const VENDOR_SERVICE_URL = process.env.VENDOR_SERVICE_URL || 'http://localhost:8004';
 
-app.use('/api/v1/auth', proxy(AUTH_SERVICE_URL));
-app.use('/api/v1/users', proxy(USER_SERVICE_URL));
-app.use('/api/v1/products', proxy(PRODUCT_SERVICE_URL));
-app.use('/api/v1/inventory', proxy(INVENTORY_SERVICE_URL));
-app.use('/api/v1/cart', proxy(CART_SERVICE_URL));
-app.use('/api/v1/orders', proxy(ORDER_SERVICE_URL));
-app.use('/api/v1/payments', proxy(PAYMENT_SERVICE_URL));
-app.use('/api/v1/notifications', proxy(NOTIFICATION_SERVICE_URL));
-app.use('/api/v1/analytics', proxy(ANALYTICS_SERVICE_URL));
-app.use('/api/v1/vendors', proxy(VENDOR_SERVICE_URL));
-app.use('/api/v1/admin/vendors', proxy(VENDOR_SERVICE_URL));
+const proxyOptions = {
+  proxyReqPathResolver: (req: express.Request) => req.originalUrl
+};
+
+app.use('/api/v1/auth', proxy(AUTH_SERVICE_URL, proxyOptions));
+app.use('/api/v1/users', proxy(USER_SERVICE_URL, proxyOptions));
+app.use('/api/v1/products', proxy(PRODUCT_SERVICE_URL, proxyOptions));
+app.use('/api/v1/inventory', proxy(INVENTORY_SERVICE_URL, proxyOptions));
+app.use('/api/v1/cart', proxy(CART_SERVICE_URL, proxyOptions));
+app.use('/api/v1/orders', proxy(ORDER_SERVICE_URL, proxyOptions));
+app.use('/api/v1/payments', proxy(PAYMENT_SERVICE_URL, proxyOptions));
+app.use('/api/v1/notifications', proxy(NOTIFICATION_SERVICE_URL, proxyOptions));
+app.use('/api/v1/analytics', proxy(ANALYTICS_SERVICE_URL, proxyOptions));
+app.use('/api/v1/vendors', proxy(VENDOR_SERVICE_URL, proxyOptions));
+app.use('/api/v1/admin/vendors', proxy(VENDOR_SERVICE_URL, proxyOptions));
 
 app.listen(PORT, () => {
   console.log(`🚀 API Gateway running on port ${PORT}`);

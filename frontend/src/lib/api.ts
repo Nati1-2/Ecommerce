@@ -181,11 +181,61 @@ export async function fetchRecommendations(): Promise<Product[]> {
 }
 
 /**
- * Fetch mock order details by order ID.
+ * Fetch order details by order ID from backend, with static fallback.
  */
 import { Order } from "@/types";
 
 export async function fetchOrderById(id: string): Promise<Order> {
+  try {
+    const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+    const res = await fetch(`http://localhost:8000/api/v1/orders/${id}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (res.ok) {
+      const result = await res.json();
+      if (result.success && result.data) {
+        const o = result.data;
+        return {
+          id: o.orderId || o._id,
+          status: o.status || o.orderStatus || "Pending",
+          paymentStatus: o.paymentStatus || "Unpaid",
+          createdAt: new Date(o.createdAt).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          }),
+          shippingAddress: {
+            id: "addr-1",
+            firstName: o.shippingAddress?.fullName?.split(" ")[0] || "John",
+            lastName: o.shippingAddress?.fullName?.split(" ").slice(1).join(" ") || "Smith",
+            phone: o.shippingAddress?.phone || "+1 (555) 019-2834",
+            street: o.shippingAddress?.street || "",
+            city: o.shippingAddress?.city || "",
+            state: o.shippingAddress?.state || "",
+            country: o.shippingAddress?.country || "US",
+            postalCode: o.shippingAddress?.zipCode || "",
+          },
+          items: (o.items || []).map((item: any, idx: number) => ({
+            productId: item.productId,
+            name: item.productName || item.name || `Product #${idx + 1}`,
+            image: item.image || "/iphone17.png",
+            quantity: item.quantity,
+            price: item.price,
+            variant: item.variant || "Standard",
+          })),
+          subtotal: o.pricing?.subtotal || o.totalAmount || 0,
+          discount: o.pricing?.discount || 0,
+          shipping: o.pricing?.shippingFee || 0,
+          tax: o.pricing?.tax || 0,
+          total: o.pricing?.total || o.totalAmount || 0,
+        };
+      }
+    }
+  } catch (err) {
+    console.warn("fetchOrderById failed, using mock:", err);
+  }
+
+  // Fallback to client mock data
   await new Promise((resolve) => setTimeout(resolve, 300));
 
   return {
@@ -287,10 +337,56 @@ export async function fetchTrackingById(orderId: string): Promise<Tracking> {
 }
 
 /**
- * Fetch list of customer orders.
+ * Fetch list of customer orders from backend.
  */
 export async function fetchOrders(): Promise<Order[]> {
-  await new Promise((resolve) => setTimeout(resolve, 200));
+  try {
+    const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+    const res = await fetch("http://localhost:8000/api/v1/orders/my-orders", {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && Array.isArray(data.data)) {
+        return data.data.map((o: any) => ({
+          id: o.orderId || o._id,
+          status: o.status || o.orderStatus || "Pending",
+          paymentStatus: o.paymentStatus || "Unpaid",
+          createdAt: new Date(o.createdAt).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          }),
+          shippingAddress: {
+            id: "addr-1",
+            firstName: o.shippingAddress?.fullName?.split(" ")[0] || "John",
+            lastName: o.shippingAddress?.fullName?.split(" ").slice(1).join(" ") || "Smith",
+            phone: o.shippingAddress?.phone || "+1 (555) 019-2834",
+            street: o.shippingAddress?.street || "",
+            city: o.shippingAddress?.city || "",
+            state: o.shippingAddress?.state || "",
+            country: o.shippingAddress?.country || "US",
+            postalCode: o.shippingAddress?.zipCode || "",
+          },
+          items: (o.items || []).map((item: any, idx: number) => ({
+            productId: item.productId,
+            name: item.productName || item.name || `Product #${idx + 1}`,
+            image: item.image || "/iphone17.png",
+            quantity: item.quantity,
+            price: item.price,
+            variant: item.variant || "Standard",
+          })),
+          subtotal: o.pricing?.subtotal || o.totalAmount || 0,
+          discount: o.pricing?.discount || 0,
+          shipping: o.pricing?.shippingFee || 0,
+          tax: o.pricing?.tax || 0,
+          total: o.pricing?.total || o.totalAmount || 0,
+        }));
+      }
+    }
+  } catch (err) {
+    console.warn("fetchOrders failed, using local store:", err);
+  }
   return useOrderStore.getState().orders;
 }
 
@@ -298,7 +394,19 @@ export async function fetchOrders(): Promise<Order[]> {
  * Request cancel order.
  */
 export async function cancelOrderApi(id: string): Promise<void> {
-  await new Promise((resolve) => setTimeout(resolve, 400));
+  try {
+    const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+    await fetch(`http://localhost:8000/api/v1/orders/${id}/cancel`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ reason: "Customer requested cancellation" }),
+    });
+  } catch (err) {
+    console.warn("cancelOrderApi failed:", err);
+  }
   useOrderStore.getState().cancelOrder(id);
 }
 
@@ -306,7 +414,19 @@ export async function cancelOrderApi(id: string): Promise<void> {
  * Request return order.
  */
 export async function returnOrderApi(id: string, payload: { reason: string; description: string }): Promise<void> {
-  await new Promise((resolve) => setTimeout(resolve, 400));
+  try {
+    const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+    await fetch(`http://localhost:8000/api/v1/orders/${id}/return`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (err) {
+    console.warn("returnOrderApi failed:", err);
+  }
   useOrderStore.getState().returnOrder(id, payload.reason, payload.description);
 }
 

@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import { useDashboardStore } from "@/store/dashboardStore";
+import { useWishlistStore } from "@/store/wishlist";
 
 import DashboardSidebar, { DashboardTab } from "@/components/Dashboard/DashboardSidebar";
 import DashboardHeader from "@/components/Dashboard/DashboardHeader";
@@ -38,6 +39,14 @@ function DashboardContent() {
       return;
     }
 
+    // Sync wishlist count from wishlist store
+    try {
+      const wishlistCount = useWishlistStore.getState().items.length;
+      useDashboardStore.setState({ wishlistCount });
+    } catch (e) {
+      console.warn("Wishlist count sync failed:", e);
+    }
+
     // If user has a valid JWT token (not a demo-jwt token), fetch real profile from backend
     if (token && !token.startsWith("demo-jwt-token-")) {
       fetch("/api/users/profile", {
@@ -59,6 +68,10 @@ function DashboardContent() {
               points: data.user.points ?? 0,
             });
 
+            useDashboardStore.setState({
+              reviewsCount: data.user.reviewsCount ?? 0
+            });
+
             // Also sync auth store
             setAuth(
               {
@@ -69,6 +82,24 @@ function DashboardContent() {
               } as any,
               token
             );
+
+            // Fetch orders for dashboard
+            fetch(`/api/orders?userId=${data.user.id}`)
+              .then((res) => res.json())
+              .then((ordersData) => {
+                if (Array.isArray(ordersData)) {
+                  const mappedOrders = ordersData.map((o: any) => ({
+                    id: o.orderId || o._id,
+                    status: o.status || "Processing",
+                    amount: o.pricing?.total || o.totalAmount || o.amount || 0,
+                    date: new Date(o.createdAt || Date.now()).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+                    itemsCount: o.items?.length || 1,
+                  }));
+                  useDashboardStore.setState({ orders: mappedOrders });
+                }
+              })
+              .catch((err) => console.warn("Dashboard orders fetch failed:", err));
+
             setProfileLoaded(true);
           }
         })

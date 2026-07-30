@@ -15,6 +15,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Mount the inventory routes
+app.use('/', router);
 app.use('/api/v1/inventory', router);
 
 // Health Check Endpoint including Redis & MongoDB check

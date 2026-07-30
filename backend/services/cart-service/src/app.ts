@@ -19,6 +19,7 @@ app.get('/health', (req, res) => {
 });
 
 // Mount Routes
+app.use('/', cartRoutes);
 app.use('/api/v1/cart', cartRoutes);
 
 // Error Middleware
