@@ -6,6 +6,10 @@ import { persist } from "zustand/middleware";
 export interface User {
   id: string;
   email: string;
+  name?: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
   role: "CUSTOMER" | "ADMIN" | "VENDOR";
 }
 

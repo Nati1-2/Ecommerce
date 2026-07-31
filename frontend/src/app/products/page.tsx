@@ -15,7 +15,6 @@ import { ProductToolbar } from "@/components/ProductListing/ProductToolbar";
 import { Pagination } from "@/components/ProductListing/Pagination";
 import { EmptyState } from "@/components/ProductListing/EmptyState";
 import { ProductGridSkeleton } from "@/components/ProductListing/ProductSkeleton";
-import { mockRecommendations } from "@/data/mock";
 
 const FilterDrawer = dynamic(() => import("@/components/ProductListing/FilterDrawer").then((mod) => mod.FilterDrawer), {
   ssr: false,
@@ -249,15 +248,17 @@ function ProductListingContent() {
       </div>
 
       {/* ── BOTTOM RECOMMENDATIONS ────────────────────────────────────────── */}
-      <div className="border-t border-gray-100 bg-[#F5F7FA] mt-12">
-        <ProductCarousel
-          title="Customers Also Viewed"
-          subtitle="A selection of trending products chosen by other shoppers"
-          label="Trending Recommendations"
-          products={mockRecommendations}
-          viewAllHref="/products"
-          dark={true}
-        />
+      <div className="border-t border-gray-100 bg-[#F5F7FA] py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <ProductCarousel 
+            title="You Might Also Like" 
+            subtitle="Curated just for you based on your browsing history"
+            label="Trending Recommendations"
+            products={[]} 
+            viewAllHref="/products"
+            dark={true}
+          />
+        </div>
       </div>
 
       {/* Mobile Drawer */}

@@ -59,7 +59,7 @@ export default function SearchPage() {
       case "price-desc": return b.price - a.price;
       case "rating": return b.rating - a.rating;
       case "newest": return b.id.localeCompare(a.id); // Mock newer
-      case "popular": return b.reviews - a.reviews;
+      case "popular": return (b.reviewCount || 0) - (a.reviewCount || 0);
       default: return 0; // relevance
     }
   });

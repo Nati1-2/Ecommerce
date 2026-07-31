@@ -202,7 +202,7 @@ export const mockProducts: Product[] = [
     price: 229, originalPrice: 269, discount: 15, rating: 4.7, reviewCount: 980,
     image: "https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?w=600&q=80",
     images: ["https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?w=600&q=80"],
-    category: "Gaming", brand: "Sony", badge: "popular", inStock: true,
+    category: "Gaming", brand: "Sony", badge: "hot", inStock: true,
     description: "Mechanical gaming keyboard with Chroma RGB, macro keys & wrist rest.",
     stock: 16
   },
@@ -258,7 +258,7 @@ export const mockProducts: Product[] = [
     price: 380, originalPrice: 420, discount: 10, rating: 4.9, reviewCount: 1450,
     image: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=600&q=80",
     images: ["https://images.unsplash.com/photo-1556228720-195a672e8a03?w=600&q=80"],
-    category: "Beauty", brand: "Dyson", badge: "luxury", inStock: true,
+    category: "Beauty", brand: "Dyson", badge: "bestseller", inStock: true,
     description: "Ultra-luxurious moisturizing cream infused with Miracle Broth elixir.",
     stock: 5
   },
@@ -267,7 +267,7 @@ export const mockProducts: Product[] = [
     price: 155, originalPrice: 175, discount: 11, rating: 4.7, reviewCount: 3980,
     image: "https://images.unsplash.com/photo-1541643600914-78b084683601?w=600&q=80",
     images: ["https://images.unsplash.com/photo-1541643600914-78b084683601?w=600&q=80"],
-    category: "Beauty", brand: "Dyson", badge: "popular", inStock: true,
+    category: "Beauty", brand: "Dyson", badge: "hot", inStock: true,
     description: "Seductive gourmand floral fragrance with notes of black coffee & vanilla.",
     stock: 14
   },
@@ -285,7 +285,7 @@ export const mockProducts: Product[] = [
     price: 175, originalPrice: 195, discount: 10, rating: 4.9, reviewCount: 9240,
     image: "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=600&q=80",
     images: ["https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=600&q=80"],
-    category: "Beauty", brand: "Dyson", badge: "luxury", inStock: true,
+    category: "Beauty", brand: "Dyson", badge: "bestseller", inStock: true,
     description: "The world's most famous floral aldehyde perfume crafted by Gabrielle Chanel.",
     stock: 12
   },

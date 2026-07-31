@@ -43,8 +43,57 @@ export default function CheckoutPage() {
     setMounted(true);
   }, []);
 
-  const goNext = () => {
-    if (step < 4) setStep(step + 1);
+  const [createdOrderId, setCreatedOrderId] = useState<string | null>(null);
+  const [createdOrderAmount, setCreatedOrderAmount] = useState<number>(0);
+  const [isCreatingOrder, setIsCreatingOrder] = useState(false);
+  const [createOrderError, setCreateOrderError] = useState("");
+
+  const goNext = async () => {
+    if (step === 3) {
+      setIsCreatingOrder(true);
+      setCreateOrderError("");
+      try {
+        const { orderApi } = await import("@/services/api/orderApi");
+        const cartState = useCartStore.getState();
+        const checkoutState = useCheckoutStore.getState();
+        
+        const address = checkoutState.addresses.find(a => a.id === checkoutState.selectedAddressId);
+        
+        const orderData = {
+          items: cartState.items.map(item => ({
+            productId: item.productId,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            imageUrl: item.image
+          })),
+          shippingAddress: {
+            street: address?.street,
+            city: address?.city,
+            state: address?.state,
+            country: address?.country,
+            zipCode: address?.postalCode,
+          },
+          shippingMethod: checkoutState.shippingMethodId,
+        };
+
+        const res = await orderApi.createOrder(orderData);
+        if (res.data && res.data._id) {
+          setCreatedOrderId(res.data._id);
+          setCreatedOrderAmount(res.data.totalAmount || cartState.totalPrice());
+          setStep(4);
+        } else {
+          throw new Error("Invalid order response");
+        }
+      } catch (err: any) {
+        console.error("Failed to create order:", err);
+        setCreateOrderError(err.response?.data?.message || err.message || "Failed to create order");
+      } finally {
+        setIsCreatingOrder(false);
+      }
+    } else if (step < 4) {
+      setStep(step + 1);
+    }
   };
 
   const goBack = () => {
@@ -54,21 +103,21 @@ export default function CheckoutPage() {
   const handlePaymentSuccess = () => {
     useCartStore.getState().clearCart();
     useCheckoutStore.getState().resetCheckout();
-    router.push("/");
+    router.push(`/order/success/${createdOrderId}`);
   };
 
   // Button labels per step
   const buttonLabels: Record<number, string> = {
     1: "Continue to Shipping",
     2: "Continue to Review",
-    3: "Continue to Payment",
+    3: isCreatingOrder ? "Processing..." : "Continue to Payment",
   };
 
   // Disable conditions per step
   const isDisabled: Record<number, boolean> = {
     1: !selectedAddressId,
     2: !shippingMethodId,
-    3: false,
+    3: isCreatingOrder,
   };
 
   if (!mounted) {
@@ -142,6 +191,11 @@ export default function CheckoutPage() {
               {/* ── STEP 3: ORDER REVIEW ─────── */}
               {step === 3 && (
                 <motion.div key="step-3" {...stepVariants} className="space-y-6">
+                  {createOrderError && (
+                    <div className="p-3 bg-red-50 text-red-600 rounded-xl text-xs font-semibold">
+                      {createOrderError}
+                    </div>
+                  )}
                   <OrderReview />
                   {/* Coupon */}
                   <div className="space-y-3">
@@ -156,7 +210,11 @@ export default function CheckoutPage() {
               {/* ── STEP 4: PAYMENT ──────────── */}
               {step === 4 && (
                 <motion.div key="step-4" {...stepVariants}>
-                  <PaymentForm onSuccess={handlePaymentSuccess} />
+                  <PaymentForm 
+                    onSuccess={handlePaymentSuccess} 
+                    orderId={createdOrderId!} 
+                    amount={createdOrderAmount} 
+                  />
                 </motion.div>
               )}
             </AnimatePresence>

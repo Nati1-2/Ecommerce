@@ -55,21 +55,18 @@ export default function PaymentForm({ onSuccess, orderId = "ORD-TEST-1001", amou
         if (res.data?.checkoutUrl) {
           window.location.href = res.data.checkoutUrl;
           return;
+        } else {
+          setErrorMsg("Failed to generate checkout URL");
+          setProcessing(false);
         }
+      } else {
+        setErrorMsg("Direct card payment is not supported yet. Please use Stripe Checkout.");
+        setProcessing(false);
       }
-
-      // Fallback or direct card simulation
-      await new Promise((r) => setTimeout(r, 2000));
-      setProcessing(false);
-      setCompleted(true);
-      setTimeout(() => onSuccess(), 1200);
     } catch (err: any) {
-      console.warn("Checkout session creation failed, proceeding with secure fallback:", err);
-      // Seamless graceful fallback for demo/testing mode
-      await new Promise((r) => setTimeout(r, 1500));
+      console.error("Checkout session creation failed:", err);
+      setErrorMsg(err.response?.data?.message || err.message || "Failed to create checkout session");
       setProcessing(false);
-      setCompleted(true);
-      setTimeout(() => onSuccess(), 1200);
     }
   };
 
@@ -125,19 +122,6 @@ export default function PaymentForm({ onSuccess, orderId = "ORD-TEST-1001", amou
         >
           <CreditCard className="w-4 h-4" />
           <span className="text-xs">Stripe Checkout</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setPaymentType("card")}
-          className={`flex-1 p-3.5 rounded-xl border-2 flex items-center justify-center gap-2 transition-all ${
-            paymentType === "card"
-              ? "border-[#007BFF] bg-blue-50/50 text-[#007BFF] font-bold"
-              : "border-gray-200 text-gray-500 hover:border-gray-300 font-semibold"
-          }`}
-        >
-          <Lock className="w-4 h-4" />
-          <span className="text-xs">Direct Card</span>
         </button>
       </div>
 

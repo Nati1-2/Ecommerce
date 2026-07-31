@@ -4,7 +4,7 @@ import { use } from "react";
 import Link from "next/link";
 import { AlertCircle, RefreshCw, ArrowLeft, ShieldAlert } from "lucide-react";
 import { paymentApi } from "@/services/api/paymentApi";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface FailedPageProps {
   params: Promise<{ orderId: string }>;
@@ -14,13 +14,29 @@ export default function OrderFailedPage({ params }: FailedPageProps) {
   const resolvedParams = use(params);
   const orderId = resolvedParams.orderId;
   const [loading, setLoading] = useState(false);
+  const [orderAmount, setOrderAmount] = useState(0);
+
+  useEffect(() => {
+    const fetchOrder = async () => {
+      try {
+        const { orderApi } = await import("@/services/api/orderApi");
+        const res = await orderApi.getOrder(orderId);
+        if (res.data?.totalAmount) {
+          setOrderAmount(res.data.totalAmount);
+        }
+      } catch (err) {
+        console.error("Failed to fetch order", err);
+      }
+    };
+    fetchOrder();
+  }, [orderId]);
 
   const handleRetryPayment = async () => {
     setLoading(true);
     try {
       const res = await paymentApi.createCheckoutSession({
         orderId,
-        amount: 149.99,
+        amount: orderAmount > 0 ? orderAmount : 149.99, // Fallback just in case
         currency: "USD",
         successUrl: `${window.location.origin}/order/success/${orderId}?session_id={CHECKOUT_SESSION_ID}`,
         cancelUrl: `${window.location.origin}/order/failed/${orderId}`

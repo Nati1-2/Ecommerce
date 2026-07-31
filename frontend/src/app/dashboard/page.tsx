@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useDashboardStore } from "@/store/dashboardStore";
 import { useWishlistStore } from "@/store/wishlist";
+import { useAuthStore } from "@/store/auth";
 
 import DashboardSidebar, { DashboardTab } from "@/components/Dashboard/DashboardSidebar";
 import DashboardHeader from "@/components/Dashboard/DashboardHeader";
@@ -16,18 +17,32 @@ import NotificationPreview from "@/components/Dashboard/NotificationPreview";
 import SecurityCard from "@/components/Dashboard/SecurityCard";
 import AddressPreview from "@/components/Dashboard/AddressPreview";
 import DashboardSkeleton from "@/components/Dashboard/DashboardSkeleton";
+
+import DashboardWishlist from "@/components/Dashboard/DashboardWishlist";
+import DashboardAddresses from "@/components/Dashboard/DashboardAddresses";
+import DashboardPayments from "@/components/Dashboard/DashboardPayments";
+import DashboardReviews from "@/components/Dashboard/DashboardReviews";
+import DashboardNotifications from "@/components/Dashboard/DashboardNotifications";
+import DashboardSettings from "@/components/Dashboard/DashboardSettings";
+
 import { motion, AnimatePresence } from "framer-motion";
-import { AlertCircle, RefreshCw, ShoppingBag } from "lucide-react";
-import Link from "next/link";
-import { useAuthStore } from "@/store/auth";
 
 function DashboardContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const tabQuery = searchParams.get("tab") as DashboardTab | null;
+
   const { user: authUser, isAuthenticated, accessToken, logout, setAuth } = useAuthStore();
   const { updateProfile } = useDashboardStore();
-  const [activeTab, setActiveTab] = useState<DashboardTab>("profile");
+  const [activeTab, setActiveTab] = useState<DashboardTab>(tabQuery || "profile");
   const [mounted, setMounted] = useState(false);
   const [profileLoaded, setProfileLoaded] = useState(false);
+
+  useEffect(() => {
+    if (tabQuery) {
+      setActiveTab(tabQuery);
+    }
+  }, [tabQuery]);
 
   useEffect(() => {
     setMounted(true);
@@ -47,7 +62,7 @@ function DashboardContent() {
       console.warn("Wishlist count sync failed:", e);
     }
 
-    // If user has a valid JWT token (not a demo-jwt token), fetch real profile from backend
+    // Fetch user profile from database endpoint
     if (token && !token.startsWith("demo-jwt-token-")) {
       fetch("/api/users/profile", {
         headers: { Authorization: `Bearer ${token}` },
@@ -58,21 +73,20 @@ function DashboardContent() {
         })
         .then((data) => {
           if (data.user) {
-            // Update dashboard store with real backend user data
             updateProfile({
               id: data.user.id,
               name: data.user.name || data.user.email.split("@")[0],
               email: data.user.email,
               avatar: data.user.avatar || "",
+              phone: data.user.phone || "",
               membership: data.user.membership || "Standard Member ⭐",
-              points: data.user.points ?? 0,
+              points: data.user.points ?? 120,
             });
 
             useDashboardStore.setState({
-              reviewsCount: data.user.reviewsCount ?? 0
+              reviewsCount: data.user.reviewsCount ?? 0,
             });
 
-            // Also sync auth store
             setAuth(
               {
                 id: data.user.id,
@@ -83,7 +97,7 @@ function DashboardContent() {
               token
             );
 
-            // Fetch orders for dashboard
+            // Fetch user orders
             fetch(`/api/orders?userId=${data.user.id}`)
               .then((res) => res.json())
               .then((ordersData) => {
@@ -98,41 +112,41 @@ function DashboardContent() {
                   useDashboardStore.setState({ orders: mappedOrders });
                 }
               })
-              .catch((err) => console.warn("Dashboard orders fetch failed:", err));
+              .catch((err) => console.warn("Dashboard orders fetch notice:", err));
 
             setProfileLoaded(true);
           }
         })
         .catch((err) => {
-          console.warn("Profile load failed:", err.message);
-          // Fallback: use auth store data if backend fails
+          console.warn("Profile load notice:", err.message);
           if (authUser) {
             updateProfile({
               id: authUser.id,
               name: (authUser as any).name || authUser.email?.split("@")[0] || "User",
               email: authUser.email,
               avatar: "",
+              phone: "",
               membership: "Standard Member ⭐",
-              points: 0,
+              points: 100,
             });
           }
           setProfileLoaded(true);
         });
     } else if (authUser) {
-      // Demo session or already have user in store — use it
       updateProfile({
         id: authUser.id,
         name: (authUser as any).name || authUser.email?.split("@")[0] || "User",
         email: authUser.email,
         avatar: "",
+        phone: "",
         membership: "Standard Member ⭐",
-        points: 0,
+        points: 100,
       });
       setProfileLoaded(true);
     } else {
       setProfileLoaded(true);
     }
-  }, []); // Only run once on mount
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -152,20 +166,24 @@ function DashboardContent() {
         {/* Sidebar navigation */}
         <DashboardSidebar
           activeTab={activeTab}
-          setActiveTab={setActiveTab}
+          setActiveTab={(tab) => {
+            setActiveTab(tab);
+            router.push(`/dashboard?tab=${tab}`);
+          }}
           onLogout={handleLogout}
         />
 
         {/* Main content */}
         <div className="flex-1 w-full min-w-0">
           <AnimatePresence mode="wait">
+            {/* ── PROFILE OVERVIEW TAB ─── */}
             {activeTab === "profile" && (
               <motion.div
                 key="profile-tab"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.25 }}
+                transition={{ duration: 0.2 }}
                 className="space-y-8"
               >
                 <DashboardHeader onEditProfile={() => setActiveTab("settings")} />
@@ -191,80 +209,95 @@ function DashboardContent() {
               </motion.div>
             )}
 
+            {/* ── ORDERS TAB ─────────────── */}
             {activeTab === "orders" && (
               <motion.div
                 key="orders-tab"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.25 }}
+                transition={{ duration: 0.2 }}
                 className="space-y-6"
               >
-                <div className="p-6 border border-gray-100 bg-white rounded-3xl shadow-sm">
-                  <h2 className="text-base font-black text-gray-900 mb-4">My Orders</h2>
-                  <RecentOrders onViewAll={undefined} />
-                </div>
+                <RecentOrders onViewAll={undefined} />
               </motion.div>
             )}
 
+            {/* ── WISHLIST TAB ────────────── */}
+            {activeTab === "wishlist" && (
+              <motion.div
+                key="wishlist-tab"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <DashboardWishlist />
+              </motion.div>
+            )}
+
+            {/* ── ADDRESSES TAB ───────────── */}
             {activeTab === "addresses" && (
               <motion.div
                 key="addresses-tab"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.25 }}
-                className="space-y-6"
+                transition={{ duration: 0.2 }}
               >
-                <div className="p-6 border border-gray-100 bg-white rounded-3xl shadow-sm">
-                  <h2 className="text-base font-black text-gray-900 mb-4">Delivery Addresses</h2>
-                  <AddressPreview onManage={undefined} />
-                </div>
+                <DashboardAddresses />
               </motion.div>
             )}
 
+            {/* ── PAYMENTS & STRIPE TAB ────── */}
+            {activeTab === "payments" && (
+              <motion.div
+                key="payments-tab"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <DashboardPayments />
+              </motion.div>
+            )}
+
+            {/* ── REVIEWS TAB ─────────────── */}
+            {activeTab === "reviews" && (
+              <motion.div
+                key="reviews-tab"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <DashboardReviews />
+              </motion.div>
+            )}
+
+            {/* ── NOTIFICATIONS TAB ───────── */}
+            {activeTab === "notifications" && (
+              <motion.div
+                key="notifications-tab"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <DashboardNotifications />
+              </motion.div>
+            )}
+
+            {/* ── SETTINGS TAB ────────────── */}
             {activeTab === "settings" && (
               <motion.div
                 key="settings-tab"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.25 }}
-                className="space-y-6"
+                transition={{ duration: 0.2 }}
               >
-                <div className="p-6 border border-gray-100 bg-white rounded-3xl shadow-sm">
-                  <h2 className="text-base font-black text-gray-900 mb-4">Security Settings</h2>
-                  <SecurityCard onManage={undefined} />
-                </div>
-              </motion.div>
-            )}
-
-            {!["profile", "orders", "addresses", "settings"].includes(activeTab) && (
-              <motion.div
-                key="other-tabs"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.25 }}
-                className="p-10 border border-gray-100 bg-white rounded-3xl text-center select-none space-y-4 shadow-sm"
-              >
-                <div className="w-14 h-14 bg-blue-50 text-[#007BFF] rounded-2xl flex items-center justify-center mx-auto">
-                  <ShoppingBag className="w-7 h-7" />
-                </div>
-                <div className="space-y-1">
-                  <h3 className="text-base font-black text-gray-900 capitalize">
-                    {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
-                  </h3>
-                  <p className="text-xs text-gray-400 font-semibold max-w-xs mx-auto">
-                    This section is coming soon. Your data will appear here shortly.
-                  </p>
-                </div>
-                <button
-                  onClick={() => setActiveTab("profile")}
-                  className="py-2.5 px-4 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 font-bold text-xs rounded-xl transition-colors"
-                >
-                  ← Back to Dashboard
-                </button>
+                <DashboardSettings />
               </motion.div>
             )}
           </AnimatePresence>

@@ -25,8 +25,6 @@ import ReviewSection from "@/components/ProductDetails/ReviewSection";
 import RelatedProducts from "@/components/ProductDetails/RelatedProducts";
 import RecentlyViewed from "@/components/ProductDetails/RecentlyViewed";
 
-// Mock customer reviews for initial render
-import { mockReviews } from "@/data/mock";
 
 interface ProductPageProps {
   params: Promise<{ id: string }>;
@@ -223,9 +221,9 @@ function ProductDetailsContent({ id }: { id: string }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 border-t border-gray-100">
         <ProductTabs
           description={product.description}
-          reviewsCount={mockReviews.length}
+          reviewsCount={0}
           reviewsContent={
-            <ReviewSection productId={product.id} initialReviews={mockReviews} />
+            <ReviewSection productId={product.id} initialReviews={[]} />
           }
         />
       </div>

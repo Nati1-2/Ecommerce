@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
-import { safeFindUserById, safeUpdateUser } from "@/lib/mongodb";
+import { safeFindUserById, safeUpdateUser, connectDB } from "@/lib/mongodb";
 
 const JWT_SECRET = process.env.JWT_ACCESS_SECRET || "fallback-secret-for-dev";
 

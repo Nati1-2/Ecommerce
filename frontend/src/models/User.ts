@@ -12,6 +12,37 @@ export interface IUser extends Document {
   address?: string;
   membership?: string;
   points?: number;
+  stripeCustomerId?: string;
+  addresses?: Array<{
+    id: string;
+    firstName: string;
+    lastName: string;
+    street: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
+    phone: string;
+    isDefault: boolean;
+  }>;
+  paymentMethods?: Array<{
+    id: string;
+    cardBrand: string;
+    last4: string;
+    expMonth: number;
+    expYear: number;
+    isDefault: boolean;
+  }>;
+  wishlist?: Array<{
+    id: string;
+    name: string;
+    price: number;
+    originalPrice?: number;
+    image: string;
+    category?: string;
+    rating?: number;
+    inStock?: boolean;
+  }>;
   isVerified: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -46,6 +77,22 @@ const userSchema = new Schema<IUser>(
     address: {
       type: String,
       default: "",
+    },
+    stripeCustomerId: {
+      type: String,
+      default: "",
+    },
+    addresses: {
+      type: Array,
+      default: [],
+    },
+    paymentMethods: {
+      type: Array,
+      default: [],
+    },
+    wishlist: {
+      type: Array,
+      default: [],
     },
     membership: {
       type: String,
