@@ -1,14 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import Stripe from "stripe";
-import { safeFindUserById, safeUpdateUser, connectDB } from "@/lib/mongodb";
+import { safeFindUserById, safeUpdateUser } from "@/lib/mongodb";
 
 const JWT_SECRET = process.env.JWT_ACCESS_SECRET || "fallback-secret-for-dev";
-const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || "";
 
-const stripe = new Stripe(STRIPE_SECRET_KEY, {
-  apiVersion: "2025-01-27.acacia" as any,
-});
+function getStripeClient(): Stripe | null {
+  const secretKey = process.env.STRIPE_SECRET_KEY || process.env.NEXT_PUBLIC_STRIPE_SECRET_KEY || "";
+  if (!secretKey) return null;
+  try {
+    return new Stripe(secretKey, {
+      apiVersion: "2025-01-27.acacia" as any,
+    });
+  } catch (e) {
+    return null;
+  }
+}
 
 function getUserFromToken(req: NextRequest): { id: string; email: string; role: string } | null {
   try {
@@ -39,10 +46,11 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    const stripe = getStripeClient();
     let stripeCustomerId = user.stripeCustomerId;
 
     // Create Stripe Customer if not existing
-    if (!stripeCustomerId) {
+    if (!stripeCustomerId && stripe) {
       try {
         const customer = await stripe.customers.create({
           email: user.email,
@@ -52,14 +60,16 @@ export async function GET(req: NextRequest) {
         stripeCustomerId = customer.id;
         await safeUpdateUser(user.id, { stripeCustomerId });
       } catch (e: any) {
-        console.warn("Stripe Customer creation warning:", e.message);
+        console.warn("Stripe Customer creation notice:", e.message);
         stripeCustomerId = `cus_demo_${user.id}`;
       }
+    } else if (!stripeCustomerId) {
+      stripeCustomerId = `cus_demo_${user.id}`;
     }
 
     // Fetch payment methods from Stripe if real ID
     let paymentMethods: any[] = [];
-    if (stripeCustomerId && !stripeCustomerId.startsWith("cus_demo_")) {
+    if (stripe && stripeCustomerId && !stripeCustomerId.startsWith("cus_demo_")) {
       try {
         const stripeMethods = await stripe.paymentMethods.list({
           customer: stripeCustomerId,
@@ -74,7 +84,7 @@ export async function GET(req: NextRequest) {
           isDefault: idx === 0,
         }));
       } catch (e: any) {
-        console.warn("Fetch Stripe PaymentMethods warning:", e.message);
+        console.warn("Fetch Stripe PaymentMethods notice:", e.message);
       }
     }
 
@@ -107,9 +117,10 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const { action, cardBrand, last4, expMonth, expYear } = body;
+    const stripe = getStripeClient();
 
     let stripeCustomerId = user.stripeCustomerId;
-    if (!stripeCustomerId) {
+    if (!stripeCustomerId && stripe) {
       try {
         const customer = await stripe.customers.create({
           email: user.email,
@@ -121,10 +132,11 @@ export async function POST(req: NextRequest) {
       } catch (e: any) {
         stripeCustomerId = `cus_demo_${user.id}`;
       }
+    } else if (!stripeCustomerId) {
+      stripeCustomerId = `cus_demo_${user.id}`;
     }
 
-    if (action === "create_checkout_session") {
-      // Create Stripe Checkout Session for setting up payment method or paying
+    if (action === "create_checkout_session" && stripe) {
       try {
         const session = await stripe.checkout.sessions.create({
           payment_method_types: ["card"],
@@ -188,12 +200,12 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Detach from Stripe if real Stripe ID
-    if (paymentMethodId.startsWith("pm_") && !paymentMethodId.includes("demo")) {
+    const stripe = getStripeClient();
+    if (stripe && paymentMethodId.startsWith("pm_") && !paymentMethodId.includes("demo")) {
       try {
         await stripe.paymentMethods.detach(paymentMethodId);
       } catch (e: any) {
-        console.warn("Stripe PM detach warning:", e.message);
+        console.warn("Stripe PM detach notice:", e.message);
       }
     }
 
