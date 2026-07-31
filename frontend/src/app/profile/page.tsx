@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import { useRouter } from "next/navigation";
-import { ChevronRight, Home, ShieldAlert, Sparkles, User } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ChevronRight, Home, User, ShoppingBag, Heart, LogOut } from "lucide-react";
 import Link from "next/link";
 
 import ProfileSidebar, { ProfileTab } from "@/components/Profile/ProfileSidebar";
@@ -16,29 +16,53 @@ import LoginActivity from "@/components/Profile/LoginActivity";
 import PrivacySettings from "@/components/Profile/PrivacySettings";
 import DeleteAccount from "@/components/Profile/DeleteAccount";
 import ProfileSkeleton from "@/components/Profile/ProfileSkeleton";
+
+import DashboardPayments from "@/components/Dashboard/DashboardPayments";
+import DashboardAddresses from "@/components/Dashboard/DashboardAddresses";
+import DashboardWishlist from "@/components/Dashboard/DashboardWishlist";
+import DashboardNotifications from "@/components/Dashboard/DashboardNotifications";
+import DashboardSettings from "@/components/Dashboard/DashboardSettings";
+import DashboardReviews from "@/components/Dashboard/DashboardReviews";
+import RecentOrders from "@/components/Dashboard/RecentOrders";
+
+import { useAuthStore } from "@/store/auth";
 import { motion, AnimatePresence } from "framer-motion";
 
 function ProfileContent() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<ProfileTab>("overview");
+  const searchParams = useSearchParams();
+  const tabQuery = searchParams.get("tab") as ProfileTab | null;
+
+  const { user, isAuthenticated, logout } = useAuthStore();
+  const [activeTab, setActiveTab] = useState<ProfileTab>(tabQuery || "overview");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    if (!isAuthenticated) {
+      router.push("/login");
+    }
+  }, [isAuthenticated, router]);
+
+  useEffect(() => {
+    if (tabQuery) {
+      setActiveTab(tabQuery);
+    }
+  }, [tabQuery]);
 
   const handleLogout = () => {
-    router.push("/");
+    logout();
+    router.push("/login");
   };
 
-  if (!mounted) {
+  if (!mounted || !isAuthenticated) {
     return <ProfileSkeleton />;
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8 select-none">
       {/* Breadcrumbs */}
-      <nav className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest select-none">
+      <nav className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
         <Link href="/" className="hover:text-gray-900 flex items-center gap-1 transition-colors">
           <Home className="w-3.5 h-3.5" />
           Home
@@ -51,7 +75,10 @@ function ProfileContent() {
         {/* Left column navigation sidebar */}
         <ProfileSidebar
           activeTab={activeTab}
-          setActiveTab={setActiveTab}
+          setActiveTab={(tab) => {
+            setActiveTab(tab);
+            router.push(`/profile?tab=${tab}`);
+          }}
           onLogout={handleLogout}
         />
 
@@ -102,6 +129,61 @@ function ProfileContent() {
               </motion.div>
             )}
 
+            {activeTab === "addresses" && (
+              <motion.div
+                key="addresses-tab"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+              >
+                <DashboardAddresses />
+              </motion.div>
+            )}
+
+            {activeTab === "payments" && (
+              <motion.div
+                key="payments-tab"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+              >
+                <DashboardPayments />
+              </motion.div>
+            )}
+
+            {activeTab === "orders" && (
+              <motion.div
+                key="orders-tab"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+              >
+                <RecentOrders onViewAll={undefined} />
+              </motion.div>
+            )}
+
+            {activeTab === "wishlist" && (
+              <motion.div
+                key="wishlist-tab"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+              >
+                <DashboardWishlist />
+              </motion.div>
+            )}
+
+            {activeTab === "notifications" && (
+              <motion.div
+                key="notifications-tab"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+              >
+                <DashboardNotifications />
+              </motion.div>
+            )}
+
             {/* Privacy / Preferences Settings Tab */}
             {activeTab === "settings" && (
               <motion.div
@@ -111,42 +193,11 @@ function ProfileContent() {
                 exit={{ opacity: 0, y: -10 }}
                 className="space-y-6"
               >
+                <DashboardSettings />
                 <PrivacySettings />
                 <DeleteAccount />
               </motion.div>
             )}
-
-            {/* Other tabs redirect placeholder */}
-            {activeTab !== "overview" &&
-              activeTab !== "personal" &&
-              activeTab !== "security" &&
-              activeTab !== "settings" && (
-                <motion.div
-                  key="placeholders"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="p-8 border border-gray-100 bg-white rounded-3xl text-center select-none space-y-4 shadow-sm"
-                >
-                  <div className="w-12 h-12 bg-blue-50 text-[#007BFF] rounded-full flex items-center justify-center mx-auto">
-                    <Sparkles className="w-6 h-6 animate-pulse" />
-                  </div>
-                  <div className="space-y-1">
-                    <h3 className="text-base font-black text-gray-900 capitalize">
-                      {activeTab} Management
-                    </h3>
-                    <p className="text-xs text-gray-400 font-semibold max-w-xs mx-auto">
-                      Access these features directly within your core Customer Account Dashboard.
-                    </p>
-                  </div>
-                  <Link
-                    href="/dashboard"
-                    className="inline-block py-2.5 px-5 bg-gray-900 hover:bg-gray-800 text-white font-bold text-xs rounded-xl transition-colors"
-                  >
-                    Open Customer Dashboard
-                  </Link>
-                </motion.div>
-              )}
 
           </AnimatePresence>
         </div>
