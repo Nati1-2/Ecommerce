@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
       email: normalizedEmail,
       password: hashedPassword,
       name: name.trim(),
-      role: "CUSTOMER",
+      role: role || "CUSTOMER",
       isVerified: true,
     });
 
