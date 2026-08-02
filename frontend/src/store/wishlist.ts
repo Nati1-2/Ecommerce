@@ -39,6 +39,7 @@ interface WishlistState {
   addCollection: (name: string) => void;
   removeCollection: (name: string) => void;
   togglePriceAlert: (productId: string) => void;
+  clearWishlist: () => void;
 }
 
 // Initial mock favorites
@@ -151,6 +152,8 @@ export const useWishlistStore = create<WishlistState>()(
               : i
           ),
         }),
+
+      clearWishlist: () => set({ items: [] }),
     }),
     { name: "wishlist-storage-2026" }
   )

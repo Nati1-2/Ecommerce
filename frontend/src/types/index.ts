@@ -77,6 +77,7 @@ export interface Address {
   state: string;
   country: string;
   postalCode: string;
+  isDefault?: boolean;
 }
 
 export interface ShippingOption {

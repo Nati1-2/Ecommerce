@@ -7,7 +7,7 @@ import { User, Lock, ShieldCheck, Check, Loader2, Save, Bell } from "lucide-reac
 
 export default function DashboardSettings() {
   const { user: authUser, setAuth, accessToken } = useAuthStore();
-  const { profile, updateProfile } = useDashboardStore();
+  const { user: profile, updateProfile } = useDashboardStore();
 
   // Profile Form State
   const [name, setName] = useState(profile.name || authUser?.email?.split("@")[0] || "");

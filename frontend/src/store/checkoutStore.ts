@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Address, ShippingOption } from "@/types";
+export type { Address };
 
 interface CheckoutState {
   step: number;
@@ -22,6 +23,8 @@ interface CheckoutState {
   updateAddress: (address: Address) => void;
   deleteAddress: (id: string) => void;
   resetCheckout: () => void;
+  setAddresses: (addresses: Address[]) => void;
+  selectAddress: (id: string | null) => void;
 }
 
 const defaultAddresses: Address[] = [
@@ -89,6 +92,9 @@ export const useCheckoutStore = create<CheckoutState>()(
             : state.selectedAddressId
         };
       }),
+
+      setAddresses: (addresses) => set({ addresses }),
+      selectAddress: (id) => set({ selectedAddressId: id }),
 
       resetCheckout: () => set({
         step: 1,

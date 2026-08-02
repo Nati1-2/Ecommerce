@@ -7,6 +7,7 @@ export interface UserProfile {
   name: string;
   email: string;
   avatar: string;
+  phone?: string;
   membership: string;
   points: number;
 }
