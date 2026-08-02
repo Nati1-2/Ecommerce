@@ -214,9 +214,9 @@ export default function Hero() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.9 }}
-                  className="absolute -left-10 top-16 bg-white rounded-2xl shadow-xl border border-gray-100 px-4 py-3 flex items-center gap-3"
+                  className="absolute -left-2 sm:-left-10 top-16 bg-white rounded-2xl shadow-xl border border-gray-100 px-3.5 py-2.5 sm:px-4 sm:py-3 flex items-center gap-3 z-10"
                 >
-                  <div className="w-9 h-9 rounded-full bg-green-50 flex items-center justify-center text-base">🎉</div>
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-green-50 flex items-center justify-center text-sm sm:text-base">🎉</div>
                   <div>
                     <p className="text-xs font-bold text-[#111827]">942 sold</p>
                     <p className="text-[10px] text-gray-400">This week</p>
@@ -228,7 +228,7 @@ export default function Hero() {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 1.1 }}
-                  className="absolute -right-6 bottom-24 bg-white rounded-2xl shadow-xl border border-gray-100 px-4 py-3 flex items-center gap-2"
+                  className="absolute -right-2 sm:-right-6 bottom-24 bg-white rounded-2xl shadow-xl border border-gray-100 px-3.5 py-2.5 sm:px-4 sm:py-3 flex items-center gap-2 z-10"
                 >
                   <Truck className="w-4 h-4 text-[#007BFF]" />
                   <div>

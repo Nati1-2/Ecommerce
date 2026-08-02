@@ -86,7 +86,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
         )}
 
         {/* Actions Overlay */}
-        <div className="absolute inset-x-3 bottom-3 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        <div className="absolute inset-x-3 bottom-3 flex items-center justify-between opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200 z-10">
           <button
             onClick={() => toggleItem(product.id)}
             className={cn(

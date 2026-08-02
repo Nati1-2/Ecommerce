@@ -15,7 +15,7 @@ export function ProductGrid({ products, viewMode, onQuickView }: ProductGridProp
     <div
       className={cn(
         viewMode === "grid"
-          ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5"
+          ? "grid grid-cols-1 min-[440px]:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5"
           : "flex flex-col gap-4"
       )}
     >
