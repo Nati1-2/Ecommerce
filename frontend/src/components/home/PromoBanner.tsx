@@ -33,7 +33,7 @@ export function PromoBanner() {
                 Explore our curated collection of premium products designed for modern living.
               </p>
               <Link
-                href="/collections/summer"
+                href="/products?category=Fashion"
                 className="inline-flex items-center gap-2 mt-6 bg-[#007BFF] hover:bg-blue-500 text-white font-bold px-6 py-3 rounded-xl transition-all hover:-translate-y-0.5 shadow-lg shadow-blue-500/30"
               >
                 Shop Collection <ArrowRight className="w-4 h-4" />
@@ -60,7 +60,7 @@ export function PromoBanner() {
               <div className="relative z-10 p-6 sm:p-8">
                 <span className="text-purple-200 text-xs font-bold uppercase tracking-widest">Game On</span>
                 <h3 className="text-2xl font-black text-white mt-1">Level Up Your Setup</h3>
-                <Link href="/category/gaming" className="inline-flex items-center gap-1 text-purple-200 text-sm font-semibold mt-3 hover:gap-2 transition-all">
+                <Link href="/products?category=Gaming" className="inline-flex items-center gap-1 text-purple-200 text-sm font-semibold mt-3 hover:gap-2 transition-all">
                   Shop Gaming <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
@@ -83,7 +83,7 @@ export function PromoBanner() {
               <div className="relative z-10 p-6 sm:p-8">
                 <span className="text-pink-200 text-xs font-bold uppercase tracking-widest">Beauty Essentials</span>
                 <h3 className="text-2xl font-black text-white mt-1">Glow Up Season</h3>
-                <Link href="/category/beauty" className="inline-flex items-center gap-1 text-pink-200 text-sm font-semibold mt-3 hover:gap-2 transition-all">
+                <Link href="/products?category=Beauty" className="inline-flex items-center gap-1 text-pink-200 text-sm font-semibold mt-3 hover:gap-2 transition-all">
                   Shop Beauty <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>

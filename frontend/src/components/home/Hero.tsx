@@ -1,10 +1,28 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, ShieldCheck, Truck, Star, Zap } from "lucide-react";
+import { ArrowRight, ShieldCheck, Truck, Star, Zap, ShoppingBag, Check } from "lucide-react";
+import { useCartStore } from "@/store/cart";
 
 export default function Hero() {
+  const [addedToCart, setAddedToCart] = useState(false);
+  const addItem = useCartStore((s) => s.addItem);
+
+  const handleAddToCart = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    addItem({
+      productId: "0",
+      name: "Apple iPhone 17 Pro",
+      price: 1199,
+      quantity: 1,
+      image: "/iphone17.png",
+    });
+    setAddedToCart(true);
+    setTimeout(() => setAddedToCart(false), 2500);
+  };
+
   return (
     <section className="relative bg-white overflow-hidden">
       {/* Subtle background decoration — light blue & warm orange blobs */}
@@ -131,19 +149,23 @@ export default function Hero() {
                 transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
               >
                 {/* Card wrapper */}
-                <div className="relative w-[300px] sm:w-[360px] lg:w-[400px] rounded-3xl overflow-hidden bg-[#F5F7FA] border border-gray-100 shadow-2xl shadow-gray-200/80">
-                  <img
-                    src="/iphone17.png"
-                    alt="Featured Product — iPhone 17 Pro"
-                    className="w-full h-[280px] sm:h-[320px] object-contain object-center p-6 bg-white"
-                  />
+                <div className="relative w-[300px] sm:w-[360px] lg:w-[400px] rounded-3xl overflow-hidden bg-[#F5F7FA] border border-gray-100 shadow-2xl shadow-gray-200/80 group">
+                  <Link href="/products/0" className="block relative bg-white overflow-hidden">
+                    <img
+                      src="/iphone17.png"
+                      alt="Featured Product — iPhone 17 Pro"
+                      className="w-full h-[280px] sm:h-[320px] object-contain object-center p-6 bg-white hover:scale-105 transition-transform duration-500 cursor-pointer"
+                    />
+                  </Link>
 
                   {/* Product info strip inside card */}
                   <div className="p-5 bg-white">
                     <div className="flex items-start justify-between">
                       <div>
                         <p className="text-xs font-semibold text-[#007BFF] uppercase tracking-wide">Apple</p>
-                        <p className="font-bold text-[#111827] mt-0.5">iPhone 17 Pro</p>
+                        <Link href="/products/0">
+                          <p className="font-bold text-[#111827] mt-0.5 hover:text-[#007BFF] transition-colors cursor-pointer">iPhone 17 Pro</p>
+                        </Link>
                         <div className="flex items-center gap-1 mt-1.5">
                           {[1,2,3,4,5].map(i => (
                             <Star key={i} className="w-3 h-3 fill-amber-400 text-amber-400" />
@@ -156,13 +178,33 @@ export default function Hero() {
                         <p className="text-xs text-gray-400 line-through">$1,399</p>
                       </div>
                     </div>
-                    <div className="mt-3 w-full py-2.5 bg-[#007BFF] text-white text-sm font-bold rounded-xl text-center">
-                      Add to Cart
-                    </div>
+
+                    {/* Functional Add to Cart Button */}
+                    <button
+                      type="button"
+                      onClick={handleAddToCart}
+                      className={`mt-3.5 w-full py-3 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all duration-300 shadow-md cursor-pointer ${
+                        addedToCart
+                          ? "bg-emerald-600 text-white shadow-emerald-500/20"
+                          : "bg-[#007BFF] hover:bg-blue-600 active:scale-[0.98] text-white shadow-blue-500/25 hover:shadow-blue-500/40"
+                      }`}
+                    >
+                      {addedToCart ? (
+                        <>
+                          <Check className="w-4 h-4" />
+                          <span>✓ Added to Cart!</span>
+                        </>
+                      ) : (
+                        <>
+                          <ShoppingBag className="w-4 h-4" />
+                          <span>Add to Cart</span>
+                        </>
+                      )}
+                    </button>
                   </div>
 
                   {/* Discount badge */}
-                  <div className="absolute top-4 left-4 bg-red-500 text-white text-xs font-black px-3 py-1.5 rounded-xl shadow-lg">
+                  <div className="absolute top-4 left-4 bg-red-500 text-white text-xs font-black px-3 py-1.5 rounded-xl shadow-lg pointer-events-none z-10">
                     -14% OFF
                   </div>
                 </div>

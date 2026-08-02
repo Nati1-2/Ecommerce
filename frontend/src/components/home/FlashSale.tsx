@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Zap, ShoppingBag, Star } from "lucide-react";
 import { Product } from "@/types";
@@ -72,7 +73,7 @@ function FlashSaleCard({ product, index, soldPercent }: FlashSaleCardProps) {
       transition={{ delay: index * 0.08 }}
       className="bg-white rounded-2xl overflow-hidden group hover:shadow-xl hover:shadow-gray-200/80 border border-gray-100 hover:border-red-100 transition-all duration-300"
     >
-      <div className="relative aspect-square bg-[#F5F7FA] overflow-hidden">
+      <Link href={`/products/${product.id}`} className="block relative aspect-square bg-[#F5F7FA] overflow-hidden">
         <img
           src={product.image}
           alt={product.name}
@@ -81,9 +82,11 @@ function FlashSaleCard({ product, index, soldPercent }: FlashSaleCardProps) {
         <div className="absolute top-3 left-3 bg-red-500 text-white text-xs font-black px-3 py-1.5 rounded-xl shadow-md">
           -{product.discount}%
         </div>
-      </div>
+      </Link>
       <div className="p-4">
-        <h3 className="text-sm font-bold text-[#111827] line-clamp-1">{product.name}</h3>
+        <Link href={`/products/${product.id}`}>
+          <h3 className="text-sm font-bold text-[#111827] line-clamp-1 hover:text-[#007BFF] transition-colors">{product.name}</h3>
+        </Link>
         <div className="flex items-center gap-1 mt-1.5">
           {[1,2,3,4,5].map(s => (
             <Star key={s} className="w-3 h-3 fill-amber-400 text-amber-400" />

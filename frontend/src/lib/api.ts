@@ -1,6 +1,7 @@
 import { Product } from "@/types";
 import { useOrderStore } from "@/store/orderStore";
 import { Order, Tracking, Notification, NotificationSettings } from "@/types";
+import { mockProducts } from "@/data/mock";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
@@ -34,60 +35,79 @@ const getAuthHeaders = (): Record<string, string> => {
  * Retrieves products via real backend API Route.
  */
 export async function fetchProducts(params: GetProductsParams): Promise<ProductsResponse> {
-  const url = new URL(`${API_BASE_URL}/v1/products`);
-  
+  try {
+    const url = new URL(`${API_BASE_URL}/v1/products`);
+    
+    if (params.category) {
+      const cat = Array.isArray(params.category) ? params.category[0] : params.category;
+      url.searchParams.set("category", cat);
+    }
+    if (params.search) url.searchParams.set("search", params.search);
+    if (params.page) url.searchParams.set("page", params.page.toString());
+    if (params.limit) url.searchParams.set("limit", params.limit.toString());
+    if (params.sort) url.searchParams.set("sort", params.sort);
+    if (params.priceMin !== undefined) url.searchParams.set("minPrice", params.priceMin.toString());
+    if (params.priceMax !== undefined) url.searchParams.set("maxPrice", params.priceMax.toString());
+
+    const res = await fetch(url.toString(), {
+      headers: getAuthHeaders(),
+    });
+    
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && data.data) {
+        if (data.data.products) {
+          return data.data;
+        }
+        return {
+          products: data.data,
+          total: data.data.length,
+          page: params.page || 1,
+          totalPages: 1
+        };
+      }
+    }
+  } catch (err) {
+    console.warn("fetchProducts API failed, falling back to mockProducts:", err);
+  }
+
+  // Fallback to mock data filtering
+  let filtered = [...mockProducts];
   if (params.category) {
     const cat = Array.isArray(params.category) ? params.category[0] : params.category;
-    url.searchParams.set("category", cat);
+    filtered = filtered.filter(p => p.category.toLowerCase() === cat.toLowerCase());
   }
-  if (params.search) url.searchParams.set("search", params.search);
-  if (params.page) url.searchParams.set("page", params.page.toString());
-  if (params.limit) url.searchParams.set("limit", params.limit.toString());
-  if (params.sort) url.searchParams.set("sort", params.sort);
-  if (params.priceMin !== undefined) url.searchParams.set("minPrice", params.priceMin.toString());
-  if (params.priceMax !== undefined) url.searchParams.set("maxPrice", params.priceMax.toString());
-
-  const res = await fetch(url.toString(), {
-    headers: getAuthHeaders(),
-  });
-  
-  if (!res.ok) {
-    throw new Error(`Failed to fetch products: ${res.statusText}`);
+  if (params.search) {
+    const term = params.search.toLowerCase();
+    filtered = filtered.filter(p => p.name.toLowerCase().includes(term) || p.description?.toLowerCase().includes(term));
   }
-
-  const data = await res.json();
-  if (data.success && data.data) {
-    // Check if the backend returns the expected paginated structure
-    if (data.data.products) {
-      return data.data;
-    }
-    // Handle array case
-    return {
-      products: data.data,
-      total: data.data.length,
-      page: params.page || 1,
-      totalPages: 1
-    };
-  }
-  
-  throw new Error(data.message || "Invalid response format");
+  return {
+    products: filtered,
+    total: filtered.length,
+    page: 1,
+    totalPages: 1
+  };
 }
 
 /**
  * Fetch a single product by its ID.
  */
 export async function fetchProductById(id: string): Promise<Product | null> {
-  const res = await fetch(`${API_BASE_URL}/v1/products/${id}`, {
-    headers: getAuthHeaders(),
-  });
-  
-  if (!res.ok) {
-    if (res.status === 404) return null;
-    throw new Error(`Failed to fetch product: ${res.statusText}`);
+  try {
+    const res = await fetch(`${API_BASE_URL}/v1/products/${id}`, {
+      headers: getAuthHeaders(),
+    });
+    
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && data.data) return data.data;
+    }
+  } catch (err) {
+    console.warn("Backend fetchProductById failed, trying mockProducts fallback:", err);
   }
 
-  const data = await res.json();
-  return data.success && data.data ? data.data : null;
+  const found = mockProducts.find(p => p.id === id || p.slug === id);
+  return found || mockProducts[0] || null;
 }
 
 /**

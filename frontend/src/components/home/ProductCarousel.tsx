@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Product } from "@/types";
@@ -48,9 +49,9 @@ export function ProductCarousel({
             {subtitle && <p className="text-gray-500 mt-1 text-sm">{subtitle}</p>}
           </div>
           <div className="flex items-center gap-3">
-            <a href={viewAllHref} className="hidden sm:flex items-center gap-1 text-[#007BFF] font-semibold text-sm hover:gap-2 transition-all mr-4">
+            <Link href={viewAllHref} className="hidden sm:flex items-center gap-1 text-[#007BFF] font-semibold text-sm hover:gap-2 transition-all mr-4">
               View All <span>→</span>
-            </a>
+            </Link>
             <button
               onClick={() => scroll("left")}
               className="w-9 h-9 rounded-full border border-gray-200 bg-white hover:border-[#007BFF] hover:text-[#007BFF] flex items-center justify-center transition-colors shadow-sm"
