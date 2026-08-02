@@ -27,7 +27,11 @@ const ProductCarousel = dynamic(() => import("@/components/home/ProductCarousel"
   ssr: false,
 });
 
-const BRANDS = ["Apple", "Sony", "Nike", "Samsung", "Dyson"];
+const BRANDS = [
+  "Apple", "Sony", "Nike", "Samsung", "Dyson",
+  "Ray-Ban", "Levi's", "The North Face", "Converse", "Gucci",
+  "Nespresso", "Herman Miller", "Razer", "Logitech", "Adidas"
+];
 const CATEGORIES = ["Electronics", "Fashion", "Home & Living", "Gaming", "Beauty", "Sports"];
 
 function ProductListingContent() {

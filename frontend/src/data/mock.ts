@@ -81,7 +81,7 @@ export const mockProducts: Product[] = [
     price: 79, originalPrice: 98, discount: 19, rating: 4.6, reviewCount: 3120,
     image: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=600&q=80",
     images: ["https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=600&q=80"],
-    category: "Fashion", brand: "Nike", badge: "popular", inStock: true,
+    category: "Fashion", brand: "Levi's", badge: "popular", inStock: true,
     description: "The timeless straight-leg blue denim jeans crafted from 100% premium cotton.",
     stock: 20
   },
@@ -90,7 +90,7 @@ export const mockProducts: Product[] = [
     price: 165, originalPrice: 195, discount: 15, rating: 4.8, reviewCount: 1840,
     image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=600&q=80",
     images: ["https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=600&q=80"],
-    category: "Fashion", brand: "Sony", badge: "hot", inStock: true,
+    category: "Fashion", brand: "Ray-Ban", badge: "hot", inStock: true,
     description: "Iconic UV400 protective polarized sunglasses with lightweight acetate frame.",
     stock: 14
   },
@@ -99,7 +99,7 @@ export const mockProducts: Product[] = [
     price: 299, originalPrice: 350, discount: 14, rating: 4.9, reviewCount: 2450,
     image: "https://images.unsplash.com/photo-1544441893-675973e31985?w=600&q=80",
     images: ["https://images.unsplash.com/photo-1544441893-675973e31985?w=600&q=80"],
-    category: "Fashion", brand: "Nike", badge: "bestseller", inStock: true,
+    category: "Fashion", brand: "The North Face", badge: "bestseller", inStock: true,
     description: "Ultra-warm 700-fill goose down insulated puffer jacket for winter comfort.",
     stock: 9
   },
@@ -108,7 +108,7 @@ export const mockProducts: Product[] = [
     price: 65, originalPrice: 75, discount: 13, rating: 4.8, reviewCount: 6120,
     image: "https://images.unsplash.com/photo-1607522370275-f14206abe5d3?w=600&q=80",
     images: ["https://images.unsplash.com/photo-1607522370275-f14206abe5d3?w=600&q=80"],
-    category: "Fashion", brand: "Nike", badge: "popular", inStock: true,
+    category: "Fashion", brand: "Converse", badge: "popular", inStock: true,
     description: "Classic canvas high-top sneakers with rubber toe cap and signature star patch.",
     stock: 25
   },
@@ -117,7 +117,7 @@ export const mockProducts: Product[] = [
     price: 490, originalPrice: 550, discount: 11, rating: 4.9, reviewCount: 1890,
     image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&q=80",
     images: ["https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&q=80"],
-    category: "Fashion", brand: "Sony", badge: "luxury", inStock: true,
+    category: "Fashion", brand: "Gucci", badge: "luxury", inStock: true,
     description: "Smooth black leather belt with iconic antique brass Double G buckle.",
     stock: 8
   },
@@ -126,8 +126,8 @@ export const mockProducts: Product[] = [
   {
     id: "6", name: "Dyson V15 Detect Vacuum", slug: "dyson-v15",
     price: 549, originalPrice: 749, discount: 27, rating: 4.7, reviewCount: 2180,
-    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80",
-    images: ["https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80"],
+    image: "https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?w=600&q=80",
+    images: ["https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?w=600&q=80"],
     category: "Home & Living", brand: "Dyson", badge: "hot", inStock: true,
     description: "Laser reveals invisible dust. Reveals what has to be cleaned.",
     stock: 9
@@ -135,27 +135,27 @@ export const mockProducts: Product[] = [
   {
     id: "h1", name: "Nespresso VertuoPlus Coffee Machine", slug: "nespresso-vertuoplus",
     price: 159, originalPrice: 199, discount: 20, rating: 4.7, reviewCount: 4210,
-    image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=600&q=80",
-    images: ["https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=600&q=80"],
-    category: "Home & Living", brand: "Dyson", badge: "bestseller", inStock: true,
+    image: "https://images.unsplash.com/photo-1517668808822-9e428824603b?w=600&q=80",
+    images: ["https://images.unsplash.com/photo-1517668808822-9e428824603b?w=600&q=80"],
+    category: "Home & Living", brand: "Nespresso", badge: "bestseller", inStock: true,
     description: "Single-serve espresso & coffee maker with Centrifusion extraction technology.",
     stock: 18
   },
   {
     id: "h2", name: "Ergonomic Executive Mesh Desk Chair", slug: "ergonomic-mesh-chair",
     price: 249, originalPrice: 320, discount: 22, rating: 4.6, reviewCount: 1290,
-    image: "https://images.unsplash.com/photo-1580481072645-022f9a6d1270?w=600&q=80",
-    images: ["https://images.unsplash.com/photo-1580481072645-022f9a6d1270?w=600&q=80"],
-    category: "Home & Living", brand: "Samsung", badge: "sale", inStock: true,
+    image: "https://images.unsplash.com/photo-1505797149-43b0069ec26b?w=600&q=80",
+    images: ["https://images.unsplash.com/photo-1505797149-43b0069ec26b?w=600&q=80"],
+    category: "Home & Living", brand: "Herman Miller", badge: "sale", inStock: true,
     description: "Adjustable 3D lumbar support mesh office chair for all-day posture comfort.",
     stock: 11
   },
   {
     id: "h3", name: "Philips Hue Smart RGB LED Light Strip", slug: "philips-hue-strip",
     price: 89, originalPrice: 110, discount: 19, rating: 4.8, reviewCount: 3510,
-    image: "https://images.unsplash.com/photo-1550985616-10810253b84d?w=600&q=80",
-    images: ["https://images.unsplash.com/photo-1550985616-10810253b84d?w=600&q=80"],
-    category: "Home & Living", brand: "Samsung", badge: "popular", inStock: true,
+    image: "https://images.unsplash.com/photo-1565814636199-ae8133055c1c?w=600&q=80",
+    images: ["https://images.unsplash.com/photo-1565814636199-ae8133055c1c?w=600&q=80"],
+    category: "Home & Living", brand: "Philips", badge: "popular", inStock: true,
     description: "16 million color smart LED light strip compatible with Alexa, Google & Apple HomeKit.",
     stock: 25
   },
@@ -164,7 +164,7 @@ export const mockProducts: Product[] = [
     price: 449, originalPrice: 499, discount: 10, rating: 4.9, reviewCount: 8430,
     image: "https://images.unsplash.com/photo-1594385208974-2e75f8d7bb48?w=600&q=80",
     images: ["https://images.unsplash.com/photo-1594385208974-2e75f8d7bb48?w=600&q=80"],
-    category: "Home & Living", brand: "Dyson", badge: "bestseller", inStock: true,
+    category: "Home & Living", brand: "KitchenAid", badge: "bestseller", inStock: true,
     description: "10-speed tilt-head stand mixer with 5-quart stainless steel bowl and dough hook.",
     stock: 7
   },
@@ -173,7 +173,7 @@ export const mockProducts: Product[] = [
     price: 179, originalPrice: 220, discount: 18, rating: 4.8, reviewCount: 4920,
     image: "https://images.unsplash.com/photo-1585515320310-259814833e62?w=600&q=80",
     images: ["https://images.unsplash.com/photo-1585515320310-259814833e62?w=600&q=80"],
-    category: "Home & Living", brand: "Dyson", badge: "hot", inStock: true,
+    category: "Home & Living", brand: "Ninja", badge: "hot", inStock: true,
     description: "2-basket air fryer allowing you to cook 2 foods, 2 ways, at the same time.",
     stock: 14
   },
@@ -193,7 +193,7 @@ export const mockProducts: Product[] = [
     price: 1599, originalPrice: 1799, discount: 11, rating: 4.9, reviewCount: 1820,
     image: "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&q=80",
     images: ["https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&q=80"],
-    category: "Gaming", brand: "Sony", badge: "new", inStock: true,
+    category: "Gaming", brand: "NVIDIA", badge: "new", inStock: true,
     description: "The ultimate gaming graphics card powered by DLSS 3 & Ada Lovelace architecture.",
     stock: 3
   },
@@ -202,7 +202,7 @@ export const mockProducts: Product[] = [
     price: 229, originalPrice: 269, discount: 15, rating: 4.7, reviewCount: 980,
     image: "https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?w=600&q=80",
     images: ["https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?w=600&q=80"],
-    category: "Gaming", brand: "Sony", badge: "hot", inStock: true,
+    category: "Gaming", brand: "Razer", badge: "hot", inStock: true,
     description: "Mechanical gaming keyboard with Chroma RGB, macro keys & wrist rest.",
     stock: 16
   },
@@ -211,7 +211,7 @@ export const mockProducts: Product[] = [
     price: 159, originalPrice: 179, discount: 11, rating: 4.8, reviewCount: 3410,
     image: "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=600&q=80",
     images: ["https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=600&q=80"],
-    category: "Gaming", brand: "Sony", badge: "bestseller", inStock: true,
+    category: "Gaming", brand: "Logitech", badge: "bestseller", inStock: true,
     description: "Ultra-lightweight 60g wireless esports gaming mouse with HERO 2 sensor.",
     stock: 22
   },
@@ -220,7 +220,7 @@ export const mockProducts: Product[] = [
     price: 499, originalPrice: 549, discount: 9, rating: 4.8, reviewCount: 8910,
     image: "https://images.unsplash.com/photo-1621259182978-fbf93132d53d?w=600&q=80",
     images: ["https://images.unsplash.com/photo-1621259182978-fbf93132d53d?w=600&q=80"],
-    category: "Gaming", brand: "Sony", badge: "hot", inStock: true,
+    category: "Gaming", brand: "Microsoft", badge: "hot", inStock: true,
     description: "The fastest, most powerful Xbox ever with 12 teraflops of raw graphic processing power.",
     stock: 9
   },
@@ -229,7 +229,7 @@ export const mockProducts: Product[] = [
     price: 349, originalPrice: 380, discount: 8, rating: 4.8, reviewCount: 1620,
     image: "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=600&q=80",
     images: ["https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=600&q=80"],
-    category: "Gaming", brand: "Sony", badge: "new", inStock: true,
+    category: "Gaming", brand: "SteelSeries", badge: "new", inStock: true,
     description: "Multi-system wireless gaming headset with active noise cancellation & dual battery system.",
     stock: 12
   },
@@ -249,7 +249,7 @@ export const mockProducts: Product[] = [
     price: 115, originalPrice: 135, discount: 15, rating: 4.8, reviewCount: 5120,
     image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=600&q=80",
     images: ["https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=600&q=80"],
-    category: "Beauty", brand: "Dyson", badge: "bestseller", inStock: true,
+    category: "Beauty", brand: "Estée Lauder", badge: "bestseller", inStock: true,
     description: "Revolutionary anti-aging face serum for radiantly hydrated skin.",
     stock: 19
   },
@@ -258,7 +258,7 @@ export const mockProducts: Product[] = [
     price: 380, originalPrice: 420, discount: 10, rating: 4.9, reviewCount: 1450,
     image: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=600&q=80",
     images: ["https://images.unsplash.com/photo-1556228720-195a672e8a03?w=600&q=80"],
-    category: "Beauty", brand: "Dyson", badge: "bestseller", inStock: true,
+    category: "Beauty", brand: "La Mer", badge: "bestseller", inStock: true,
     description: "Ultra-luxurious moisturizing cream infused with Miracle Broth elixir.",
     stock: 5
   },
@@ -267,7 +267,7 @@ export const mockProducts: Product[] = [
     price: 155, originalPrice: 175, discount: 11, rating: 4.7, reviewCount: 3980,
     image: "https://images.unsplash.com/photo-1541643600914-78b084683601?w=600&q=80",
     images: ["https://images.unsplash.com/photo-1541643600914-78b084683601?w=600&q=80"],
-    category: "Beauty", brand: "Dyson", badge: "hot", inStock: true,
+    category: "Beauty", brand: "YSL", badge: "hot", inStock: true,
     description: "Seductive gourmand floral fragrance with notes of black coffee & vanilla.",
     stock: 14
   },
@@ -276,7 +276,7 @@ export const mockProducts: Product[] = [
     price: 23, originalPrice: 28, discount: 17, rating: 4.9, reviewCount: 7120,
     image: "https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=600&q=80",
     images: ["https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=600&q=80"],
-    category: "Beauty", brand: "Dyson", badge: "bestseller", inStock: true,
+    category: "Beauty", brand: "MAC", badge: "bestseller", inStock: true,
     description: "Iconic vivid blue-red matte finish lipstick with intense color payoff.",
     stock: 30
   },
@@ -285,7 +285,7 @@ export const mockProducts: Product[] = [
     price: 175, originalPrice: 195, discount: 10, rating: 4.9, reviewCount: 9240,
     image: "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=600&q=80",
     images: ["https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=600&q=80"],
-    category: "Beauty", brand: "Dyson", badge: "bestseller", inStock: true,
+    category: "Beauty", brand: "Chanel", badge: "bestseller", inStock: true,
     description: "The world's most famous floral aldehyde perfume crafted by Gabrielle Chanel.",
     stock: 12
   },
@@ -296,7 +296,7 @@ export const mockProducts: Product[] = [
     price: 190, originalPrice: 220, discount: 14, rating: 4.8, reviewCount: 3890,
     image: "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?w=600&q=80",
     images: ["https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?w=600&q=80"],
-    category: "Sports", brand: "Nike", badge: "bestseller", inStock: true,
+    category: "Sports", brand: "Adidas", badge: "bestseller", inStock: true,
     description: "Lightest Ultraboost ever made with responsive Light BOOST cushioning.",
     stock: 17
   },
@@ -305,7 +305,7 @@ export const mockProducts: Product[] = [
     price: 599, originalPrice: 649, discount: 8, rating: 4.9, reviewCount: 1640,
     image: "https://images.unsplash.com/photo-1510017803434-a899398421b3?w=600&q=80",
     images: ["https://images.unsplash.com/photo-1510017803434-a899398421b3?w=600&q=80"],
-    category: "Sports", brand: "Apple", badge: "new", inStock: true,
+    category: "Sports", brand: "Garmin", badge: "new", inStock: true,
     description: "Premium triathlon & running smartwatch with vibrant AMOLED display & full mapping.",
     stock: 8
   },
@@ -314,7 +314,7 @@ export const mockProducts: Product[] = [
     price: 429, originalPrice: 549, discount: 22, rating: 4.7, reviewCount: 5410,
     image: "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=600&q=80",
     images: ["https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=600&q=80"],
-    category: "Sports", brand: "Nike", badge: "hot", inStock: true,
+    category: "Sports", brand: "Bowflex", badge: "hot", inStock: true,
     description: "Adjustable weights from 5 to 52.5 lbs with intuitive dial selection system.",
     stock: 10
   },
@@ -323,7 +323,7 @@ export const mockProducts: Product[] = [
     price: 49, originalPrice: 65, discount: 24, rating: 4.8, reviewCount: 2190,
     image: "https://images.unsplash.com/photo-1519861531473-9200262188bf?w=600&q=80",
     images: ["https://images.unsplash.com/photo-1519861531473-9200262188bf?w=600&q=80"],
-    category: "Sports", brand: "Nike", badge: "popular", inStock: true,
+    category: "Sports", brand: "Wilson", badge: "popular", inStock: true,
     description: "Official NBA leather composite game basketball with high durability tack cover.",
     stock: 25
   },
@@ -332,7 +332,7 @@ export const mockProducts: Product[] = [
     price: 28, originalPrice: 35, discount: 20, rating: 4.7, reviewCount: 4120,
     image: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=600&q=80",
     images: ["https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=600&q=80"],
-    category: "Sports", brand: "Nike", badge: "popular", inStock: true,
+    category: "Sports", brand: "Under Armour", badge: "popular", inStock: true,
     description: "Quick-drying ultra-soft UA Tech moisture-wicking athletic training t-shirt.",
     stock: 28
   },
@@ -341,7 +341,7 @@ export const mockProducts: Product[] = [
     price: 138, originalPrice: 158, discount: 12, rating: 4.9, reviewCount: 1890,
     image: "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=600&q=80",
     images: ["https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=600&q=80"],
-    category: "Sports", brand: "Nike", badge: "bestseller", inStock: true,
+    category: "Sports", brand: "Manduka", badge: "bestseller", inStock: true,
     description: "Ultra-dense 6mm cushioning non-toxic PVC yoga mat with lifetime guarantee.",
     stock: 14
   }

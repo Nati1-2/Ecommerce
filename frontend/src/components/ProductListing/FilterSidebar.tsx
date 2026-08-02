@@ -92,7 +92,7 @@ export function FilterSidebar({
                 type="number"
                 value={filters.priceRange[0]}
                 onChange={(e) => handlePriceChange(e, "min")}
-                className="w-full mt-0.5 px-3 py-2 border border-gray-200 rounded-lg text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#007BFF]/30"
+                className="w-full mt-0.5 px-3 py-2 bg-white text-gray-900 border border-gray-200 rounded-lg text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#007BFF]/30 shadow-sm"
               />
             </div>
             <div className="flex-1">
@@ -101,7 +101,7 @@ export function FilterSidebar({
                 type="number"
                 value={filters.priceRange[1]}
                 onChange={(e) => handlePriceChange(e, "max")}
-                className="w-full mt-0.5 px-3 py-2 border border-gray-200 rounded-lg text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#007BFF]/30"
+                className="w-full mt-0.5 px-3 py-2 bg-white text-gray-900 border border-gray-200 rounded-lg text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[#007BFF]/30 shadow-sm"
               />
             </div>
           </div>

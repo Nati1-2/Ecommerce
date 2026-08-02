@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Heart, ShoppingBag, Eye, Star, ShieldCheck, Zap } from "lucide-react";
+import { motion } from "framer-motion";
+import { Heart, ShoppingBag, Eye, Check } from "lucide-react";
 import { Product } from "@/types";
 import { RatingStars } from "@/components/shared/RatingStars";
 import { useCartStore } from "@/store/cart";
@@ -17,16 +17,21 @@ interface ProductCardProps {
   onQuickView: (product: Product) => void;
 }
 
+const DEFAULT_FALLBACK_IMAGE = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80";
+
 export function ProductCard({ product, index, viewMode, onQuickView }: ProductCardProps) {
   const [mounted, setMounted] = useState(false);
   const [added, setAdded] = useState(false);
+  const [imgSrc, setImgSrc] = useState<string>(product.image || DEFAULT_FALLBACK_IMAGE);
+
   const addItem = useCartStore((s) => s.addItem);
   const { toggleItem, isWishlisted } = useWishlistStore();
   const router = useRouter();
-  
+
   useEffect(() => {
     setMounted(true);
-  }, []);
+    setImgSrc(product.image || DEFAULT_FALLBACK_IMAGE);
+  }, [product.image]);
 
   const wishlisted = mounted ? isWishlisted(product.id) : false;
   const discount = product.discount || formatDiscount(product.originalPrice, product.price);
@@ -63,24 +68,25 @@ export function ProductCard({ product, index, viewMode, onQuickView }: ProductCa
         initial={{ opacity: 0, y: 15 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        transition={{ duration: 0.4, delay: index * 0.05 }}
+        transition={{ duration: 0.4, delay: index * 0.04 }}
         className="group flex flex-col sm:flex-row gap-5 p-5 bg-white rounded-3xl border border-gray-100 hover:border-[#007BFF]/30 hover:shadow-lg transition-all duration-300 cursor-pointer"
         onClick={handleCardClick}
       >
         {/* Left: Image */}
         <div className="relative w-full sm:w-48 aspect-square shrink-0 rounded-2xl bg-gray-50 overflow-hidden flex items-center justify-center">
           <img
-            src={product.image}
+            src={imgSrc}
             alt={product.name}
+            onError={() => setImgSrc(DEFAULT_FALLBACK_IMAGE)}
             className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-105"
           />
           {product.badge && (
-            <span className="absolute top-3 left-3 bg-[#111827] text-white text-[10px] font-black px-2.5 py-1 rounded-lg">
+            <span className="z-10 absolute top-3 left-3 bg-[#111827] text-white text-[10px] font-black px-2.5 py-1 rounded-lg shadow-sm">
               {product.badge.toUpperCase()}
             </span>
           )}
           {discount > 0 && (
-            <span className="absolute top-3 right-3 bg-red-500 text-white text-[10px] font-black px-2 py-1 rounded-lg">
+            <span className="z-10 absolute top-3 right-3 bg-red-500 text-white text-[10px] font-black px-2 py-1 rounded-lg shadow-sm">
               -{discount}%
             </span>
           )}
@@ -107,13 +113,13 @@ export function ProductCard({ product, index, viewMode, onQuickView }: ProductCa
             </p>
           </div>
 
-          <div className="flex flex-wrap items-end justify-between gap-4 pt-4 border-t border-gray-50">
+          <div className="flex flex-wrap items-end justify-between gap-4 pt-4 border-t border-gray-100">
             {/* Price */}
             <div>
               <div className="flex items-baseline gap-2">
-                <span className="text-xl font-black text-gray-900">{formatPrice(product.price)}</span>
+                <span className="text-xl font-black text-gray-900">${formatPrice(product.price)}</span>
                 {product.originalPrice > product.price && (
-                  <span className="text-sm text-gray-400 line-through font-medium">{formatPrice(product.originalPrice)}</span>
+                  <span className="text-sm text-gray-400 line-through font-medium">${formatPrice(product.originalPrice)}</span>
                 )}
               </div>
               <p className="text-[10px] text-gray-400 font-bold mt-0.5">
@@ -128,7 +134,7 @@ export function ProductCard({ product, index, viewMode, onQuickView }: ProductCa
                   e.stopPropagation();
                   onQuickView(product);
                 }}
-                className="p-3 rounded-xl border border-gray-200 hover:border-[#007BFF] text-gray-500 hover:text-[#007BFF] bg-white transition-all"
+                className="p-3 rounded-xl border border-gray-200 hover:border-[#007BFF] text-gray-500 hover:text-[#007BFF] bg-white transition-all cursor-pointer"
                 title="Quick View"
               >
                 <Eye className="w-4.5 h-4.5" />
@@ -136,26 +142,27 @@ export function ProductCard({ product, index, viewMode, onQuickView }: ProductCa
               <button
                 onClick={handleWishlist}
                 className={cn(
-                  "p-3 rounded-xl border transition-all",
+                  "p-3 rounded-xl border transition-all cursor-pointer",
                   wishlisted
                     ? "bg-rose-50 border-rose-200 text-rose-500"
                     : "border-gray-200 text-gray-500 hover:border-rose-200 hover:text-rose-500"
                 )}
+                title="Wishlist"
               >
                 <Heart className={cn("w-4.5 h-4.5", wishlisted && "fill-current")} />
               </button>
               <button
                 onClick={handleAddToCart}
-                disabled={!product.inStock || added}
+                disabled={!product.inStock}
                 className={cn(
-                  "px-5 py-3 rounded-xl text-xs font-bold transition-all flex items-center gap-2",
+                  "px-5 py-3 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-sm",
                   added
-                    ? "bg-green-500 text-white"
+                    ? "bg-emerald-600 text-white"
                     : "bg-[#111827] hover:bg-[#007BFF] text-white"
                 )}
               >
-                <ShoppingBag className="w-4 h-4" />
-                {added ? "Added!" : "Add to Cart"}
+                {added ? <Check className="w-4 h-4" /> : <ShoppingBag className="w-4 h-4" />}
+                <span>{added ? "Added!" : "Add to Cart"}</span>
               </button>
             </div>
           </div>
@@ -170,41 +177,43 @@ export function ProductCard({ product, index, viewMode, onQuickView }: ProductCa
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ duration: 0.4, delay: index * 0.05 }}
-      className="group relative bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-[#007BFF]/30 hover:shadow-xl hover:shadow-gray-200/50 transition-all duration-300 flex flex-col justify-between cursor-pointer"
+      transition={{ duration: 0.4, delay: index * 0.04 }}
+      className="group relative bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-[#007BFF]/30 hover:shadow-xl hover:shadow-gray-200/60 transition-all duration-300 flex flex-col justify-between cursor-pointer h-full"
       onClick={handleCardClick}
     >
       <div>
         {/* Image Container */}
-        <div className="relative aspect-square bg-[#F5F7FA] overflow-hidden flex items-center justify-center">
+        <div className="relative aspect-square w-full min-h-[220px] bg-[#F8FAFC] overflow-hidden flex items-center justify-center">
           <img
-            src={product.image}
+            src={imgSrc}
             alt={product.name}
-            className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-105"
+            onError={() => setImgSrc(DEFAULT_FALLBACK_IMAGE)}
+            className="w-full h-full object-contain p-5 transition-transform duration-500 group-hover:scale-105"
           />
 
           {/* Badge */}
           {product.badge && (
-            <span className="absolute top-3 left-3 bg-[#111827] text-white text-[9px] font-black px-2.5 py-1 rounded-lg">
+            <span className="z-10 absolute top-3 left-3 bg-[#111827] text-white text-[9px] font-black px-2.5 py-1 rounded-lg shadow-sm">
               {product.badge.toUpperCase()}
             </span>
           )}
 
           {/* Discount */}
           {discount > 0 && (
-            <span className="absolute top-3 right-3 bg-red-500 text-white text-[9px] font-black px-2 py-1 rounded-lg">
+            <span className="z-10 absolute top-3 right-3 bg-red-500 text-white text-[9px] font-black px-2 py-1 rounded-lg shadow-sm">
               -{discount}%
             </span>
           )}
 
           {/* Action trigger overlay */}
-          <div className="absolute inset-0 bg-black/10 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div className="z-20 absolute inset-0 bg-black/10 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 backdrop-blur-[2px]">
             <button
               onClick={handleWishlist}
               className={cn(
-                "w-10 h-10 rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-all",
-                wishlisted ? "bg-rose-500 text-white" : "bg-white text-gray-700"
+                "w-10 h-10 rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-all cursor-pointer",
+                wishlisted ? "bg-rose-500 text-white" : "bg-white text-gray-700 hover:bg-rose-500 hover:text-white"
               )}
+              title="Wishlist"
             >
               <Heart className={cn("w-4.5 h-4.5", wishlisted && "fill-current")} />
             </button>
@@ -213,7 +222,8 @@ export function ProductCard({ product, index, viewMode, onQuickView }: ProductCa
                 e.stopPropagation();
                 onQuickView(product);
               }}
-              className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-all text-gray-700"
+              className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-all text-gray-700 hover:bg-[#007BFF] hover:text-white cursor-pointer"
+              title="Quick View"
             >
               <Eye className="w-4.5 h-4.5" />
             </button>
@@ -221,9 +231,9 @@ export function ProductCard({ product, index, viewMode, onQuickView }: ProductCa
         </div>
 
         {/* Content body */}
-        <div className="p-4 space-y-1.5">
-          <span className="text-[10px] text-[#007BFF] font-bold uppercase tracking-wider">{product.brand}</span>
-          <h3 className="text-sm font-bold text-gray-900 line-clamp-2 leading-snug group-hover:text-[#007BFF] transition-colors">
+        <div className="p-4 space-y-1.5 flex-1">
+          <span className="text-[10px] text-[#007BFF] font-extrabold uppercase tracking-wider">{product.brand}</span>
+          <h3 className="text-sm font-bold text-gray-900 line-clamp-2 min-h-[40px] leading-snug group-hover:text-[#007BFF] transition-colors">
             {product.name}
           </h3>
 
@@ -236,26 +246,26 @@ export function ProductCard({ product, index, viewMode, onQuickView }: ProductCa
       </div>
 
       {/* Pricing and Action Footer */}
-      <div className="p-4 pt-0 border-t border-gray-50 mt-auto">
+      <div className="p-4 pt-0 border-t border-gray-100 mt-auto">
         <div className="flex items-baseline gap-2 pt-3">
-          <span className="text-lg font-black text-gray-900">{formatPrice(product.price)}</span>
+          <span className="text-lg font-black text-gray-900">${formatPrice(product.price)}</span>
           {product.originalPrice > product.price && (
-            <span className="text-xs text-gray-400 line-through font-medium">{formatPrice(product.originalPrice)}</span>
+            <span className="text-xs text-gray-400 line-through font-medium">${formatPrice(product.originalPrice)}</span>
           )}
         </div>
 
         <button
           onClick={handleAddToCart}
-          disabled={!product.inStock || added}
+          disabled={!product.inStock}
           className={cn(
-            "w-full mt-3 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2",
+            "w-full mt-3 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm",
             added
-              ? "bg-green-500 text-white"
-              : "bg-[#111827] hover:bg-[#007BFF] text-white shadow-sm hover:-translate-y-0.5"
+              ? "bg-emerald-600 text-white shadow-emerald-500/20"
+              : "bg-[#111827] hover:bg-[#007BFF] text-white hover:shadow-md active:scale-[0.98]"
           )}
         >
-          <ShoppingBag className="w-4 h-4" />
-          {added ? "Added!" : "Add to Cart"}
+          {added ? <Check className="w-4 h-4" /> : <ShoppingBag className="w-4 h-4" />}
+          <span>{added ? "Added!" : "Add to Cart"}</span>
         </button>
       </div>
     </motion.div>
