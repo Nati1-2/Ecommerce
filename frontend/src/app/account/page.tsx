@@ -4,45 +4,65 @@ import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronRight, Home, ShoppingBag, Heart, LogOut, User } from "lucide-react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 
 import ProfileSidebar, { ProfileTab } from "@/components/Profile/ProfileSidebar";
-import ProfileHeader from "@/components/Profile/ProfileHeader";
-import PersonalInfoForm from "@/components/Profile/PersonalInfoForm";
-import EmailVerification from "@/components/Profile/EmailVerification";
-import PhoneVerification from "@/components/Profile/PhoneVerification";
-import PasswordForm from "@/components/Profile/PasswordForm";
-import TwoFactorAuth from "@/components/Profile/TwoFactorAuth";
-import LoginActivity from "@/components/Profile/LoginActivity";
-import PrivacySettings from "@/components/Profile/PrivacySettings";
-import DeleteAccount from "@/components/Profile/DeleteAccount";
 import ProfileSkeleton from "@/components/Profile/ProfileSkeleton";
-
-import DashboardPayments from "@/components/Dashboard/DashboardPayments";
-import DashboardAddresses from "@/components/Dashboard/DashboardAddresses";
-import DashboardWishlist from "@/components/Dashboard/DashboardWishlist";
-import DashboardNotifications from "@/components/Dashboard/DashboardNotifications";
-import DashboardSettings from "@/components/Dashboard/DashboardSettings";
-import RecentOrders from "@/components/Dashboard/RecentOrders";
 
 import { useAuthStore } from "@/store/auth";
 import { useProfileStore } from "@/store/profileStore";
 import { motion, AnimatePresence } from "framer-motion";
+
+// Dynamically import heavy profile/dashboard components to avoid SSR crashes
+const ProfileHeader = dynamic(() => import("@/components/Profile/ProfileHeader"), { ssr: false });
+const PersonalInfoForm = dynamic(() => import("@/components/Profile/PersonalInfoForm"), { ssr: false });
+const EmailVerification = dynamic(() => import("@/components/Profile/EmailVerification"), { ssr: false });
+const PhoneVerification = dynamic(() => import("@/components/Profile/PhoneVerification"), { ssr: false });
+const PasswordForm = dynamic(() => import("@/components/Profile/PasswordForm"), { ssr: false });
+const TwoFactorAuth = dynamic(() => import("@/components/Profile/TwoFactorAuth"), { ssr: false });
+const LoginActivity = dynamic(() => import("@/components/Profile/LoginActivity"), { ssr: false });
+const PrivacySettings = dynamic(() => import("@/components/Profile/PrivacySettings"), { ssr: false });
+const DeleteAccount = dynamic(() => import("@/components/Profile/DeleteAccount"), { ssr: false });
+
+const DashboardPayments = dynamic(() => import("@/components/Dashboard/DashboardPayments"), { ssr: false });
+const DashboardAddresses = dynamic(() => import("@/components/Dashboard/DashboardAddresses"), { ssr: false });
+const DashboardWishlist = dynamic(() => import("@/components/Dashboard/DashboardWishlist"), { ssr: false });
+const DashboardNotifications = dynamic(() => import("@/components/Dashboard/DashboardNotifications"), { ssr: false });
+const DashboardSettings = dynamic(() => import("@/components/Dashboard/DashboardSettings"), { ssr: false });
+const RecentOrders = dynamic(() => import("@/components/Dashboard/RecentOrders"), { ssr: false });
 
 function AccountContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const tabQuery = searchParams ? (searchParams.get("tab") as ProfileTab | null) : null;
 
-  const { user, isAuthenticated, logout, setAuth } = useAuthStore();
   const [activeTab, setActiveTab] = useState<ProfileTab>(tabQuery || "overview");
   const [mounted, setMounted] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+    // Wait for Zustand persist middleware to finish hydrating from localStorage
+    const unsub = useAuthStore.persist.onFinishHydration(() => {
+      setHydrated(true);
+    });
+    // If already hydrated (e.g. fast load), check immediately
+    if (useAuthStore.persist.hasHydrated()) {
+      setHydrated(true);
+    }
+    return () => {
+      unsub();
+    };
   }, []);
 
+  // Read store values after hydration
+  const user = useAuthStore((s) => s.user);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const logout = useAuthStore((s) => s.logout);
+  const setAuth = useAuthStore((s) => s.setAuth);
+
   useEffect(() => {
-    if (!mounted) return;
+    if (!mounted || !hydrated) return;
 
     if (!isAuthenticated) {
       router.push("/login");
@@ -62,16 +82,20 @@ function AccountContent() {
             const firstName = nameParts[0] || user?.email?.split("@")[0] || "Customer";
             const lastName = nameParts.slice(1).join(" ") || "";
 
-            useProfileStore.getState().setUser({
-              id: data.user.id || "usr-me",
-              firstName,
-              lastName,
-              email: data.user.email || user?.email || "",
-              phone: data.user.phone || "",
-              role: data.user.membership || data.user.role || "Standard Member ⭐",
-              verified: data.user.isVerified ?? true,
-              avatar: data.user.avatar || "",
-            });
+            try {
+              useProfileStore.getState().setUser({
+                id: data.user.id || "usr-me",
+                firstName,
+                lastName,
+                email: data.user.email || user?.email || "",
+                phone: data.user.phone || "",
+                role: data.user.membership || data.user.role || "Standard Member ⭐",
+                verified: data.user.isVerified ?? true,
+                avatar: data.user.avatar || "",
+              });
+            } catch (e) {
+              console.warn("Profile store sync warning:", e);
+            }
 
             if (user && data.user.name && user.name !== data.user.name) {
               setAuth({ ...user, name: data.user.name, phone: data.user.phone }, token);
@@ -80,7 +104,7 @@ function AccountContent() {
         })
         .catch(() => {});
     }
-  }, [mounted, isAuthenticated, router]);
+  }, [mounted, hydrated, isAuthenticated, router]);
 
   useEffect(() => {
     if (tabQuery) {
@@ -90,10 +114,14 @@ function AccountContent() {
 
   const handleLogout = () => {
     logout();
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("auth_token");
+    }
     router.push("/login");
   };
 
-  if (!mounted || !isAuthenticated) {
+  // Show skeleton until client-side hydration is complete
+  if (!mounted || !hydrated || !isAuthenticated) {
     return <ProfileSkeleton />;
   }
 
@@ -234,7 +262,7 @@ function AccountContent() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
               >
-                <RecentOrders onViewAll={undefined} />
+                <RecentOrders />
               </motion.div>
             )}
 
