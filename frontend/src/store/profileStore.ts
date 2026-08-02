@@ -46,15 +46,15 @@ interface ProfileState {
 }
 
 const initialUser: ProfileUser = {
-  id: "usr-948",
-  firstName: "John",
-  lastName: "Smith",
-  email: "john.smith@gmail.com",
-  phone: "+1 (555) 019-2834",
-  avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&q=80",
-  role: "Premium Member ⭐",
+  id: "",
+  firstName: "",
+  lastName: "",
+  email: "",
+  phone: "",
+  avatar: "",
+  role: "Standard Member ⭐",
   verified: true,
-  dateOfBirth: "1992-05-12",
+  dateOfBirth: "1995-01-01",
   gender: "Male",
 };
 

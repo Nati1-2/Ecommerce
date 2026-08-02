@@ -40,14 +40,32 @@ export default function PersonalInfoForm() {
   } = useForm<PersonalInfoFormInput>({
     resolver: zodResolver(personalInfoSchema),
     defaultValues: {
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      phone: user.phone,
-      dateOfBirth: user.dateOfBirth || "",
+      firstName: user.firstName || (authUser?.name ? authUser.name.split(" ")[0] : ""),
+      lastName: user.lastName || (authUser?.name ? authUser.name.split(" ").slice(1).join(" ") : ""),
+      email: user.email || authUser?.email || "",
+      phone: user.phone || authUser?.phone || "",
+      dateOfBirth: user.dateOfBirth || "1995-01-01",
       gender: user.gender || "Male",
     },
   });
+
+  // Sync form inputs when profile store or auth store updates with real server user data
+  useEffect(() => {
+    const nameParts = (authUser?.name || "").trim().split(" ");
+    const firstName = user.firstName || nameParts[0] || (authUser?.email ? authUser.email.split("@")[0] : "");
+    const lastName = user.lastName || nameParts.slice(1).join(" ") || "";
+    const email = user.email || authUser?.email || "";
+    const phone = user.phone || authUser?.phone || "";
+
+    reset({
+      firstName,
+      lastName,
+      email,
+      phone,
+      dateOfBirth: user.dateOfBirth || "1995-01-01",
+      gender: user.gender || "Male",
+    });
+  }, [user, authUser, reset]);
 
   const onSubmit = async (data: PersonalInfoFormInput) => {
     setLoading(true);

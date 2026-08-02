@@ -86,6 +86,22 @@ export default function LoginPage() {
           localStorage.setItem("auth_token", data.token);
         }
         setAuth(data.user, data.token);
+
+        const nameParts = (data.user.name || name || "").trim().split(" ");
+        const firstName = nameParts[0] || data.user.email.split("@")[0];
+        const lastName = nameParts.slice(1).join(" ") || "";
+
+        useProfileStore.getState().setUser({
+          id: data.user.id,
+          firstName,
+          lastName,
+          email: data.user.email,
+          phone: data.user.phone || "",
+          role: data.user.membership || data.user.role || "Standard Member ⭐",
+          avatar: data.user.avatar || "",
+          verified: true,
+        });
+
         setSuccess(`Signed in successfully as ${data.user.role}! Redirecting...`);
         setTimeout(() => redirectByRole(data.user.role), 600);
         return;
@@ -118,6 +134,22 @@ export default function LoginPage() {
           localStorage.setItem("auth_token", demoToken);
         }
         setAuth(demoUser, demoToken);
+
+        const nameParts = (demoUser.name || "").trim().split(" ");
+        const firstName = nameParts[0] || demoUser.email.split("@")[0];
+        const lastName = nameParts.slice(1).join(" ") || "";
+
+        useProfileStore.getState().setUser({
+          id: demoUser.id,
+          firstName,
+          lastName,
+          email: demoUser.email,
+          phone: "",
+          role: `${demoUser.role} Account`,
+          avatar: "",
+          verified: true,
+        });
+
         setSuccess(`Signed in as ${demoAccount.role}! Redirecting...`);
         setTimeout(() => redirectByRole(demoAccount.role), 600);
         return;
