@@ -8,8 +8,6 @@ import Link from "next/link";
 import ProfileSidebar, { ProfileTab } from "@/components/Profile/ProfileSidebar";
 import ProfileHeader from "@/components/Profile/ProfileHeader";
 import PersonalInfoForm from "@/components/Profile/PersonalInfoForm";
-import EmailVerification from "@/components/Profile/EmailVerification";
-import PhoneVerification from "@/components/Profile/PhoneVerification";
 import PasswordForm from "@/components/Profile/PasswordForm";
 import TwoFactorAuth from "@/components/Profile/TwoFactorAuth";
 import LoginActivity from "@/components/Profile/LoginActivity";
@@ -97,8 +95,6 @@ function ProfileContent() {
               >
                 <ProfileHeader />
                 <PersonalInfoForm />
-                <EmailVerification />
-                <PhoneVerification />
               </motion.div>
             )}
 
