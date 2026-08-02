@@ -88,20 +88,24 @@ export default function LoginPage() {
         }
         setAuth(data.user, data.token);
 
-        const nameParts = (data.user.name || name || "").trim().split(" ");
-        const firstName = nameParts[0] || data.user.email.split("@")[0];
-        const lastName = nameParts.slice(1).join(" ") || "";
+        try {
+          const nameParts = (data.user.name || name || "").trim().split(" ");
+          const firstName = nameParts[0] || data.user.email.split("@")[0];
+          const lastName = nameParts.slice(1).join(" ") || "";
 
-        useProfileStore.getState().setUser({
-          id: data.user.id,
-          firstName,
-          lastName,
-          email: data.user.email,
-          phone: data.user.phone || "",
-          role: data.user.membership || data.user.role || "Standard Member ⭐",
-          avatar: data.user.avatar || "",
-          verified: true,
-        });
+          useProfileStore.getState().setUser({
+            id: data.user.id || "usr-" + Math.floor(1000 + Math.random() * 9000),
+            firstName,
+            lastName,
+            email: data.user.email,
+            phone: data.user.phone || "",
+            role: data.user.membership || data.user.role || "Standard Member ⭐",
+            avatar: data.user.avatar || "",
+            verified: true,
+          });
+        } catch (storeErr) {
+          console.warn("Profile sync notice:", storeErr);
+        }
 
         setSuccess(`Signed in successfully as ${data.user.role}! Redirecting...`);
         setTimeout(() => redirectByRole(data.user.role), 600);
@@ -136,23 +140,33 @@ export default function LoginPage() {
         }
         setAuth(demoUser, demoToken);
 
-        const nameParts = (demoUser.name || "").trim().split(" ");
-        const firstName = nameParts[0] || demoUser.email.split("@")[0];
-        const lastName = nameParts.slice(1).join(" ") || "";
+        try {
+          const nameParts = (demoUser.name || "").trim().split(" ");
+          const firstName = nameParts[0] || demoUser.email.split("@")[0];
+          const lastName = nameParts.slice(1).join(" ") || "";
 
-        useProfileStore.getState().setUser({
-          id: demoUser.id,
-          firstName,
-          lastName,
-          email: demoUser.email,
-          phone: "",
-          role: `${demoUser.role} Account`,
-          avatar: "",
-          verified: true,
-        });
+          useProfileStore.getState().setUser({
+            id: demoUser.id,
+            firstName,
+            lastName,
+            email: demoUser.email,
+            phone: "",
+            role: `${demoUser.role} Account`,
+            avatar: "",
+            verified: true,
+          });
+        } catch (storeErr) {
+          console.warn("Demo profile sync notice:", storeErr);
+        }
 
         setSuccess(`Signed in as ${demoAccount.role}! Redirecting...`);
         setTimeout(() => redirectByRole(demoAccount.role), 600);
+        return;
+      }
+
+      if (err.message && (err.message.includes("useProfileStore") || err.message.includes("is not defined"))) {
+        setError("Invalid email or password. Please try again or click Register.");
+        setLoading(false);
         return;
       }
 
@@ -161,7 +175,7 @@ export default function LoginPage() {
         setLoading(false);
         return;
       }
-      setError(err.message || "Invalid email or password");
+      setError(err.message || "Invalid email or password. Please try again.");
     } finally {
       setLoading(false);
     }
