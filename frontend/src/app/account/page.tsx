@@ -25,6 +25,7 @@ import DashboardSettings from "@/components/Dashboard/DashboardSettings";
 import RecentOrders from "@/components/Dashboard/RecentOrders";
 
 import { useAuthStore } from "@/store/auth";
+import { useProfileStore } from "@/store/profileStore";
 import { motion, AnimatePresence } from "framer-motion";
 
 function AccountContent() {
