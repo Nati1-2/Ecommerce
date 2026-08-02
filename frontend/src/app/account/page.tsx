@@ -38,31 +38,21 @@ function AccountContent() {
 
   const [activeTab, setActiveTab] = useState<ProfileTab>(tabQuery || "overview");
   const [mounted, setMounted] = useState(false);
-  const [hydrated, setHydrated] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-    // Wait for Zustand persist middleware to finish hydrating from localStorage
-    const unsub = useAuthStore.persist.onFinishHydration(() => {
-      setHydrated(true);
-    });
-    // If already hydrated (e.g. fast load), check immediately
-    if (useAuthStore.persist.hasHydrated()) {
-      setHydrated(true);
-    }
-    return () => {
-      unsub();
-    };
-  }, []);
-
-  // Read store values after hydration
+  // Read store values — these will be empty during SSR then hydrate on client
   const user = useAuthStore((s) => s.user);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const logout = useAuthStore((s) => s.logout);
   const setAuth = useAuthStore((s) => s.setAuth);
 
+  // Mark component as mounted after first client-side render
+  // This ensures Zustand persist has hydrated from localStorage
   useEffect(() => {
-    if (!mounted || !hydrated) return;
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
 
     if (!isAuthenticated) {
       router.push("/login");
@@ -104,7 +94,7 @@ function AccountContent() {
         })
         .catch(() => {});
     }
-  }, [mounted, hydrated, isAuthenticated, router]);
+  }, [mounted, isAuthenticated, router]);
 
   useEffect(() => {
     if (tabQuery) {
@@ -121,7 +111,7 @@ function AccountContent() {
   };
 
   // Show skeleton until client-side hydration is complete
-  if (!mounted || !hydrated || !isAuthenticated) {
+  if (!mounted || !isAuthenticated) {
     return <ProfileSkeleton />;
   }
 
