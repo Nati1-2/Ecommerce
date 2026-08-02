@@ -13,23 +13,22 @@ import { useAuthStore } from "@/store/auth";
 import { useProfileStore } from "@/store/profileStore";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Dynamically import heavy profile/dashboard components to avoid SSR crashes
-const ProfileHeader = dynamic(() => import("@/components/Profile/ProfileHeader"), { ssr: false });
-const PersonalInfoForm = dynamic(() => import("@/components/Profile/PersonalInfoForm"), { ssr: false });
-const EmailVerification = dynamic(() => import("@/components/Profile/EmailVerification"), { ssr: false });
-const PhoneVerification = dynamic(() => import("@/components/Profile/PhoneVerification"), { ssr: false });
-const PasswordForm = dynamic(() => import("@/components/Profile/PasswordForm"), { ssr: false });
-const TwoFactorAuth = dynamic(() => import("@/components/Profile/TwoFactorAuth"), { ssr: false });
-const LoginActivity = dynamic(() => import("@/components/Profile/LoginActivity"), { ssr: false });
-const PrivacySettings = dynamic(() => import("@/components/Profile/PrivacySettings"), { ssr: false });
-const DeleteAccount = dynamic(() => import("@/components/Profile/DeleteAccount"), { ssr: false });
+import ProfileHeader from "@/components/Profile/ProfileHeader";
+import PersonalInfoForm from "@/components/Profile/PersonalInfoForm";
+import EmailVerification from "@/components/Profile/EmailVerification";
+import PhoneVerification from "@/components/Profile/PhoneVerification";
+import PasswordForm from "@/components/Profile/PasswordForm";
+import TwoFactorAuth from "@/components/Profile/TwoFactorAuth";
+import LoginActivity from "@/components/Profile/LoginActivity";
+import PrivacySettings from "@/components/Profile/PrivacySettings";
+import DeleteAccount from "@/components/Profile/DeleteAccount";
 
-const DashboardPayments = dynamic(() => import("@/components/Dashboard/DashboardPayments"), { ssr: false });
-const DashboardAddresses = dynamic(() => import("@/components/Dashboard/DashboardAddresses"), { ssr: false });
-const DashboardWishlist = dynamic(() => import("@/components/Dashboard/DashboardWishlist"), { ssr: false });
-const DashboardNotifications = dynamic(() => import("@/components/Dashboard/DashboardNotifications"), { ssr: false });
-const DashboardSettings = dynamic(() => import("@/components/Dashboard/DashboardSettings"), { ssr: false });
-const RecentOrders = dynamic(() => import("@/components/Dashboard/RecentOrders"), { ssr: false });
+import DashboardPayments from "@/components/Dashboard/DashboardPayments";
+import DashboardAddresses from "@/components/Dashboard/DashboardAddresses";
+import DashboardWishlist from "@/components/Dashboard/DashboardWishlist";
+import DashboardNotifications from "@/components/Dashboard/DashboardNotifications";
+import DashboardSettings from "@/components/Dashboard/DashboardSettings";
+import RecentOrders from "@/components/Dashboard/RecentOrders";
 
 function AccountContent() {
   const router = useRouter();
