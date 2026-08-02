@@ -16,7 +16,7 @@ export default function ProfileHeader() {
         {/* User Badge meta */}
         <div className="text-center sm:text-right space-y-1.5 shrink-0">
           <h3 className="text-base font-black text-gray-900 leading-snug">
-            {user.firstName} {user.lastName}
+            {user.firstName || user.lastName ? `${user.firstName || ""} ${user.lastName || ""}`.trim() : (user.email ? user.email.split("@")[0] : "Customer")}
           </h3>
           <span className="inline-flex items-center gap-1 text-[9px] font-black text-amber-700 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-full">
             <Star className="w-2.5 h-2.5 fill-amber-500 text-amber-500" />

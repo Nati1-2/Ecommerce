@@ -32,7 +32,7 @@ function AccountContent() {
   const searchParams = useSearchParams();
   const tabQuery = searchParams.get("tab") as ProfileTab | null;
 
-  const { user, isAuthenticated, logout } = useAuthStore();
+  const { user, isAuthenticated, logout, setAuth } = useAuthStore();
   const [activeTab, setActiveTab] = useState<ProfileTab>(tabQuery || "overview");
   const [mounted, setMounted] = useState(false);
 
@@ -40,6 +40,39 @@ function AccountContent() {
     setMounted(true);
     if (!isAuthenticated) {
       router.push("/login");
+      return;
+    }
+
+    // Sync profile data from backend server database API
+    const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+    if (token) {
+      fetch("/api/users/profile", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.user) {
+            const nameParts = (data.user.name || user?.name || "").trim().split(" ");
+            const firstName = nameParts[0] || user?.email?.split("@")[0] || "Customer";
+            const lastName = nameParts.slice(1).join(" ") || "";
+
+            useProfileStore.getState().setUser({
+              id: data.user.id,
+              firstName,
+              lastName,
+              email: data.user.email || user?.email || "",
+              phone: data.user.phone || "",
+              role: data.user.membership || data.user.role || "Standard Member ⭐",
+              verified: data.user.isVerified ?? true,
+              avatar: data.user.avatar || "",
+            });
+
+            if (user && data.user.name && user.name !== data.user.name) {
+              setAuth({ ...user, name: data.user.name, phone: data.user.phone }, token);
+            }
+          }
+        })
+        .catch(console.error);
     }
   }, [isAuthenticated, router]);
 
@@ -57,6 +90,8 @@ function AccountContent() {
   if (!mounted || !isAuthenticated) {
     return <ProfileSkeleton />;
   }
+
+  const displayName = user?.name || (user?.email ? user.email.split("@")[0] : "Customer");
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8 select-none">
@@ -78,7 +113,7 @@ function AccountContent() {
           </div>
           <div>
             <h1 className="text-lg font-black text-gray-900">
-              Welcome Back, {user?.email ? user.email.split("@")[0] : "Customer"}
+              Welcome Back, {displayName}
             </h1>
             <p className="text-xs text-gray-400 font-medium">{user?.email || "Logged In User"}</p>
           </div>

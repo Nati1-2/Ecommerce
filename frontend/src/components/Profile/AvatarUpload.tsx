@@ -80,8 +80,7 @@ export default function AvatarUpload() {
           />
         ) : (
           <span className="text-xl font-black text-gray-400">
-            {user.firstName[0]}
-            {user.lastName[0]}
+            {(user.firstName?.[0] || user.email?.[0] || "U").toUpperCase()}
           </span>
         )}
 

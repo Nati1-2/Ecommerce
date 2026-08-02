@@ -25,7 +25,10 @@ export default function RecentOrders({ onViewAll }: { onViewAll?: () => void }) 
   const fetchOrders = () => {
     setLoading(true);
     const userIdQuery = user?.id ? `?userId=${user.id}` : "";
-    fetch(`/api/orders${userIdQuery}`)
+    const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+    fetch(`/api/orders${userIdQuery}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
