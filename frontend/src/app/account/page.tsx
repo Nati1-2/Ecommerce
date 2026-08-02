@@ -31,7 +31,7 @@ import { motion, AnimatePresence } from "framer-motion";
 function AccountContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const tabQuery = searchParams.get("tab") as ProfileTab | null;
+  const tabQuery = searchParams ? (searchParams.get("tab") as ProfileTab | null) : null;
 
   const { user, isAuthenticated, logout, setAuth } = useAuthStore();
   const [activeTab, setActiveTab] = useState<ProfileTab>(tabQuery || "overview");
@@ -39,6 +39,11 @@ function AccountContent() {
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+
     if (!isAuthenticated) {
       router.push("/login");
       return;
@@ -52,13 +57,13 @@ function AccountContent() {
       })
         .then((res) => res.json())
         .then((data) => {
-          if (data.user) {
+          if (data?.user) {
             const nameParts = (data.user.name || user?.name || "").trim().split(" ");
             const firstName = nameParts[0] || user?.email?.split("@")[0] || "Customer";
             const lastName = nameParts.slice(1).join(" ") || "";
 
             useProfileStore.getState().setUser({
-              id: data.user.id,
+              id: data.user.id || "usr-me",
               firstName,
               lastName,
               email: data.user.email || user?.email || "",
@@ -73,9 +78,9 @@ function AccountContent() {
             }
           }
         })
-        .catch(console.error);
+        .catch(() => {});
     }
-  }, [isAuthenticated, router]);
+  }, [mounted, isAuthenticated, router]);
 
   useEffect(() => {
     if (tabQuery) {

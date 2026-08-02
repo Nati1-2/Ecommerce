@@ -7,9 +7,9 @@ import axios from "axios";
 
 export default function PhoneVerification() {
   const { user, setUser } = useProfileStore();
-  const [phoneNumber, setPhoneNumber] = useState(user.phone);
+  const [phoneNumber, setPhoneNumber] = useState(user?.phone || "");
   
-  const [step, setStep] = useState<"input" | "verify" | "success">(user.phone ? "success" : "input");
+  const [step, setStep] = useState<"input" | "verify" | "success">(user?.phone ? "success" : "input");
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

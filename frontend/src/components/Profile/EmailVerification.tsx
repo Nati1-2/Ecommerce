@@ -10,8 +10,8 @@ export default function EmailVerification() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  // For demonstration, we check user.verified. We can toggle state locally.
-  const [verified, setVerified] = useState(user.verified);
+  // For demonstration, we check user?.verified. We can toggle state locally.
+  const [verified, setVerified] = useState(user?.verified ?? true);
 
   const handleVerify = async () => {
     setLoading(true);
@@ -19,7 +19,7 @@ export default function EmailVerification() {
 
     try {
       // POST /auth/email-verification
-      await axios.post("/api/auth/email-verification", { email: user.email }).catch(() => {});
+      await axios.post("/api/auth/email-verification", { email: user?.email || "" }).catch(() => {});
       
       await new Promise((r) => setTimeout(r, 1200));
       setSuccess(true);
@@ -39,7 +39,7 @@ export default function EmailVerification() {
           <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
             Email Address
           </p>
-          <p className="text-xs font-black text-gray-900 mt-0.5">{user.email}</p>
+          <p className="text-xs font-black text-gray-900 mt-0.5">{user?.email || ""}</p>
         </div>
 
         {verified ? (
