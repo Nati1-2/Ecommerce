@@ -8,6 +8,7 @@ import { ChevronRight, Home, RefreshCw, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 import { fetchProducts, GetProductsParams } from "@/lib/api";
+import { mockProducts } from "@/data/mock";
 import { Product } from "@/types";
 import { FilterSidebar, FilterState } from "@/components/ProductListing/FilterSidebar";
 import { ProductGrid } from "@/components/ProductListing/ProductGrid";
@@ -254,7 +255,7 @@ function ProductListingContent() {
             title="You Might Also Like" 
             subtitle="Curated just for you based on your browsing history"
             label="Trending Recommendations"
-            products={[]} 
+            products={mockProducts} 
             viewAllHref="/products"
             dark={true}
           />

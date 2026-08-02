@@ -40,7 +40,7 @@ export async function fetchProducts(params: GetProductsParams): Promise<Products
     
     if (params.category) {
       const cat = Array.isArray(params.category) ? params.category[0] : params.category;
-      url.searchParams.set("category", cat);
+      if (cat) url.searchParams.set("category", cat);
     }
     if (params.search) url.searchParams.set("search", params.search);
     if (params.page) url.searchParams.set("page", params.page.toString());
@@ -63,29 +63,70 @@ export async function fetchProducts(params: GetProductsParams): Promise<Products
           products: data.data,
           total: data.data.length,
           page: params.page || 1,
-          totalPages: 1
+          totalPages: Math.ceil(data.data.length / (params.limit || 8)) || 1
         };
       }
     }
   } catch (err) {
-    console.warn("fetchProducts API failed, falling back to mockProducts:", err);
+    console.warn("fetchProducts API unavailable, using mock fallback:", err);
   }
 
   // Fallback to mock data filtering
   let filtered = [...mockProducts];
+
+  // Category filter
   if (params.category) {
-    const cat = Array.isArray(params.category) ? params.category[0] : params.category;
-    filtered = filtered.filter(p => p.category.toLowerCase() === cat.toLowerCase());
+    const catStr = Array.isArray(params.category) ? params.category[0] : params.category;
+    if (catStr && typeof catStr === "string") {
+      filtered = filtered.filter(p => p.category && p.category.toLowerCase() === catStr.toLowerCase());
+    }
   }
-  if (params.search) {
-    const term = params.search.toLowerCase();
-    filtered = filtered.filter(p => p.name.toLowerCase().includes(term) || p.description?.toLowerCase().includes(term));
+
+  // Search filter
+  if (params.search && typeof params.search === "string") {
+    const term = params.search.toLowerCase().trim();
+    if (term) {
+      filtered = filtered.filter(
+        p => p.name.toLowerCase().includes(term) || (p.description && p.description.toLowerCase().includes(term))
+      );
+    }
   }
+
+  // Brands filter
+  if (params.brands && params.brands.length > 0) {
+    filtered = filtered.filter(p => p.brand && params.brands?.includes(p.brand));
+  }
+
+  // Price range filter
+  if (params.priceMin !== undefined) {
+    filtered = filtered.filter(p => p.price >= params.priceMin!);
+  }
+  if (params.priceMax !== undefined) {
+    filtered = filtered.filter(p => p.price <= params.priceMax!);
+  }
+
+  // Sort
+  if (params.sort) {
+    if (params.sort === "price-asc") {
+      filtered.sort((a, b) => a.price - b.price);
+    } else if (params.sort === "price-desc") {
+      filtered.sort((a, b) => b.price - a.price);
+    } else if (params.sort === "rating") {
+      filtered.sort((a, b) => b.rating - a.rating);
+    }
+  }
+
+  const page = params.page || 1;
+  const limit = params.limit || 8;
+  const total = filtered.length;
+  const totalPages = Math.ceil(total / limit) || 1;
+  const paginated = filtered.slice((page - 1) * limit, page * limit);
+
   return {
-    products: filtered,
-    total: filtered.length,
-    page: 1,
-    totalPages: 1
+    products: paginated,
+    total,
+    page,
+    totalPages
   };
 }
 
