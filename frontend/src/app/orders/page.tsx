@@ -76,25 +76,29 @@ export default function OrdersPage() {
 
     if (user?.id) {
       setLoading(true);
-      fetch(`/api/orders?userId=${user.id}`)
+      fetch(`/api/orders?userId=${user.id}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
         .then((res) => res.json())
         .then((data) => {
-          if (Array.isArray(data)) {
-            const mapped = data.map((o: any) => ({
-              id: o.orderId || o._id || "ORD-" + Math.random().toString(36).slice(2, 8).toUpperCase(),
-              status: o.status || "Processing",
-              amount: o.totalAmount || o.amount || 0,
-              date: new Date(o.createdAt || Date.now()).toLocaleDateString("en-US", {
-                month: "long",
-                day: "numeric",
-                year: "numeric",
-              }),
-              itemsCount: o.items?.length || 1,
-            }));
-            setOrders(mapped);
-          } else {
-            setOrders([]);
-          }
+          const list = Array.isArray(data)
+            ? data
+            : (data.success && Array.isArray(data.data))
+              ? data.data
+              : [];
+
+          const mapped = list.map((o: any) => ({
+            id: o.orderId || o._id || "ORD-" + Math.random().toString(36).slice(2, 8).toUpperCase(),
+            status: o.status || "Processing",
+            amount: o.totalAmount || o.amount || 0,
+            date: new Date(o.createdAt || Date.now()).toLocaleDateString("en-US", {
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+            }),
+            itemsCount: o.items?.length || 1,
+          }));
+          setOrders(mapped);
         })
         .catch(() => setOrders([]))
         .finally(() => setLoading(false));

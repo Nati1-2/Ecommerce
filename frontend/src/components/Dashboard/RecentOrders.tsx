@@ -31,34 +31,38 @@ export default function RecentOrders({ onViewAll }: { onViewAll?: () => void }) 
     })
       .then((res) => res.json())
       .then((data) => {
-        if (Array.isArray(data)) {
-          const mapped = data.map((o: any) => ({
-            id: o.orderId || o.id || o._id,
-            status: o.status || o.orderStatus || "Processing",
-            amount: o.totalAmount || o.grandTotal || o.amount || 249.99,
-            date: new Date(o.createdAt || Date.now()).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-            itemsCount: o.items?.length || 1,
-            items: o.items || [
-              {
-                productId: "prod-demo-1",
-                name: "Apex Smart Watch Ultra",
-                image: "https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?auto=format&fit=crop&w=400&q=80",
-                quantity: 1,
-                price: 249.99,
-              },
-            ],
-            shippingAddress: o.shippingAddress || {
-              street: "742 Evergreen Terrace",
-              city: "Springfield",
-              state: "IL",
-              zipCode: "62704",
-              country: "US",
+        const list = Array.isArray(data)
+          ? data
+          : (data.success && Array.isArray(data.data))
+            ? data.data
+            : [];
+
+        const mapped = list.map((o: any) => ({
+          id: o.orderId || o.id || o._id,
+          status: o.status || o.orderStatus || "Processing",
+          amount: o.totalAmount || o.grandTotal || o.amount || 249.99,
+          date: new Date(o.createdAt || Date.now()).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+          itemsCount: o.items?.length || 1,
+          items: o.items || [
+            {
+              productId: "prod-demo-1",
+              name: "Apex Smart Watch Ultra",
+              image: "https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?auto=format&fit=crop&w=400&q=80",
+              quantity: 1,
+              price: 249.99,
             },
-            trackingNumber: o.trackingNumber || `TRK-NATI-${Math.floor(1000 + Math.random() * 9000)}`,
-            paymentStatus: o.paymentStatus || "PAID",
-          }));
-          setOrders(mapped);
-        }
+          ],
+          shippingAddress: o.shippingAddress || {
+            street: "742 Evergreen Terrace",
+            city: "Springfield",
+            state: "IL",
+            zipCode: "62704",
+            country: "US",
+          },
+          trackingNumber: o.trackingNumber || `TRK-NATI-${Math.floor(1000 + Math.random() * 9000)}`,
+          paymentStatus: o.paymentStatus || "PAID",
+        }));
+        setOrders(mapped);
       })
       .catch(() => {
         // Fallback demo orders

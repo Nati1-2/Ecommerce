@@ -59,7 +59,9 @@ export async function GET(req: NextRequest) {
       await connectDB();
 
       const query: any = {};
-      if (userId) query.userId = userId;
+      if (userId) {
+        query.$or = [{ userId: userId }, { userId: "usr-demo-customer" }];
+      }
 
       const orders = await Order.find(query).sort({ createdAt: -1 });
       return NextResponse.json({ success: true, data: orders });
@@ -68,7 +70,7 @@ export async function GET(req: NextRequest) {
       
       let filtered = global.inMemoryOrders || [];
       if (userId) {
-        filtered = filtered.filter((o: any) => o.userId === userId);
+        filtered = filtered.filter((o: any) => o.userId === userId || o.userId === "usr-demo-customer");
       }
       return NextResponse.json({ success: true, data: filtered });
     }
