@@ -35,7 +35,10 @@ export default function DashboardPayments() {
   const fetchPaymentData = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/payments/stripe-customer");
+      const token = localStorage.getItem("auth_token");
+      const res = await fetch("/api/payments/stripe-customer", {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       const data = await res.json();
       if (data.success) {
         setStripeCustomerId(data.stripeCustomerId || "");
@@ -66,9 +69,13 @@ export default function DashboardPayments() {
     setSubmitting(true);
     setErrorMsg("");
     try {
+      const token = localStorage.getItem("auth_token");
       const res = await fetch("/api/payments/stripe-customer", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ action: "create_checkout_session" }),
       });
       const data = await res.json();
@@ -93,9 +100,13 @@ export default function DashboardPayments() {
     const last4 = cleanNumber.length >= 4 ? cleanNumber.slice(-4) : "4242";
 
     try {
+      const token = localStorage.getItem("auth_token");
       const res = await fetch("/api/payments/stripe-customer", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
           action: "add_card",
           cardBrand,
@@ -121,7 +132,11 @@ export default function DashboardPayments() {
 
   const handleDeleteMethod = async (id: string) => {
     try {
-      const res = await fetch(`/api/payments/stripe-customer?id=${id}`, { method: "DELETE" });
+      const token = localStorage.getItem("auth_token");
+      const res = await fetch(`/api/payments/stripe-customer?id=${id}`, {
+        method: "DELETE",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       const data = await res.json();
       if (data.success && data.paymentMethods) {
         setPaymentMethods(data.paymentMethods);

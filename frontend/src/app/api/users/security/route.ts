@@ -3,24 +3,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { safeFindUserById, safeUpdateUser, connectDB } from "@/lib/mongodb";
 
-const JWT_SECRET = process.env.JWT_ACCESS_SECRET || "fallback-secret-for-dev";
-
-function getUserFromToken(req: NextRequest): { id: string; email: string; role: string } | null {
-  try {
-    const authHeader = req.headers.get("authorization");
-    let token = "";
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-      token = authHeader.substring(7);
-    } else {
-      const tokenCookie = req.cookies.get("token");
-      token = tokenCookie?.value || "";
-    }
-    if (!token) return null;
-    return jwt.verify(token, JWT_SECRET) as any;
-  } catch (err) {
-    return null;
-  }
-}
+import { getUserFromToken } from "@/lib/authHelper";
 
 export async function PUT(req: NextRequest) {
   try {

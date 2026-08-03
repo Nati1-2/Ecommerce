@@ -63,7 +63,7 @@ function DashboardContent() {
     }
 
     // Fetch user profile from database endpoint
-    if (token && !token.startsWith("demo-jwt-token-")) {
+    if (token) {
       fetch("/api/users/profile", {
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -98,19 +98,25 @@ function DashboardContent() {
             );
 
             // Fetch user orders
-            fetch(`/api/orders?userId=${data.user.id}`)
+            fetch(`/api/orders?userId=${data.user.id}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            })
               .then((res) => res.json())
               .then((ordersData) => {
-                if (Array.isArray(ordersData)) {
-                  const mappedOrders = ordersData.map((o: any) => ({
-                    id: o.orderId || o._id,
-                    status: o.status || "Processing",
-                    amount: o.pricing?.total || o.totalAmount || o.amount || 0,
-                    date: new Date(o.createdAt || Date.now()).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-                    itemsCount: o.items?.length || 1,
-                  }));
-                  useDashboardStore.setState({ orders: mappedOrders });
-                }
+                const list = Array.isArray(ordersData)
+                  ? ordersData
+                  : (ordersData.success && Array.isArray(ordersData.data))
+                    ? ordersData.data
+                    : [];
+
+                const mappedOrders = list.map((o: any) => ({
+                  id: o.orderId || o._id,
+                  status: o.status || "Processing",
+                  amount: o.pricing?.total || o.totalAmount || o.amount || 0,
+                  date: new Date(o.createdAt || Date.now()).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+                  itemsCount: o.items?.length || 1,
+                }));
+                useDashboardStore.setState({ orders: mappedOrders });
               })
               .catch((err) => console.warn("Dashboard orders fetch notice:", err));
 

@@ -3,24 +3,7 @@ import { connectDB } from "@/lib/mongodb";
 import { Order } from "@/models/Order";
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET || process.env.JWT_ACCESS_SECRET || "super-secret-ecom-jwt-key";
-
-function getUserFromToken(req: NextRequest): { id: string; email: string; role: string } | null {
-  try {
-    const authHeader = req.headers.get("authorization");
-    let token = "";
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-      token = authHeader.substring(7);
-    } else {
-      const tokenCookie = req.cookies.get("token");
-      token = tokenCookie?.value || "";
-    }
-    if (!token) return null;
-    return jwt.verify(token, JWT_SECRET) as any;
-  } catch (err) {
-    return null;
-  }
-}
+import { getUserFromToken } from "@/lib/authHelper";
 
 export async function GET(req: NextRequest) {
   try {

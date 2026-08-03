@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import Stripe from "stripe";
 import { safeFindUserById } from "@/lib/mongodb";
 
-const JWT_SECRET = process.env.JWT_ACCESS_SECRET || "fallback-secret-for-dev";
+import { getUserFromToken } from "@/lib/authHelper";
 
 function getStripeClient(): Stripe | null {
   const secretKey = process.env.STRIPE_SECRET_KEY || process.env.NEXT_PUBLIC_STRIPE_SECRET_KEY || "";
@@ -13,23 +13,6 @@ function getStripeClient(): Stripe | null {
       apiVersion: "2025-01-27.acacia" as any,
     });
   } catch (e) {
-    return null;
-  }
-}
-
-function getUserFromToken(req: NextRequest): { id: string; email: string; role: string } | null {
-  try {
-    const authHeader = req.headers.get("authorization");
-    let token = "";
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-      token = authHeader.substring(7);
-    } else {
-      const tokenCookie = req.cookies.get("token");
-      token = tokenCookie?.value || "";
-    }
-    if (!token) return null;
-    return jwt.verify(token, JWT_SECRET) as any;
-  } catch (err) {
     return null;
   }
 }

@@ -134,7 +134,7 @@ export default function LoginPage() {
           role: demoAccount.role,
         };
 
-        const demoToken = "demo-jwt-token-" + Math.random().toString(36).substring(2);
+        const demoToken = "demo-jwt-token-" + demoUser.role.toLowerCase() + "-" + demoUser.id;
         if (typeof window !== "undefined") {
           localStorage.setItem("auth_token", demoToken);
         }
