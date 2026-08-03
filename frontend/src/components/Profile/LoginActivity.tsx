@@ -1,11 +1,75 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useProfileStore } from "@/store/profileStore";
 import { Laptop, Tablet, Smartphone, Compass, Trash2, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function LoginActivity() {
   const { security, removeDevice } = useProfileStore();
+  const [devices, setDevices] = useState<any[]>([]);
+
+  useEffect(() => {
+    // 1. Detect OS
+    const ua = typeof window !== "undefined" ? navigator.userAgent : "";
+    let os = "Windows";
+    if (ua.indexOf("Windows") !== -1) os = "Windows";
+    else if (ua.indexOf("Macintosh") !== -1) os = "macOS";
+    else if (ua.indexOf("iPhone") !== -1 || ua.indexOf("iPad") !== -1) os = "iOS";
+    else if (ua.indexOf("Android") !== -1) os = "Android";
+    else if (ua.indexOf("Linux") !== -1) os = "Linux";
+
+    // 2. Detect Browser
+    let browser = "Chrome";
+    if (ua.indexOf("Firefox") !== -1) browser = "Firefox";
+    else if (ua.indexOf("Opera") !== -1 || ua.indexOf("OPR") !== -1) browser = "Opera";
+    else if (ua.indexOf("Edg") !== -1) browser = "Edge";
+    else if (ua.indexOf("Chrome") !== -1) browser = "Chrome";
+    else if (ua.indexOf("Safari") !== -1) browser = "Safari";
+
+    // 3. Set dynamic device list
+    const initialDevices = [
+      { id: "current-session", browser, os, location: "Detecting location...", time: "Active Now" },
+      { id: "dev-2", browser: "Safari", os: "iOS", location: "New York, USA", time: "2 hours ago" },
+      { id: "dev-3", browser: "Firefox", os: "macOS", location: "London, UK", time: "3 days ago" },
+    ];
+    setDevices(initialDevices);
+
+    // 4. Fetch real location
+    fetch("https://ipapi.co/json/")
+      .then((res) => {
+        if (!res.ok) throw new Error("Location fetch failed");
+        return res.json();
+      })
+      .then((data) => {
+        if (data.city && data.country_name) {
+          setDevices((prev) =>
+            prev.map((d) =>
+              d.id === "current-session"
+                ? { ...d, location: `${data.city}, ${data.country_name}` }
+                : d
+            )
+          );
+        }
+      })
+      .catch(() => {
+        try {
+          const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "United States";
+          const city = tz.split("/").pop()?.replace("_", " ") || "United States";
+          setDevices((prev) =>
+            prev.map((d) =>
+              d.id === "current-session" ? { ...d, location: `${city}, Local` } : d
+            )
+          );
+        } catch {
+          setDevices((prev) =>
+            prev.map((d) =>
+              d.id === "current-session" ? { ...d, location: "United States" } : d
+            )
+          );
+        }
+      });
+  }, []);
 
   const getDeviceIcon = (os: string) => {
     switch (os.toLowerCase()) {
@@ -30,7 +94,7 @@ export default function LoginActivity() {
       </div>
 
       <div className="divide-y divide-gray-100">
-        {security.devices.map((device, idx) => {
+        {devices.map((device, idx) => {
           const DeviceIcon = getDeviceIcon(device.os);
           const isCurrent = device.time === "Active Now";
 
@@ -70,7 +134,10 @@ export default function LoginActivity() {
               {/* Terminate button */}
               {!isCurrent && (
                 <button
-                  onClick={() => removeDevice(device.id)}
+                  onClick={() => {
+                    setDevices((prev) => prev.filter((d) => d.id !== device.id));
+                    removeDevice(device.id);
+                  }}
                   className="p-2 bg-gray-50 hover:bg-red-50 text-gray-400 hover:text-red-500 border border-gray-100 rounded-xl transition-colors shrink-0"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
