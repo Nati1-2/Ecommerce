@@ -25,15 +25,43 @@ export async function GET(
     const { searchParams } = new URL(req.url);
     const sessionId = searchParams.get("session_id");
 
-    await connectDB();
+    let order = null;
+    try {
+      await connectDB();
+      order = await Order.findOne({ $or: [{ orderId: id }, { _id: id }] });
+    } catch (dbErr: any) {
+      console.warn("MongoDB connection failed in order detail fetch, trying in-memory fallback:", dbErr);
+    }
 
-    // Find the order
-    let order = await Order.findOne({ $or: [{ orderId: id }, { _id: id }] });
     if (!order) {
       // Look up in seeded memory fallback just in case
       const { connectDB: _ } = await import("@/lib/mongodb");
       const inMemoryOrder = global.inMemoryOrders?.find((o: any) => o.orderId === id || o.id === id || o._id === id);
       if (inMemoryOrder) {
+        // Mock Stripe payment status update on the in-memory order as well!
+        if (inMemoryOrder.paymentStatus === "PENDING" && sessionId) {
+          const stripe = getStripeClient();
+          if (stripe) {
+            try {
+              const session = await stripe.checkout.sessions.retrieve(sessionId);
+              if (session.payment_status === "paid") {
+                inMemoryOrder.paymentStatus = "PAID";
+                inMemoryOrder.orderStatus = "PAID";
+                inMemoryOrder.status = "PAID";
+                if (session.payment_intent) {
+                  inMemoryOrder.paymentIntentId = typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent.id;
+                }
+              }
+            } catch (err) {
+              console.error("Failed to verify Stripe session in-memory:", err);
+            }
+          } else {
+            // Safe fallback: automatically mark as PAID during local simulation/mockcheckout
+            inMemoryOrder.paymentStatus = "PAID";
+            inMemoryOrder.orderStatus = "PAID";
+            inMemoryOrder.status = "PAID";
+          }
+        }
         return NextResponse.json({ success: true, data: inMemoryOrder });
       }
       return NextResponse.json({ success: false, message: "Order not found" }, { status: 404 });
