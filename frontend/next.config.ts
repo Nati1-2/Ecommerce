@@ -46,6 +46,10 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
+        source: "/api/v1/orders/my-orders",
+        destination: "/api/orders",
+      },
+      {
         source: "/api/v1/:path*",
         destination: "/api/:path*",
       },

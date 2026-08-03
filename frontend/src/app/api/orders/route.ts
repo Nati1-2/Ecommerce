@@ -1,6 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import { Order } from "@/models/Order";
+import jwt from "jsonwebtoken";
+
+const JWT_SECRET = process.env.JWT_SECRET || process.env.JWT_ACCESS_SECRET || "super-secret-ecom-jwt-key";
+
+function getUserFromToken(req: NextRequest): { id: string; email: string; role: string } | null {
+  try {
+    const authHeader = req.headers.get("authorization");
+    let token = "";
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      token = authHeader.substring(7);
+    } else {
+      const tokenCookie = req.cookies.get("token");
+      token = tokenCookie?.value || "";
+    }
+    if (!token) return null;
+    return jwt.verify(token, JWT_SECRET) as any;
+  } catch (err) {
+    return null;
+  }
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -44,7 +64,7 @@ export async function GET(req: NextRequest) {
             createdAt: o.createdAt,
             updatedAt: o.updatedAt
           }));
-          return NextResponse.json(mappedOrders);
+          return NextResponse.json({ success: true, data: mappedOrders });
         }
       }
     } catch (err) {
@@ -52,13 +72,23 @@ export async function GET(req: NextRequest) {
     }
 
     // 2. Fallback to direct local MongoDB database query
-    await connectDB();
+    try {
+      await connectDB();
 
-    const query: any = {};
-    if (userId) query.userId = userId;
+      const query: any = {};
+      if (userId) query.userId = userId;
 
-    const orders = await Order.find(query).sort({ createdAt: -1 });
-    return NextResponse.json(orders);
+      const orders = await Order.find(query).sort({ createdAt: -1 });
+      return NextResponse.json({ success: true, data: orders });
+    } catch (dbErr: any) {
+      console.warn("MongoDB order fetch failed, falling back to in-memory store:", dbErr);
+      
+      let filtered = global.inMemoryOrders || [];
+      if (userId) {
+        filtered = filtered.filter((o: any) => o.userId === userId);
+      }
+      return NextResponse.json({ success: true, data: filtered });
+    }
   } catch (error: any) {
     return NextResponse.json({ error: error.message || "Failed to fetch orders" }, { status: 500 });
   }
@@ -70,6 +100,9 @@ export async function POST(req: NextRequest) {
 
     const authHeader = req.headers.get("authorization");
     const token = authHeader || req.cookies.get("token")?.value;
+
+    const decoded = getUserFromToken(req);
+    const userId = decoded?.id || "usr-demo-customer";
 
     // 1. Try to submit to backend Order Service via API Gateway
     try {
@@ -135,7 +168,7 @@ export async function POST(req: NextRequest) {
             createdAt: o.createdAt,
             updatedAt: o.updatedAt
           };
-          return NextResponse.json(mappedOrder, { status: 201 });
+          return NextResponse.json({ success: true, data: mappedOrder }, { status: 201 });
         }
       }
     } catch (err) {
@@ -143,15 +176,42 @@ export async function POST(req: NextRequest) {
     }
 
     // 2. Fallback to direct local MongoDB database write
-    await connectDB();
+    try {
+      await connectDB();
 
-    const orderId = `ORD-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-    const newOrder = await Order.create({
-      ...body,
-      orderId,
-    });
+      const orderId = `ORD-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+      const newOrder = await Order.create({
+        ...body,
+        userId,
+        orderId,
+      });
 
-    return NextResponse.json(newOrder, { status: 201 });
+      return NextResponse.json({ success: true, data: newOrder }, { status: 201 });
+    } catch (dbErr: any) {
+      console.warn("MongoDB order save failed, falling back to in-memory store:", dbErr);
+      
+      const orderId = `ORD-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+      const inMemoryOrder = {
+        ...body,
+        id: orderId,
+        _id: orderId,
+        orderId,
+        userId,
+        paymentStatus: body.paymentStatus || "PENDING",
+        orderStatus: body.orderStatus || "PENDING",
+        status: body.orderStatus || "PENDING",
+        totalAmount: body.grandTotal || body.totalAmount || 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      if (!global.inMemoryOrders) {
+        global.inMemoryOrders = [];
+      }
+      global.inMemoryOrders.push(inMemoryOrder);
+      
+      return NextResponse.json({ success: true, data: inMemoryOrder }, { status: 201 });
+    }
   } catch (error: any) {
     return NextResponse.json({ error: error.message || "Failed to create order" }, { status: 400 });
   }
