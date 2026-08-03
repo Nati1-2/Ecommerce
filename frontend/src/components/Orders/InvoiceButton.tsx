@@ -4,6 +4,9 @@ import { useState } from "react";
 import { Download, Loader2 } from "lucide-react";
 import axios from "axios";
 
+import { generateInvoicePDF } from "@/lib/invoiceHelper";
+import { fetchOrderById } from "@/lib/api";
+
 interface InvoiceButtonProps {
   orderId: string;
 }
@@ -14,20 +17,15 @@ export default function InvoiceButton({ orderId }: InvoiceButtonProps) {
   const handleDownload = async () => {
     setLoading(true);
     try {
-      // GET /orders/:id/invoice
-      await axios.get(`/api/orders/${orderId}/invoice`).catch(() => {});
-      
-      await new Promise((r) => setTimeout(r, 1200));
-
-      // Simulate download prompt in browser
-      const link = document.createElement("a");
-      link.href = "#";
-      link.setAttribute("download", `invoice-${orderId}.pdf`);
-      document.body.appendChild(link);
-      // Clean trigger
-      document.body.removeChild(link);
+      const order = await fetchOrderById(orderId);
+      if (order) {
+        generateInvoicePDF(order);
+      } else {
+        alert("Failed to locate order details for invoice download");
+      }
     } catch (err) {
       console.error(err);
+      alert("An error occurred during invoice PDF generation");
     } finally {
       setLoading(false);
     }
