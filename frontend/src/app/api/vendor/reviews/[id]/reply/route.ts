@@ -4,12 +4,14 @@ import { Review } from "@/models/Review";
 import { requireVendor } from "@/lib/authHelper";
 
 // PUT /api/vendor/reviews/[id]/reply — post a vendor reply to a review
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = requireVendor(req);
   if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
   const { payload } = auth;
 
   try {
+    const resolvedParams = await params;
+    const { id } = resolvedParams;
     const { text } = await req.json();
     if (!text || !text.trim()) {
       return NextResponse.json({ error: "Reply text is required" }, { status: 400 });
@@ -18,7 +20,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     await connectDB();
 
     const review = await Review.findOneAndUpdate(
-      { _id: params.id, vendorId: payload.id },
+      { _id: id, vendorId: payload.id },
       {
         $set: {
           reply: {

@@ -22,7 +22,7 @@ export interface Product {
   images: string[];
   category: string;
   brand: string;
-  badge?: "new" | "sale" | "hot" | "bestseller";
+  badge?: "new" | "sale" | "hot" | "bestseller" | "popular" | "luxury";
   inStock: boolean;
   description: string;
   features?: string[];

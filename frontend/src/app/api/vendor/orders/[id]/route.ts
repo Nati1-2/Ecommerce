@@ -5,12 +5,14 @@ import { VendorProduct } from "@/models/VendorProduct";
 import { requireVendor } from "@/lib/authHelper";
 
 // PATCH /api/vendor/orders/[id] — update order status
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = requireVendor(req);
   if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
   const { payload } = auth;
 
   try {
+    const resolvedParams = await params;
+    const { id } = resolvedParams;
     const { status } = await req.json();
     if (!status) return NextResponse.json({ error: "status is required" }, { status: 400 });
 
@@ -21,7 +23,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     const productIds = vendorProducts.map(p => p._id.toString());
 
     const order = await Order.findOne({
-      _id: params.id,
+      _id: id,
       "items.productId": { $in: productIds },
     });
 

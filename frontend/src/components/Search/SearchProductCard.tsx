@@ -20,6 +20,7 @@ export default function SearchProductCard({ product, viewMode }: SearchProductCa
   const setCartDrawerOpen = useCartStore((s) => s.setCartDrawerOpen);
 
   const [isHovered, setIsHovered] = useState(false);
+  const stock = product.stock ?? (product.inStock ? 10 : 0);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -64,7 +65,7 @@ export default function SearchProductCard({ product, viewMode }: SearchProductCa
               ))}
             </div>
             <span className="text-xs font-medium text-gray-600">{product.rating}</span>
-            <span className="text-xs text-gray-400">({product.reviews})</span>
+            <span className="text-xs text-gray-400">({product.reviewCount})</span>
           </div>
 
           <div className="flex items-center justify-between mt-auto">
@@ -85,15 +86,15 @@ export default function SearchProductCard({ product, viewMode }: SearchProductCa
               </button>
               <button
                 onClick={handleAddToCart}
-                disabled={product.stock === 0}
+                disabled={stock === 0}
                 className={`px-6 h-10 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors ${
-                  product.stock > 0 
+                  stock > 0 
                     ? "bg-[#111827] text-white hover:bg-gray-800 shadow-md shadow-gray-900/10" 
                     : "bg-gray-100 text-gray-400 cursor-not-allowed"
                 }`}
               >
                 <ShoppingCart className="w-4 h-4" />
-                {product.stock > 0 ? "Add to Cart" : "Out of Stock"}
+                {stock > 0 ? "Add to Cart" : "Out of Stock"}
               </button>
             </div>
           </div>
@@ -128,7 +129,7 @@ export default function SearchProductCard({ product, viewMode }: SearchProductCa
               -{product.discount}%
             </div>
           )}
-          {product.stock === 0 && (
+          {stock === 0 && (
             <div className="bg-gray-900/80 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider">
               Out of stock
             </div>
@@ -147,15 +148,15 @@ export default function SearchProductCard({ product, viewMode }: SearchProductCa
         <div className={`absolute bottom-4 left-4 right-4 transition-all duration-300 ${isHovered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
           <button
             onClick={handleAddToCart}
-            disabled={product.stock === 0}
+            disabled={stock === 0}
             className={`w-full py-2.5 rounded-xl text-sm font-bold shadow-lg flex items-center justify-center gap-2 backdrop-blur-md ${
-              product.stock > 0 
+              stock > 0 
                 ? "bg-white/90 text-gray-900 hover:bg-white border border-white/20" 
                 : "bg-gray-100/90 text-gray-400 cursor-not-allowed"
             }`}
           >
             <ShoppingCart className="w-4 h-4" />
-            {product.stock > 0 ? "Quick Add" : "Unavailable"}
+            {stock > 0 ? "Quick Add" : "Unavailable"}
           </button>
         </div>
       </div>
@@ -171,7 +172,7 @@ export default function SearchProductCard({ product, viewMode }: SearchProductCa
             <Star className="w-3.5 h-3.5 fill-current" />
           </div>
           <span className="text-xs font-bold text-gray-700">{product.rating}</span>
-          <span className="text-[10px] font-semibold text-gray-400">({product.reviews})</span>
+          <span className="text-[10px] font-semibold text-gray-400">({product.reviewCount})</span>
         </div>
 
         <div className="mt-auto flex items-baseline gap-2">

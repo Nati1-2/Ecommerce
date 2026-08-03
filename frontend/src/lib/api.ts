@@ -184,7 +184,15 @@ export async function fetchRecommendations(): Promise<Product[]> {
  * Fetch order details by order ID from backend.
  */
 export async function fetchOrderById(id: string): Promise<Order> {
-  const res = await fetch(`${API_BASE_URL}/v1/orders/${id}`, {
+  let url = `${API_BASE_URL}/v1/orders/${id}`;
+  if (typeof window !== "undefined") {
+    const searchParams = new URLSearchParams(window.location.search);
+    const sessionId = searchParams.get("session_id");
+    if (sessionId) {
+      url += `?session_id=${sessionId}`;
+    }
+  }
+  const res = await fetch(url, {
     headers: getAuthHeaders(),
   });
   
