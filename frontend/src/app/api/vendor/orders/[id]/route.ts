@@ -42,6 +42,30 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       },
     });
   } catch (err: any) {
+    console.warn("MongoDB order status update failed, trying in-memory fallback:", err.message);
+
+    const inMemoryOrder = global.inMemoryOrders?.find(
+      (o: any) => o._id === id || o.id === id || o.orderId === id
+    );
+
+    if (inMemoryOrder) {
+      inMemoryOrder.orderStatus = status.toUpperCase();
+      inMemoryOrder.status = status.toUpperCase();
+      inMemoryOrder.updatedAt = new Date();
+
+      return NextResponse.json({
+        success: true,
+        order: {
+          id: inMemoryOrder.id || inMemoryOrder._id,
+          orderNumber: inMemoryOrder.orderId,
+          status: inMemoryOrder.orderStatus,
+          updatedAt: typeof inMemoryOrder.updatedAt === "string"
+            ? inMemoryOrder.updatedAt
+            : inMemoryOrder.updatedAt.toISOString(),
+        },
+      });
+    }
+
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

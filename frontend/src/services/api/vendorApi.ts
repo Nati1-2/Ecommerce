@@ -191,7 +191,7 @@ export const vendorApi = {
       totalAmount: 0,
       paymentMethod: "Card",
       paymentStatus: "Paid",
-      status: data.order.status,
+      status: mapOrderStatus(data.order.status),
       shippingAddress: "",
       createdAt: data.order.updatedAt,
       updatedAt: data.order.updatedAt,
