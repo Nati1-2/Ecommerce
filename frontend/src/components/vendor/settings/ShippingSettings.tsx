@@ -28,11 +28,11 @@ export default function ShippingSettings({ settings, onSave, isSaving }: Props) 
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
-      <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+    <form onSubmit={handleSubmit} className="bg-white  p-6 rounded-3xl border border-slate-200  shadow-sm space-y-6">
+      <div className="flex items-center justify-between border-b border-slate-100  pb-4">
         <div>
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Shipping Rules</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          <h3 className="text-lg font-bold text-slate-900 ">Shipping Rules</h3>
+          <p className="text-xs text-slate-500  mt-0.5">
             Configure delivery fees and free shipping thresholds.
           </p>
         </div>
@@ -48,41 +48,41 @@ export default function ShippingSettings({ settings, onSave, isSaving }: Props) 
 
       <div className="grid grid-cols-1 gap-6">
         {/* Shipping Rates */}
-        <div className="space-y-3 p-4 bg-slate-50 dark:bg-slate-800/40 rounded-2xl">
-          <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white text-xs">
+        <div className="space-y-3 p-4 bg-slate-50  rounded-2xl">
+          <div className="flex items-center gap-2 font-bold text-slate-900  text-xs">
             <Truck className="w-4 h-4 text-blue-500" />
             <span>Shipping Rates</span>
           </div>
 
           <div>
-            <label className="text-[11px] font-bold text-slate-600 dark:text-slate-400">Free Shipping Threshold ($)</label>
+            <label className="text-[11px] font-bold text-slate-600 ">Free Shipping Threshold ($)</label>
             <input
               type="number"
               value={freeShippingThreshold}
               onChange={(e) => setFreeShippingThreshold(Number(e.target.value))}
-              className="w-full mt-1 px-3 py-2 text-xs bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-xl border border-slate-200 dark:border-slate-700 outline-none"
+              className="w-full mt-1 px-3 py-2 text-xs bg-white  text-slate-900  rounded-xl border border-slate-200  outline-none"
             />
           </div>
 
           <div>
-            <label className="text-[11px] font-bold text-slate-600 dark:text-slate-400">Standard Shipping Fee ($)</label>
+            <label className="text-[11px] font-bold text-slate-600 ">Standard Shipping Fee ($)</label>
             <input
               type="number"
               step="0.01"
               value={standardFee}
               onChange={(e) => setStandardFee(Number(e.target.value))}
-              className="w-full mt-1 px-3 py-2 text-xs bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-xl border border-slate-200 dark:border-slate-700 outline-none"
+              className="w-full mt-1 px-3 py-2 text-xs bg-white  text-slate-900  rounded-xl border border-slate-200  outline-none"
             />
           </div>
 
           <div>
-            <label className="text-[11px] font-bold text-slate-600 dark:text-slate-400">Express Shipping Fee ($)</label>
+            <label className="text-[11px] font-bold text-slate-600 ">Express Shipping Fee ($)</label>
             <input
               type="number"
               step="0.01"
               value={expressFee}
               onChange={(e) => setExpressFee(Number(e.target.value))}
-              className="w-full mt-1 px-3 py-2 text-xs bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-xl border border-slate-200 dark:border-slate-700 outline-none"
+              className="w-full mt-1 px-3 py-2 text-xs bg-white  text-slate-900  rounded-xl border border-slate-200  outline-none"
             />
           </div>
         </div>

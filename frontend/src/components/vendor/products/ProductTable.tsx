@@ -37,30 +37,30 @@ export default function ProductTable({
   const getStatusBadge = (status: VendorProduct["status"]) => {
     switch (status) {
       case "Active":
-        return "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/40";
+        return "bg-emerald-50 text-emerald-600   border-emerald-200 ";
       case "Draft":
-        return "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-300 dark:border-slate-700";
+        return "bg-slate-100 text-slate-600   border-slate-300 ";
       case "Pending":
-        return "bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800/40";
+        return "bg-amber-50 text-amber-600   border-amber-200 ";
       case "Rejected":
-        return "bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400 border-rose-200 dark:border-rose-800/40";
+        return "bg-rose-50 text-rose-600   border-rose-200 ";
       default:
         return "bg-slate-100 text-slate-600";
     }
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+    <div className="bg-white  rounded-3xl border border-slate-200  shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase font-semibold">
+          <thead className="bg-slate-50  text-slate-500  text-xs uppercase font-semibold">
             <tr>
               <th className="py-3.5 px-4 w-10">
                 <input
                   type="checkbox"
                   checked={isAllSelected}
                   onChange={handleSelectAllChange}
-                  className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800"
+                  className="rounded border-slate-300 text-blue-600 focus:ring-blue-500  "
                 />
               </th>
               <th className="py-3.5 px-6">Product</th>
@@ -73,7 +73,7 @@ export default function ProductTable({
               <th className="py-3.5 px-6 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+          <tbody className="divide-y divide-slate-100 ">
             {products.length === 0 ? (
               <tr>
                 <td colSpan={9} className="py-12 text-center text-slate-400 text-sm">
@@ -88,8 +88,8 @@ export default function ProductTable({
                   <tr
                     key={product.id}
                     className={cn(
-                      "hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors",
-                      isSelected && "bg-blue-50/40 dark:bg-blue-900/10"
+                      "hover:bg-slate-50/60  transition-colors",
+                      isSelected && "bg-blue-50/40 "
                     )}
                   >
                     <td className="py-4 px-4">
@@ -97,7 +97,7 @@ export default function ProductTable({
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => onToggleSelect(product.id)}
-                        className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800"
+                        className="rounded border-slate-300 text-blue-600 focus:ring-blue-500  "
                       />
                     </td>
                     <td className="py-4 px-6 max-w-xs">
@@ -105,10 +105,10 @@ export default function ProductTable({
                         <img
                           src={product.images[0]}
                           alt={product.name}
-                          className="w-10 h-10 rounded-xl object-cover bg-slate-100 border border-slate-200 dark:border-slate-700 shrink-0"
+                          className="w-10 h-10 rounded-xl object-cover bg-slate-100 border border-slate-200  shrink-0"
                         />
                         <div className="min-w-0">
-                          <h4 className="font-bold text-slate-900 dark:text-white text-xs truncate">
+                          <h4 className="font-bold text-slate-900  text-xs truncate">
                             {product.name}
                           </h4>
                           <span className="text-[11px] text-slate-400 font-mono">
@@ -118,16 +118,16 @@ export default function ProductTable({
                       </div>
                     </td>
                     <td className="py-4 px-6">
-                      <p className="text-xs font-mono font-semibold text-slate-800 dark:text-slate-200">
+                      <p className="text-xs font-mono font-semibold text-slate-800 ">
                         {product.sku}
                       </p>
                       <p className="text-[11px] text-slate-400">{product.brand}</p>
                     </td>
-                    <td className="py-4 px-6 text-xs text-slate-600 dark:text-slate-300">
+                    <td className="py-4 px-6 text-xs text-slate-600 ">
                       {product.category}
                     </td>
                     <td className="py-4 px-6">
-                      <p className="text-xs font-extrabold text-slate-900 dark:text-white">
+                      <p className="text-xs font-extrabold text-slate-900 ">
                         ${product.price.toFixed(2)}
                       </p>
                       {product.discountPrice && (
@@ -141,10 +141,10 @@ export default function ProductTable({
                         className={cn(
                           "text-xs font-bold px-2 py-0.5 rounded-md",
                           product.stock === 0
-                            ? "bg-rose-100 text-rose-600 dark:bg-rose-900/30"
+                            ? "bg-rose-100 text-rose-600 "
                             : product.stock <= product.lowStockThreshold
-                            ? "bg-amber-100 text-amber-600 dark:bg-amber-900/30"
-                            : "text-slate-700 dark:text-slate-300"
+                            ? "bg-amber-100 text-amber-600 "
+                            : "text-slate-700 "
                         )}
                       >
                         {product.stock} in stock
@@ -160,35 +160,35 @@ export default function ProductTable({
                         {product.status}
                       </span>
                     </td>
-                    <td className="py-4 px-6 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    <td className="py-4 px-6 text-xs font-semibold text-slate-700 ">
                       {product.salesCount} sold
                     </td>
                     <td className="py-4 px-6 text-right">
                       <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => onPreview(product)}
-                          className="p-1.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                          className="p-1.5 text-slate-400 hover:text-blue-600  rounded-lg hover:bg-slate-100  transition-colors"
                           title="Preview Product"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
                         <Link
                           href={`/vendor/products/${product.id}/edit`}
-                          className="p-1.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                          className="p-1.5 text-slate-400 hover:text-blue-600  rounded-lg hover:bg-slate-100  transition-colors"
                           title="Edit Product"
                         >
                           <Edit3 className="w-4 h-4" />
                         </Link>
                         <button
                           onClick={() => onDuplicate(product.id)}
-                          className="p-1.5 text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                          className="p-1.5 text-slate-400 hover:text-purple-600  rounded-lg hover:bg-slate-100  transition-colors"
                           title="Duplicate Product"
                         >
                           <Copy className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => onDelete(product.id)}
-                          className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                          className="p-1.5 text-slate-400 hover:text-rose-600  rounded-lg hover:bg-slate-100  transition-colors"
                           title="Delete Product"
                         >
                           <Trash2 className="w-4 h-4" />

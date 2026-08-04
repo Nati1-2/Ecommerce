@@ -39,25 +39,25 @@ export default function PayoutCard({ balance, payouts, onRequestPayout }: Props)
 
       {/* Balance Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">Available Balance</p>
-          <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
+        <div className="bg-white  p-5 rounded-2xl border border-slate-200  shadow-sm">
+          <p className="text-xs font-semibold text-emerald-600 ">Available Balance</p>
+          <p className="text-2xl font-black text-slate-900  mt-1">
             ${balance.available.toLocaleString(undefined, { minimumFractionDigits: 2 })}
           </p>
           <p className="text-[11px] text-slate-400 mt-1">Ready for instant deposit</p>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="bg-white  p-5 rounded-2xl border border-slate-200  shadow-sm">
           <p className="text-xs font-semibold text-amber-500">Pending Escrow Payout</p>
-          <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
+          <p className="text-2xl font-black text-slate-900  mt-1">
             ${balance.pending.toLocaleString(undefined, { minimumFractionDigits: 2 })}
           </p>
           <p className="text-[11px] text-slate-400 mt-1">Clears in 2-3 business days</p>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="bg-white  p-5 rounded-2xl border border-slate-200  shadow-sm">
           <p className="text-xs font-semibold text-blue-500">Total Lifetime Earnings</p>
-          <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
+          <p className="text-2xl font-black text-slate-900  mt-1">
             ${balance.totalEarnings.toLocaleString(undefined, { minimumFractionDigits: 2 })}
           </p>
           <p className="text-[11px] text-slate-400 mt-1">Net revenue after commission</p>
@@ -65,17 +65,17 @@ export default function PayoutCard({ balance, payouts, onRequestPayout }: Props)
       </div>
 
       {/* Payout History List */}
-      <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-        <h3 className="text-base font-bold text-slate-900 dark:text-white">Payout History Log</h3>
-        <div className="divide-y divide-slate-100 dark:divide-slate-800">
+      <div className="bg-white  p-6 rounded-3xl border border-slate-200  shadow-sm space-y-4">
+        <h3 className="text-base font-bold text-slate-900 ">Payout History Log</h3>
+        <div className="divide-y divide-slate-100 ">
           {payouts.map((po) => (
             <div key={po.id} className="py-3 flex items-center justify-between text-xs">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-600 dark:text-slate-300">
+                <div className="p-2.5 bg-slate-100  rounded-xl text-slate-600 ">
                   <Landmark className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="font-bold text-slate-900 dark:text-white">
+                  <p className="font-bold text-slate-900 ">
                     ${po.amount.toLocaleString()} {po.currency}
                   </p>
                   <p className="text-[11px] text-slate-400">
@@ -88,8 +88,8 @@ export default function PayoutCard({ balance, payouts, onRequestPayout }: Props)
                 <span
                   className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
                     po.status === "Paid"
-                      ? "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30"
-                      : "bg-amber-100 text-amber-600 dark:bg-amber-900/30"
+                      ? "bg-emerald-100 text-emerald-600 "
+                      : "bg-amber-100 text-amber-600 "
                   }`}
                 >
                   {po.status}

@@ -40,11 +40,11 @@ export default function StoreProfile({ settings, onSave, isSaving }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
-      <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+    <form onSubmit={handleSubmit} className="bg-white  p-6 rounded-3xl border border-slate-200  shadow-sm space-y-6">
+      <div className="flex items-center justify-between border-b border-slate-100  pb-4">
         <div>
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Store Branding & Business Details</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          <h3 className="text-lg font-bold text-slate-900 ">Store Branding & Business Details</h3>
+          <p className="text-xs text-slate-500  mt-0.5">
             Public store profile, logo, banner, and legal entity info.
           </p>
         </div>
@@ -62,45 +62,45 @@ export default function StoreProfile({ settings, onSave, isSaving }: Props) {
         {/* Store Name & Branding */}
         <div className="space-y-4">
           <div>
-            <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Public Storefront Name</label>
+            <label className="text-xs font-bold text-slate-700 ">Public Storefront Name</label>
             <input
               type="text"
               required
               value={storeName}
               onChange={(e) => setStoreName(e.target.value)}
-              className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-600"
+              className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50  text-slate-900  rounded-xl border border-slate-200  outline-none focus:ring-2 focus:ring-blue-600"
             />
           </div>
 
           <div>
-            <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Store Logo Image URL</label>
+            <label className="text-xs font-bold text-slate-700 ">Store Logo Image URL</label>
             <input
               type="url"
               required
               value={logo}
               onChange={(e) => setLogo(e.target.value)}
-              className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-600"
+              className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50  text-slate-900  rounded-xl border border-slate-200  outline-none focus:ring-2 focus:ring-blue-600"
             />
           </div>
 
           <div>
-            <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Banner Image URL</label>
+            <label className="text-xs font-bold text-slate-700 ">Banner Image URL</label>
             <input
               type="url"
               required
               value={banner}
               onChange={(e) => setBanner(e.target.value)}
-              className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-600"
+              className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50  text-slate-900  rounded-xl border border-slate-200  outline-none focus:ring-2 focus:ring-blue-600"
             />
           </div>
 
           <div>
-            <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Store Description</label>
+            <label className="text-xs font-bold text-slate-700 ">Store Description</label>
             <textarea
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-600"
+              className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50  text-slate-900  rounded-xl border border-slate-200  outline-none focus:ring-2 focus:ring-blue-600"
             />
           </div>
         </div>
@@ -108,56 +108,56 @@ export default function StoreProfile({ settings, onSave, isSaving }: Props) {
         {/* Legal & Contact Details */}
         <div className="space-y-4">
           <div>
-            <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Legal Company Name</label>
+            <label className="text-xs font-bold text-slate-700 ">Legal Company Name</label>
             <input
               type="text"
               required
               value={legalName}
               onChange={(e) => setLegalName(e.target.value)}
-              className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-600"
+              className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50  text-slate-900  rounded-xl border border-slate-200  outline-none focus:ring-2 focus:ring-blue-600"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Tax ID / EIN</label>
+              <label className="text-xs font-bold text-slate-700 ">Tax ID / EIN</label>
               <input
                 type="text"
                 required
                 value={taxId}
                 onChange={(e) => setTaxId(e.target.value)}
-                className="w-full mt-1 px-4 py-2.5 text-xs font-mono bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-600"
+                className="w-full mt-1 px-4 py-2.5 text-xs font-mono bg-slate-50  text-slate-900  rounded-xl border border-slate-200  outline-none focus:ring-2 focus:ring-blue-600"
               />
             </div>
             <div>
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Seller Phone</label>
+              <label className="text-xs font-bold text-slate-700 ">Seller Phone</label>
               <input
                 type="text"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-600"
+                className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50  text-slate-900  rounded-xl border border-slate-200  outline-none focus:ring-2 focus:ring-blue-600"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Seller Support Email</label>
+            <label className="text-xs font-bold text-slate-700 ">Seller Support Email</label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-600"
+              className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50  text-slate-900  rounded-xl border border-slate-200  outline-none focus:ring-2 focus:ring-blue-600"
             />
           </div>
 
           <div>
-            <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Business Address</label>
+            <label className="text-xs font-bold text-slate-700 ">Business Address</label>
             <textarea
               rows={2}
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-600"
+              className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50  text-slate-900  rounded-xl border border-slate-200  outline-none focus:ring-2 focus:ring-blue-600"
             />
           </div>
         </div>

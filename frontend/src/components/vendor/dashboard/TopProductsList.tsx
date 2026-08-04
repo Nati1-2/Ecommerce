@@ -12,13 +12,13 @@ export default function TopProductsList({ products }: Props) {
   const sorted = [...products].sort((a, b) => b.revenueGenerated - a.revenueGenerated).slice(0, 4);
 
   return (
-    <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+    <div className="bg-white  p-6 rounded-3xl border border-slate-100  shadow-sm flex flex-col justify-between">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Top Performing Products</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Highest revenue contributors</p>
+          <h3 className="text-lg font-bold text-slate-900 ">Top Performing Products</h3>
+          <p className="text-xs text-slate-500  mt-0.5">Highest revenue contributors</p>
         </div>
-        <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-500">
+        <div className="p-2 rounded-xl bg-blue-50  text-blue-500">
           <TrendingUp className="w-5 h-5" />
         </div>
       </div>
@@ -27,7 +27,7 @@ export default function TopProductsList({ products }: Props) {
         {sorted.map((product) => (
           <div
             key={product.id}
-            className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 transition-all hover:shadow-sm"
+            className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-white  border border-slate-100  hover:border-slate-200  transition-all hover:shadow-sm"
           >
             <div className="flex items-center gap-3 min-w-0">
               <img
@@ -36,7 +36,7 @@ export default function TopProductsList({ products }: Props) {
                 className="w-12 h-12 rounded-xl object-cover bg-white shrink-0"
               />
               <div className="min-w-0">
-                <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate">{product.name}</h4>
+                <h4 className="text-xs font-bold text-slate-900  truncate">{product.name}</h4>
                 <div className="flex items-center gap-2 mt-1 text-[11px] text-slate-400">
                   <span className="flex items-center gap-1">
                     <ShoppingBag className="w-3 h-3 text-slate-400" />
@@ -49,10 +49,10 @@ export default function TopProductsList({ products }: Props) {
             </div>
 
             <div className="text-right shrink-0">
-              <p className="text-xs font-extrabold text-slate-900 dark:text-white">
+              <p className="text-xs font-extrabold text-slate-900 ">
                 ${product.revenueGenerated.toLocaleString()}
               </p>
-              <span className="text-[10px] text-emerald-600 font-semibold bg-emerald-50 dark:bg-emerald-900/30 px-1.5 py-0.5 rounded-md">
+              <span className="text-[10px] text-emerald-600 font-semibold bg-emerald-50  px-1.5 py-0.5 rounded-md">
                 ${product.price} / unit
               </span>
             </div>

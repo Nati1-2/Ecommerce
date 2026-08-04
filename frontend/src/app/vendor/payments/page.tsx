@@ -27,14 +27,14 @@ export default function VendorPaymentsPage() {
   });
 
   if (isLoading || !data) {
-    return <div className="h-96 bg-slate-200 dark:bg-slate-800 rounded-3xl animate-pulse max-w-7xl mx-auto" />;
+    return <div className="h-96 bg-slate-200  rounded-3xl animate-pulse max-w-7xl mx-auto" />;
   }
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-12">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Payments & Stripe Direct Payouts</h1>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+        <h1 className="text-2xl font-bold text-slate-900 ">Payments & Stripe Direct Payouts</h1>
+        <p className="text-xs text-slate-500  mt-1">
           Manage seller balances, Stripe Connect bank transfers, order fees, and payout history.
         </p>
       </div>

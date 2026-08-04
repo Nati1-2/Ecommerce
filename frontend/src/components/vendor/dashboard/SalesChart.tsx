@@ -28,25 +28,25 @@ export default function SalesChart({ data }: Props) {
   const current = metricConfig[metric];
 
   return (
-    <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+    <div className="bg-white  p-6 rounded-3xl border border-slate-100  shadow-sm flex flex-col justify-between">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Sales & Performance Analytics</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          <h3 className="text-lg font-bold text-slate-900 ">Sales & Performance Analytics</h3>
+          <p className="text-xs text-slate-500  mt-0.5">
             Daily breakdown of store revenue, volume and estimated profit.
           </p>
         </div>
 
         {/* Tab selector */}
-        <div className="flex items-center gap-1 bg-white border border-slate-100 dark:bg-slate-800 p-1 rounded-xl shrink-0">
+        <div className="flex items-center gap-1 bg-white border border-slate-100  p-1 rounded-xl shrink-0">
           {(["revenue", "orders", "profit"] as const).map((m) => (
             <button
               key={m}
               onClick={() => setMetric(m)}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all ${
                 metric === m
-                  ? "bg-slate-50 border border-slate-200 dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm"
-                  : "text-slate-500 hover:text-slate-900 dark:hover:text-white bg-transparent border border-transparent"
+                  ? "bg-slate-50 border border-slate-200  text-slate-900  shadow-sm"
+                  : "text-slate-500 hover:text-slate-900  bg-transparent border border-transparent"
               }`}
             >
               {m}

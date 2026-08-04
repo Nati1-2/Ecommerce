@@ -17,22 +17,22 @@ export default function ProductPreviewModal({ product, onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
-      <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-3xl w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+      <div className="bg-white  rounded-3xl max-w-3xl w-full p-6 sm:p-8 border border-slate-200  shadow-2xl relative max-h-[90vh] overflow-y-auto">
         <button
           onClick={onClose}
-          className="absolute top-6 right-6 p-2 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          className="absolute top-6 right-6 p-2 rounded-full text-slate-400 hover:text-slate-600  hover:bg-slate-100  transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
 
-        <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 rounded-full">
+        <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 bg-blue-100 text-blue-600   rounded-full">
           Storefront Preview Mode
         </span>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
           {/* Images */}
           <div className="space-y-4">
-            <div className="h-64 sm:h-72 w-full rounded-2xl bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-slate-700">
+            <div className="h-64 sm:h-72 w-full rounded-2xl bg-slate-100  overflow-hidden border border-slate-200 ">
               <img
                 src={selectedImage}
                 alt={product.name}
@@ -47,7 +47,7 @@ export default function ProductPreviewModal({ product, onClose }: Props) {
                     key={img}
                     onClick={() => setSelectedImage(img)}
                     className={`w-14 h-14 rounded-xl border-2 overflow-hidden shrink-0 transition-all ${
-                      selectedImage === img ? "border-blue-600" : "border-slate-200 dark:border-slate-700"
+                      selectedImage === img ? "border-blue-600" : "border-slate-200 "
                     }`}
                   >
                     <img src={img} alt="" className="w-full h-full object-cover" />
@@ -60,13 +60,13 @@ export default function ProductPreviewModal({ product, onClose }: Props) {
           {/* Details */}
           <div className="space-y-4 flex flex-col justify-between">
             <div>
-              <p className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">{product.brand}</p>
-              <h2 className="text-xl font-extrabold text-slate-900 dark:text-white mt-1">{product.name}</h2>
+              <p className="text-xs font-bold text-blue-600  uppercase tracking-wider">{product.brand}</p>
+              <h2 className="text-xl font-extrabold text-slate-900  mt-1">{product.name}</h2>
 
               <div className="flex items-center gap-2 mt-2 text-xs">
                 <div className="flex items-center text-amber-400">
                   <Star className="w-4 h-4 fill-amber-400" />
-                  <span className="font-bold text-slate-900 dark:text-white ml-1">4.9</span>
+                  <span className="font-bold text-slate-900  ml-1">4.9</span>
                 </div>
                 <span className="text-slate-400">•</span>
                 <span className="text-slate-500">In Stock ({product.stock} available)</span>
@@ -74,7 +74,7 @@ export default function ProductPreviewModal({ product, onClose }: Props) {
 
               {/* Price */}
               <div className="mt-4 flex items-baseline gap-3">
-                <span className="text-2xl font-black text-slate-900 dark:text-white">
+                <span className="text-2xl font-black text-slate-900 ">
                   ${product.price.toFixed(2)}
                 </span>
                 {product.discountPrice && (
@@ -85,14 +85,14 @@ export default function ProductPreviewModal({ product, onClose }: Props) {
               </div>
 
               {/* Description */}
-              <p className="text-xs text-slate-600 dark:text-slate-300 mt-4 leading-relaxed line-clamp-4">
+              <p className="text-xs text-slate-600  mt-4 leading-relaxed line-clamp-4">
                 {product.description}
               </p>
 
               {/* Variants Selection */}
               {product.variants.length > 0 && (
                 <div className="mt-4 space-y-2">
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Select Option</label>
+                  <label className="text-xs font-bold text-slate-700 ">Select Option</label>
                   <div className="flex flex-wrap gap-2">
                     {product.variants.map((v) => (
                       <button
@@ -101,7 +101,7 @@ export default function ProductPreviewModal({ product, onClose }: Props) {
                         className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
                           selectedVariant === v.id
                             ? "bg-blue-600 text-white border-blue-600 shadow-sm"
-                            : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700"
+                            : "bg-slate-100  text-slate-700  border-slate-200 "
                         }`}
                       >
                         {v.name}
@@ -113,7 +113,7 @@ export default function ProductPreviewModal({ product, onClose }: Props) {
             </div>
 
             {/* Simulated Add To Cart */}
-            <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+            <div className="space-y-3 pt-4 border-t border-slate-100 ">
               <button className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl transition-all shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2">
                 <ShoppingCart className="w-4 h-4" />
                 Add to Shopping Cart

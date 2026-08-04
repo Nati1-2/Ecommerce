@@ -27,8 +27,8 @@ export default function VendorReviewsPage() {
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Customer Reviews & Moderation</h1>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+        <h1 className="text-2xl font-bold text-slate-900 ">Customer Reviews & Moderation</h1>
+        <p className="text-xs text-slate-500  mt-1">
           Monitor customer satisfaction, reply to buyer feedback, and manage product ratings.
         </p>
       </div>
@@ -38,9 +38,9 @@ export default function VendorReviewsPage() {
 
       {/* Reviews Feed */}
       <div className="space-y-4">
-        <h3 className="text-base font-bold text-slate-900 dark:text-white">Recent Verified Buyer Reviews</h3>
+        <h3 className="text-base font-bold text-slate-900 ">Recent Verified Buyer Reviews</h3>
         {isLoading ? (
-          <div className="h-48 bg-slate-200 dark:bg-slate-800 rounded-3xl animate-pulse" />
+          <div className="h-48 bg-slate-200  rounded-3xl animate-pulse" />
         ) : (
           reviews.map((review) => (
             <ReviewCard

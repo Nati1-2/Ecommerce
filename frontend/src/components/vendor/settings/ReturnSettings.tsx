@@ -27,11 +27,11 @@ export default function ReturnSettings({ settings, onSave, isSaving }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
-      <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+    <form onSubmit={handleSubmit} className="bg-white  p-6 rounded-3xl border border-slate-200  shadow-sm space-y-6">
+      <div className="flex items-center justify-between border-b border-slate-100  pb-4">
         <div>
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Customer Return & Refund Rules</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          <h3 className="text-lg font-bold text-slate-900 ">Customer Return & Refund Rules</h3>
+          <p className="text-xs text-slate-500  mt-0.5">
             Configure return windows, policy guidelines, and refund approvals.
           </p>
         </div>
@@ -47,36 +47,36 @@ export default function ReturnSettings({ settings, onSave, isSaving }: Props) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Return Window (Days)</label>
+          <label className="text-xs font-bold text-slate-700 ">Return Window (Days)</label>
           <input
             type="number"
             value={returnWindowDays}
             onChange={(e) => setReturnWindowDays(Number(e.target.value))}
-            className="w-full mt-1 px-4 py-2.5 text-xs font-bold bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-600"
+            className="w-full mt-1 px-4 py-2.5 text-xs font-bold bg-slate-50  text-slate-900  rounded-xl border border-slate-200  outline-none focus:ring-2 focus:ring-blue-600"
           />
         </div>
 
-        <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/40 rounded-2xl">
+        <div className="flex items-center justify-between p-4 bg-slate-50  rounded-2xl">
           <div>
-            <p className="text-xs font-bold text-slate-900 dark:text-white">Allow Automatic Refund Requests</p>
+            <p className="text-xs font-bold text-slate-900 ">Allow Automatic Refund Requests</p>
             <p className="text-[11px] text-slate-400">Buyers can request refunds within valid return window.</p>
           </div>
           <input
             type="checkbox"
             checked={allowRefunds}
             onChange={(e) => setAllowRefunds(e.target.checked)}
-            className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 dark:bg-slate-800"
+            className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 "
           />
         </div>
       </div>
 
       <div>
-        <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Public Return Policy Guidelines</label>
+        <label className="text-xs font-bold text-slate-700 ">Public Return Policy Guidelines</label>
         <textarea
           rows={4}
           value={policyText}
           onChange={(e) => setPolicyText(e.target.value)}
-          className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-600"
+          className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50  text-slate-900  rounded-xl border border-slate-200  outline-none focus:ring-2 focus:ring-blue-600"
         />
       </div>
     </form>

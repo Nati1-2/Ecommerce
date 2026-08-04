@@ -42,7 +42,7 @@ export default function VariantManager({ variants, onChange, basePrice }: Props)
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+        <label className="text-xs font-bold text-slate-700  flex items-center gap-1.5">
           <Layers className="w-4 h-4 text-blue-500" />
           <span>Product Variants (Color, Size, Memory, Storage)</span>
         </label>
@@ -50,27 +50,27 @@ export default function VariantManager({ variants, onChange, basePrice }: Props)
       </div>
 
       {/* Add New Variant Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700">
+      <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 p-3 bg-slate-50  rounded-2xl border border-slate-200 ">
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Variant Name (e.g. 16GB / Black)"
-          className="sm:col-span-2 px-3 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none text-slate-900 dark:text-white"
+          className="sm:col-span-2 px-3 py-1.5 text-xs bg-white  border border-slate-200  rounded-xl outline-none text-slate-900 "
         />
         <input
           type="text"
           value={sku}
           onChange={(e) => setSku(e.target.value)}
           placeholder="SKU Code"
-          className="px-3 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none text-slate-900 dark:text-white"
+          className="px-3 py-1.5 text-xs bg-white  border border-slate-200  rounded-xl outline-none text-slate-900 "
         />
         <input
           type="number"
           value={price}
           onChange={(e) => setPrice(Number(e.target.value))}
           placeholder="Price ($)"
-          className="px-3 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none text-slate-900 dark:text-white"
+          className="px-3 py-1.5 text-xs bg-white  border border-slate-200  rounded-xl outline-none text-slate-900 "
         />
         <div className="flex gap-2">
           <input
@@ -78,7 +78,7 @@ export default function VariantManager({ variants, onChange, basePrice }: Props)
             value={stock}
             onChange={(e) => setStock(Number(e.target.value))}
             placeholder="Stock"
-            className="w-full px-3 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none text-slate-900 dark:text-white"
+            className="w-full px-3 py-1.5 text-xs bg-white  border border-slate-200  rounded-xl outline-none text-slate-900 "
           />
           <button
             type="button"
@@ -93,9 +93,9 @@ export default function VariantManager({ variants, onChange, basePrice }: Props)
 
       {/* List */}
       {variants.length > 0 && (
-        <div className="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden">
+        <div className="border border-slate-200  rounded-2xl overflow-hidden">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-100 dark:bg-slate-800 text-slate-500 font-semibold">
+            <thead className="bg-slate-100  text-slate-500 font-semibold">
               <tr>
                 <th className="py-2.5 px-4">Variant</th>
                 <th className="py-2.5 px-4">SKU</th>
@@ -104,13 +104,13 @@ export default function VariantManager({ variants, onChange, basePrice }: Props)
                 <th className="py-2.5 px-4 text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody className="divide-y divide-slate-100 ">
               {variants.map((v) => (
-                <tr key={v.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-                  <td className="py-2.5 px-4 font-bold text-slate-900 dark:text-white">{v.name}</td>
+                <tr key={v.id} className="hover:bg-slate-50/50 ">
+                  <td className="py-2.5 px-4 font-bold text-slate-900 ">{v.name}</td>
                   <td className="py-2.5 px-4 font-mono text-slate-500">{v.sku}</td>
                   <td className="py-2.5 px-4 font-bold text-emerald-600">${v.price.toFixed(2)}</td>
-                  <td className="py-2.5 px-4 font-semibold text-slate-700 dark:text-slate-300">{v.stock} units</td>
+                  <td className="py-2.5 px-4 font-semibold text-slate-700 ">{v.stock} units</td>
                   <td className="py-2.5 px-4 text-right">
                     <button
                       type="button"

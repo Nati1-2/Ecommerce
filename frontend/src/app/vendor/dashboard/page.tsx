@@ -13,7 +13,7 @@ import { OrderStatus } from "@/types/vendor";
 
 const SalesChart = dynamic(() => import("@/components/vendor/dashboard/SalesChart"), {
   ssr: false,
-  loading: () => <div className="h-80 bg-slate-200 dark:bg-slate-800 rounded-3xl animate-pulse" />,
+  loading: () => <div className="h-80 bg-slate-200  rounded-3xl animate-pulse" />,
 });
 
 export default function VendorDashboardPage() {
@@ -66,9 +66,9 @@ export default function VendorDashboardPage() {
   if (!profile || !metrics || !analytics) {
     return (
       <div className="space-y-6 animate-pulse p-4">
-        <div className="h-48 bg-slate-200 dark:bg-slate-800 rounded-3xl" />
+        <div className="h-48 bg-slate-200  rounded-3xl" />
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map(i => <div key={i} className="h-32 bg-slate-200 dark:bg-slate-800 rounded-2xl" />)}
+          {[1, 2, 3, 4].map(i => <div key={i} className="h-32 bg-slate-200  rounded-2xl" />)}
         </div>
       </div>
     );

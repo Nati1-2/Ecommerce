@@ -32,7 +32,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   });
 
   if (isLoading || !product) {
-    return <div className="p-8 h-96 bg-slate-200 dark:bg-slate-800 rounded-3xl animate-pulse max-w-5xl mx-auto" />;
+    return <div className="p-8 h-96 bg-slate-200  rounded-3xl animate-pulse max-w-5xl mx-auto" />;
   }
 
   return (

@@ -31,7 +31,7 @@ export default function ImageUploader({ images, onChange }: Props) {
 
   return (
     <div className="space-y-4">
-      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+      <label className="text-xs font-bold text-slate-700  flex items-center justify-between">
         <span>Product Media & Gallery</span>
         <span className="text-slate-400 font-normal">{images.length} images added</span>
       </label>
@@ -42,21 +42,21 @@ export default function ImageUploader({ images, onChange }: Props) {
         <button
           type="button"
           onClick={() => handleAddPreset("https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80")}
-          className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded hover:bg-slate-200 text-blue-600 dark:text-blue-400"
+          className="px-2 py-0.5 bg-slate-100  rounded hover:bg-slate-200 text-blue-600 "
         >
           Headphones
         </button>
         <button
           type="button"
           onClick={() => handleAddPreset("https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=600&q=80")}
-          className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded hover:bg-slate-200 text-blue-600 dark:text-blue-400"
+          className="px-2 py-0.5 bg-slate-100  rounded hover:bg-slate-200 text-blue-600 "
         >
           Laptop
         </button>
         <button
           type="button"
           onClick={() => handleAddPreset("https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=600&q=80")}
-          className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded hover:bg-slate-200 text-blue-600 dark:text-blue-400"
+          className="px-2 py-0.5 bg-slate-100  rounded hover:bg-slate-200 text-blue-600 "
         >
           Monitor
         </button>
@@ -69,7 +69,7 @@ export default function ImageUploader({ images, onChange }: Props) {
           value={newUrl}
           onChange={(e) => setNewUrl(e.target.value)}
           placeholder="Paste image URL (https://...)"
-          className="flex-1 px-3.5 py-2 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-600 outline-none"
+          className="flex-1 px-3.5 py-2 text-xs bg-slate-50  text-slate-900  rounded-xl border border-slate-200  focus:ring-2 focus:ring-blue-600 outline-none"
         />
         <button
           type="button"
@@ -86,7 +86,7 @@ export default function ImageUploader({ images, onChange }: Props) {
         {images.map((img, index) => (
           <div
             key={index}
-            className="group relative h-28 rounded-2xl bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm"
+            className="group relative h-28 rounded-2xl bg-slate-100  overflow-hidden border border-slate-200  shadow-sm"
           >
             <img src={img} alt={`Product media ${index + 1}`} className="w-full h-full object-cover" />
             <button
@@ -106,7 +106,7 @@ export default function ImageUploader({ images, onChange }: Props) {
         ))}
 
         {images.length === 0 && (
-          <div className="col-span-full border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-8 text-center text-slate-400">
+          <div className="col-span-full border-2 border-dashed border-slate-300  rounded-2xl p-8 text-center text-slate-400">
             <Upload className="w-8 h-8 mx-auto text-slate-400 mb-2" />
             <p className="text-xs font-semibold">Drag and drop images or paste a URL above</p>
           </div>

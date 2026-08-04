@@ -46,13 +46,13 @@ export default function VendorSidebar({ isMobile = false, onCloseMobile }: Sideb
   return (
     <aside
       className={cn(
-        "flex flex-col bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-r border-slate-200 dark:border-slate-800 transition-all duration-300 relative",
+        "flex flex-col bg-slate-50  text-slate-600  border-r border-slate-200  transition-all duration-300 relative",
         isMobile ? "w-full h-full" : isSidebarCollapsed ? "w-20" : "w-64",
         "h-screen sticky top-0 z-30 select-none"
       )}
     >
       {/* Store Header */}
-      <div className="p-5 flex items-center justify-between border-b border-slate-200 dark:border-slate-800 shrink-0">
+      <div className="p-5 flex items-center justify-between border-b border-slate-200  shrink-0">
         <Link
           href="/vendor/dashboard"
           onClick={onCloseMobile}
@@ -63,11 +63,11 @@ export default function VendorSidebar({ isMobile = false, onCloseMobile }: Sideb
           </div>
           {(!isSidebarCollapsed || isMobile) && (
             <div className="min-w-0">
-              <div className="flex items-center gap-1.5 font-bold text-slate-900 dark:text-white text-base truncate">
+              <div className="flex items-center gap-1.5 font-bold text-slate-900  text-base truncate">
                 Apex Tech Labs
                 <BadgeCheck className="w-4 h-4 text-blue-500 shrink-0" />
               </div>
-              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Seller Portal</span>
+              <span className="text-xs text-slate-500  font-medium">Seller Portal</span>
             </div>
           )}
         </Link>
@@ -76,7 +76,7 @@ export default function VendorSidebar({ isMobile = false, onCloseMobile }: Sideb
         {!isMobile && (
           <button
             onClick={toggleSidebar}
-            className="w-7 h-7 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-colors absolute -right-3.5 top-7 border border-slate-200 dark:border-slate-700 shadow-sm"
+            className="w-7 h-7 rounded-lg bg-white  hover:bg-slate-100  text-slate-600  hover:text-slate-900  flex items-center justify-center transition-colors absolute -right-3.5 top-7 border border-slate-200  shadow-sm"
             title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
           >
             {isSidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -99,10 +99,10 @@ export default function VendorSidebar({ isMobile = false, onCloseMobile }: Sideb
                 "flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all relative group",
                 isActive
                   ? "bg-blue-600 text-white font-semibold shadow-md shadow-blue-600/20"
-                  : "hover:bg-slate-200/50 dark:hover:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                  : "hover:bg-slate-200/50  text-slate-600  hover:text-slate-900 "
               )}
             >
-              <Icon className={cn("w-5 h-5 shrink-0", isActive ? "text-white" : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200")} />
+              <Icon className={cn("w-5 h-5 shrink-0", isActive ? "text-white" : "text-slate-400 group-hover:text-slate-600 ")} />
 
               {(!isSidebarCollapsed || isMobile) && (
                 <span className="truncate flex-1">{item.label}</span>
@@ -131,16 +131,16 @@ export default function VendorSidebar({ isMobile = false, onCloseMobile }: Sideb
       </nav>
 
       {/* User / Logout Footer */}
-      <div className="p-4 border-t border-slate-200 dark:border-slate-800 shrink-0">
+      <div className="p-4 border-t border-slate-200  shrink-0">
         <button
           onClick={() => window.location.href = '/login'}
           className={cn(
-            "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors group",
+            "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-500  hover:text-red-600  hover:bg-red-50  transition-colors group",
             isSidebarCollapsed && !isMobile && "justify-center"
           )}
           title="Logout"
         >
-          <LogOut className="w-5 h-5 shrink-0 text-slate-400 group-hover:text-red-600 dark:group-hover:text-red-400" />
+          <LogOut className="w-5 h-5 shrink-0 text-slate-400 group-hover:text-red-600 " />
           {(!isSidebarCollapsed || isMobile) && <span>Logout Seller</span>}
         </button>
       </div>

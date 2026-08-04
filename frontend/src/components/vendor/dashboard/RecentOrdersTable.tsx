@@ -13,32 +13,32 @@ export default function RecentOrdersTable({ orders, onUpdateStatus }: Props) {
   const getStatusBadge = (status: OrderStatus) => {
     switch (status) {
       case "Pending":
-        return "bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800/40";
+        return "bg-amber-50 text-amber-600   border-amber-200 ";
       case "Processing":
-        return "bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800/40";
+        return "bg-blue-50 text-blue-600   border-blue-200 ";
       case "Shipped":
-        return "bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400 border-purple-200 dark:border-purple-800/40";
+        return "bg-purple-50 text-purple-600   border-purple-200 ";
       case "Delivered":
-        return "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/40";
+        return "bg-emerald-50 text-emerald-600   border-emerald-200 ";
       case "Cancelled":
-        return "bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400 border-rose-200 dark:border-rose-800/40";
+        return "bg-rose-50 text-rose-600   border-rose-200 ";
       default:
-        return "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400";
+        return "bg-slate-100 text-slate-600  ";
     }
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col justify-between">
-      <div className="p-6 pb-4 border-b border-slate-50 dark:border-slate-800 flex items-center justify-between">
+    <div className="bg-white  rounded-3xl border border-slate-100  shadow-sm overflow-hidden flex flex-col justify-between">
+      <div className="p-6 pb-4 border-b border-slate-50  flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Recent Customer Orders</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          <h3 className="text-lg font-bold text-slate-900 ">Recent Customer Orders</h3>
+          <p className="text-xs text-slate-500  mt-0.5">
             Latest customer orders requiring fulfillment or dispatch.
           </p>
         </div>
         <Link
           href="/vendor/orders"
-          className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+          className="text-xs font-semibold text-blue-600  hover:underline"
         >
           View All Orders →
         </Link>
@@ -46,7 +46,7 @@ export default function RecentOrdersTable({ orders, onUpdateStatus }: Props) {
 
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead className="bg-white dark:bg-slate-900 border-b border-slate-50 text-slate-400 dark:text-slate-500 text-[10px] uppercase font-bold tracking-wider">
+          <thead className="bg-white  border-b border-slate-50 text-slate-400  text-[10px] uppercase font-bold tracking-wider">
             <tr>
               <th className="py-3.5 px-6">Order ID</th>
               <th className="py-3.5 px-6">Customer</th>
@@ -56,10 +56,10 @@ export default function RecentOrdersTable({ orders, onUpdateStatus }: Props) {
               <th className="py-3.5 px-6 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
+          <tbody className="divide-y divide-slate-50 ">
             {orders.slice(0, 5).map((order) => (
-              <tr key={order.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                <td className="py-4 px-6 font-bold text-slate-900 dark:text-white font-mono text-xs">
+              <tr key={order.id} className="hover:bg-slate-50/50  transition-colors">
+                <td className="py-4 px-6 font-bold text-slate-900  font-mono text-xs">
                   {order.orderNumber}
                 </td>
                 <td className="py-4 px-6">
@@ -70,7 +70,7 @@ export default function RecentOrdersTable({ orders, onUpdateStatus }: Props) {
                       className="w-8 h-8 rounded-full object-cover"
                     />
                     <div>
-                      <p className="font-semibold text-slate-900 dark:text-white text-xs">{order.customerName}</p>
+                      <p className="font-semibold text-slate-900  text-xs">{order.customerName}</p>
                       <p className="text-[11px] text-slate-400">{order.customerEmail}</p>
                     </div>
                   </div>
@@ -82,13 +82,13 @@ export default function RecentOrdersTable({ orders, onUpdateStatus }: Props) {
                       alt={order.items[0]?.productName}
                       className="w-8 h-8 rounded-lg object-cover bg-slate-100 shrink-0"
                     />
-                    <span className="text-xs text-slate-700 dark:text-slate-300 font-medium truncate">
+                    <span className="text-xs text-slate-700  font-medium truncate">
                       {order.items[0]?.productName}
                       {order.items.length > 1 && ` (+${order.items.length - 1} more)`}
                     </span>
                   </div>
                 </td>
-                <td className="py-4 px-6 font-bold text-slate-900 dark:text-white">
+                <td className="py-4 px-6 font-bold text-slate-900 ">
                   ${order.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                 </td>
                 <td className="py-4 px-6">
@@ -105,7 +105,7 @@ export default function RecentOrdersTable({ orders, onUpdateStatus }: Props) {
                   <select
                     value={order.status}
                     onChange={(e) => onUpdateStatus && onUpdateStatus(order.id, e.target.value as OrderStatus)}
-                    className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-none rounded-lg px-2.5 py-1 font-medium focus:ring-2 focus:ring-blue-600 outline-none"
+                    className="text-xs bg-slate-100  text-slate-700  border-none rounded-lg px-2.5 py-1 font-medium focus:ring-2 focus:ring-blue-600 outline-none"
                   >
                     <option value="Pending">Pending</option>
                     <option value="Processing">Processing</option>

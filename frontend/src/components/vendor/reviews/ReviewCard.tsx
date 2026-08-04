@@ -21,7 +21,7 @@ export default function ReviewCard({ review, onReply }: Props) {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+    <div className="bg-white  p-6 rounded-3xl border border-slate-200  shadow-sm space-y-4">
       {/* Top Header: Customer info & Rating */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -31,56 +31,56 @@ export default function ReviewCard({ review, onReply }: Props) {
             className="w-10 h-10 rounded-full object-cover shrink-0"
           />
           <div>
-            <h4 className="font-bold text-slate-900 dark:text-white text-xs">{review.customerName}</h4>
+            <h4 className="font-bold text-slate-900  text-xs">{review.customerName}</h4>
             <p className="text-[11px] text-slate-400">{new Date(review.createdAt).toLocaleDateString()}</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-1 text-amber-400 bg-amber-50 dark:bg-amber-900/30 px-3 py-1 rounded-xl w-fit">
+        <div className="flex items-center gap-1 text-amber-400 bg-amber-50  px-3 py-1 rounded-xl w-fit">
           {[1, 2, 3, 4, 5].map((s) => (
             <Star
               key={s}
-              className={`w-3.5 h-3.5 ${s <= review.rating ? "fill-amber-400" : "text-slate-300 dark:text-slate-700"}`}
+              className={`w-3.5 h-3.5 ${s <= review.rating ? "fill-amber-400" : "text-slate-300 "}`}
             />
           ))}
-          <span className="text-xs font-bold text-amber-600 dark:text-amber-400 ml-1">{review.rating}.0</span>
+          <span className="text-xs font-bold text-amber-600  ml-1">{review.rating}.0</span>
         </div>
       </div>
 
       {/* Product reference */}
-      <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/40 rounded-2xl">
+      <div className="flex items-center gap-3 p-3 bg-slate-50  rounded-2xl">
         <img src={review.productImage} alt="" className="w-10 h-10 rounded-xl object-cover" />
         <div className="min-w-0">
-          <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{review.productName}</p>
-          <span className="text-[10px] text-blue-600 dark:text-blue-400 font-mono">Product ID: {review.productId}</span>
+          <p className="text-xs font-bold text-slate-900  truncate">{review.productName}</p>
+          <span className="text-[10px] text-blue-600  font-mono">Product ID: {review.productId}</span>
         </div>
       </div>
 
       {/* Review Comment */}
-      <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed italic">
+      <p className="text-xs text-slate-700  leading-relaxed italic">
         "{review.comment}"
       </p>
 
       {/* Vendor Existing Reply */}
       {review.reply && (
-        <div className="p-4 bg-blue-50/60 dark:bg-blue-950/20 border-l-4 border-blue-600 rounded-r-2xl space-y-1 text-xs">
-          <div className="flex items-center gap-1.5 font-bold text-blue-700 dark:text-blue-300">
+        <div className="p-4 bg-blue-50/60  border-l-4 border-blue-600 rounded-r-2xl space-y-1 text-xs">
+          <div className="flex items-center gap-1.5 font-bold text-blue-700 ">
             <CornerDownRight className="w-4 h-4" />
             <span>Store Official Response</span>
           </div>
-          <p className="text-slate-700 dark:text-slate-300">{review.reply.text}</p>
+          <p className="text-slate-700 ">{review.reply.text}</p>
         </div>
       )}
 
       {/* Reply Input Box */}
       {isReplying && (
-        <div className="mt-4 space-y-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+        <div className="mt-4 space-y-2 pt-3 border-t border-slate-100 ">
           <textarea
             rows={2}
             value={replyText}
             onChange={(e) => setReplyText(e.target.value)}
             placeholder="Write an official seller response to this review..."
-            className="w-full px-3.5 py-2 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-600"
+            className="w-full px-3.5 py-2 text-xs bg-slate-50  text-slate-900  rounded-xl border border-slate-200  outline-none focus:ring-2 focus:ring-blue-600"
           />
           <div className="flex justify-end gap-2">
             <button
@@ -106,16 +106,16 @@ export default function ReviewCard({ review, onReply }: Props) {
           {!review.reply && (
             <button
               onClick={() => setIsReplying(true)}
-              className="px-3 py-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 font-bold rounded-xl transition-colors flex items-center gap-1"
+              className="px-3 py-1.5 text-blue-600  hover:bg-blue-50  font-bold rounded-xl transition-colors flex items-center gap-1"
             >
               <MessageCircle className="w-3.5 h-3.5" />
               Reply
             </button>
           )}
-          <button className="p-1.5 text-slate-400 hover:text-amber-600 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+          <button className="p-1.5 text-slate-400 hover:text-amber-600 rounded-lg hover:bg-slate-100  transition-colors">
             <Flag className="w-3.5 h-3.5" />
           </button>
-          <button className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+          <button className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100  transition-colors">
             <EyeOff className="w-3.5 h-3.5" />
           </button>
         </div>
