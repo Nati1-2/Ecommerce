@@ -28,8 +28,8 @@ export default function RecentOrdersTable({ orders, onUpdateStatus }: Props) {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col justify-between">
-      <div className="p-6 pb-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+    <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col justify-between">
+      <div className="p-6 pb-4 border-b border-slate-50 dark:border-slate-800 flex items-center justify-between">
         <div>
           <h3 className="text-lg font-bold text-slate-900 dark:text-white">Recent Customer Orders</h3>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -46,7 +46,7 @@ export default function RecentOrdersTable({ orders, onUpdateStatus }: Props) {
 
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase font-semibold">
+          <thead className="bg-white dark:bg-slate-900 border-b border-slate-50 text-slate-400 dark:text-slate-500 text-[10px] uppercase font-bold tracking-wider">
             <tr>
               <th className="py-3.5 px-6">Order ID</th>
               <th className="py-3.5 px-6">Customer</th>
@@ -56,7 +56,7 @@ export default function RecentOrdersTable({ orders, onUpdateStatus }: Props) {
               <th className="py-3.5 px-6 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+          <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
             {orders.slice(0, 5).map((order) => (
               <tr key={order.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                 <td className="py-4 px-6 font-bold text-slate-900 dark:text-white font-mono text-xs">

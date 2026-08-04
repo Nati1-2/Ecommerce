@@ -9,7 +9,7 @@ interface Props {
 
 export default function StoreOverviewCard({ profile }: Props) {
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+    <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 overflow-hidden shadow-sm">
       {/* Banner */}
       <div className="h-32 w-full relative bg-slate-800">
         <img
@@ -41,18 +41,18 @@ export default function StoreOverviewCard({ profile }: Props) {
 
         {/* Stats Badges */}
         <div className="flex flex-wrap items-center gap-4 text-xs">
-          <div className="flex items-center gap-1.5 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 px-3 py-1.5 rounded-xl font-bold border border-amber-200 dark:border-amber-800/50">
+          <div className="flex items-center gap-1.5 bg-white dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 px-3 py-1.5 rounded-xl font-bold border border-amber-100 dark:border-amber-800/50">
             <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
             <span>{profile.rating}</span>
             <span className="text-slate-400 font-normal">({profile.totalReviews} reviews)</span>
           </div>
 
-          <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded-xl font-medium">
+          <div className="flex items-center gap-1.5 bg-white border border-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded-xl font-medium">
             <Store className="w-4 h-4 text-blue-500" />
             <span>{profile.productCount} Products</span>
           </div>
 
-          <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-3 py-1.5 rounded-xl">
+          <div className="flex items-center gap-1.5 bg-white border border-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-3 py-1.5 rounded-xl">
             <MapPin className="w-4 h-4" />
             <span>{profile.address.city}, {profile.address.state}</span>
           </div>

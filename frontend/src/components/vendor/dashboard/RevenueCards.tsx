@@ -15,7 +15,7 @@ export default function RevenueCards({ metrics }: Props) {
       change: `+${metrics.revenueChangePercent}%`,
       isUp: metrics.revenueChangePercent >= 0,
       icon: DollarSign,
-      color: "text-blue-500 bg-blue-50 dark:bg-blue-900/20",
+      color: "text-blue-500 bg-white border border-slate-100 dark:bg-blue-900/20",
     },
     {
       title: "Total Orders",
@@ -23,7 +23,7 @@ export default function RevenueCards({ metrics }: Props) {
       change: `+${metrics.ordersChangePercent}%`,
       isUp: metrics.ordersChangePercent >= 0,
       icon: ShoppingBag,
-      color: "text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20",
+      color: "text-emerald-500 bg-white border border-slate-100 dark:bg-emerald-900/20",
     },
     {
       title: "Products Sold",
@@ -31,7 +31,7 @@ export default function RevenueCards({ metrics }: Props) {
       change: `+${metrics.productsSoldChangePercent}%`,
       isUp: metrics.productsSoldChangePercent >= 0,
       icon: PackageCheck,
-      color: "text-purple-500 bg-purple-50 dark:bg-purple-900/20",
+      color: "text-purple-500 bg-white border border-slate-100 dark:bg-purple-900/20",
     },
     {
       title: "Total Customers",
@@ -39,7 +39,7 @@ export default function RevenueCards({ metrics }: Props) {
       change: `+${metrics.customersChangePercent}%`,
       isUp: metrics.customersChangePercent >= 0,
       icon: Users,
-      color: "text-amber-500 bg-amber-50 dark:bg-amber-900/20",
+      color: "text-amber-500 bg-white border border-slate-100 dark:bg-amber-900/20",
     },
   ];
 
@@ -50,7 +50,7 @@ export default function RevenueCards({ metrics }: Props) {
         return (
           <div
             key={card.title}
-            className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between"
+            className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow"
           >
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{card.title}</span>

@@ -12,7 +12,7 @@ export default function TopProductsList({ products }: Props) {
   const sorted = [...products].sort((a, b) => b.revenueGenerated - a.revenueGenerated).slice(0, 4);
 
   return (
-    <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+    <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between">
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="text-lg font-bold text-slate-900 dark:text-white">Top Performing Products</h3>
@@ -27,7 +27,7 @@ export default function TopProductsList({ products }: Props) {
         {sorted.map((product) => (
           <div
             key={product.id}
-            className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 transition-all hover:shadow-sm"
           >
             <div className="flex items-center gap-3 min-w-0">
               <img
