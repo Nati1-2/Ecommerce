@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb://root:rootpassword@localhost:27017/ecom?authSource=admin";
+const MONGODB_URI = process.env.MONGODB_URI || process.env.MONGO_URI || "mongodb://127.0.0.1:27017/ecom?authSource=admin" || "mongodb://root:rootpassword@localhost:27017/ecom?authSource=admin";
 
 interface MongooseCache {
   conn: typeof mongoose | null;
