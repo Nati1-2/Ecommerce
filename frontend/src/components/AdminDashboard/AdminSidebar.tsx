@@ -48,13 +48,13 @@ export default function AdminSidebar({ isMobile = false, onCloseMobile }: Sideba
   return (
     <aside
       className={cn(
-        "flex flex-col bg-slate-950 text-slate-300 border-r border-slate-800 transition-all duration-300 relative",
+        "flex flex-col bg-white text-slate-600 border-r border-slate-200 transition-all duration-300 relative",
         isMobile ? "w-full h-full" : isSidebarCollapsed ? "w-20" : "w-64",
         "h-screen sticky top-0 z-30 select-none"
       )}
     >
       {/* Platform Logo */}
-      <div className="p-5 flex items-center justify-between border-b border-slate-800 shrink-0">
+      <div className="p-5 flex items-center justify-between border-b border-slate-200 shrink-0">
         <Link
           href="/admin/dashboard"
           onClick={onCloseMobile}
@@ -65,10 +65,10 @@ export default function AdminSidebar({ isMobile = false, onCloseMobile }: Sideba
           </div>
           {(!isSidebarCollapsed || isMobile) && (
             <div className="min-w-0">
-              <div className="flex items-center gap-1.5 font-bold text-white text-base truncate">
+              <div className="flex items-center gap-1.5 font-bold text-slate-900 text-base truncate">
                 Apex Admin
               </div>
-              <span className="text-[11px] text-blue-400 font-semibold tracking-wide">
+              <span className="text-[11px] text-blue-600 font-semibold tracking-wide">
                 Marketplace Engine
               </span>
             </div>
@@ -79,7 +79,7 @@ export default function AdminSidebar({ isMobile = false, onCloseMobile }: Sideba
         {!isMobile && (
           <button
             onClick={toggleSidebar}
-            className="w-7 h-7 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition-colors absolute -right-3.5 top-7 border border-slate-800 shadow-md"
+            className="w-7 h-7 rounded-lg bg-white hover:bg-slate-100 text-slate-500 hover:text-slate-900 flex items-center justify-center transition-colors absolute -right-3.5 top-7 border border-slate-200 shadow-sm"
             title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
           >
             {isSidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -96,22 +96,18 @@ export default function AdminSidebar({ isMobile = false, onCloseMobile }: Sideba
           return (
             <Link
               key={item.href}
-              href={item.href === "/admin/dashboard" ? "/admin/dashboard" : "#"}
-              onClick={(e) => {
-                if (item.href !== "/admin/dashboard") {
-                  e.preventDefault();
-                  alert(`Navigating to ${item.label} section`);
-                }
+              href={item.href}
+              onClick={() => {
                 if (onCloseMobile) onCloseMobile();
               }}
               className={cn(
                 "flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all relative group",
                 isActive
                   ? "bg-blue-600 text-white font-bold shadow-lg shadow-blue-600/25"
-                  : "hover:bg-slate-900 hover:text-white text-slate-400"
+                  : "hover:bg-slate-100 text-slate-600 hover:text-slate-900"
               )}
             >
-              <Icon className={cn("w-5 h-5 shrink-0", isActive ? "text-white" : "text-slate-400 group-hover:text-slate-200")} />
+              <Icon className={cn("w-5 h-5 shrink-0", isActive ? "text-white" : "text-slate-400 group-hover:text-slate-600")} />
 
               {(!isSidebarCollapsed || isMobile) && (
                 <span className="truncate flex-1">{item.label}</span>
@@ -122,10 +118,10 @@ export default function AdminSidebar({ isMobile = false, onCloseMobile }: Sideba
                   className={cn(
                     "text-[10px] px-2 py-0.5 rounded-full font-bold",
                     item.badge.includes("pending")
-                      ? "bg-amber-500/20 text-amber-400"
+                      ? "bg-amber-500/20 text-amber-600"
                       : isActive
                       ? "bg-white/20 text-white"
-                      : "bg-blue-500/20 text-blue-400"
+                      : "bg-blue-500/20 text-blue-600"
                   )}
                 >
                   {item.badge}
@@ -144,16 +140,19 @@ export default function AdminSidebar({ isMobile = false, onCloseMobile }: Sideba
       </nav>
 
       {/* Logout Footer */}
-      <div className="p-4 border-t border-slate-900 shrink-0">
+      <div className="p-4 border-t border-slate-200 shrink-0">
         <button
-          onClick={() => alert("Logged out from Admin Console")}
+          onClick={() => {
+            localStorage.removeItem("auth_token");
+            window.location.href = "/login";
+          }}
           className={cn(
-            "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors",
+            "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors",
             isSidebarCollapsed && !isMobile && "justify-center"
           )}
           title="Logout"
         >
-          <LogOut className="w-5 h-5 shrink-0 text-slate-400 group-hover:text-red-400" />
+          <LogOut className="w-5 h-5 shrink-0 text-slate-400 group-hover:text-red-600" />
           {(!isSidebarCollapsed || isMobile) && <span>Exit Super Admin</span>}
         </button>
       </div>

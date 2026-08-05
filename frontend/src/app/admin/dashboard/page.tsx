@@ -39,17 +39,17 @@ const UserAnalytics = dynamic(() => import("@/components/AdminDashboard/UserAnal
 });
 
 export default function AdminDashboardPage() {
-  const { activeTimeframe, showToast } = useAdminDashboardStore();
+  const { activeTimeframe } = useAdminDashboardStore();
 
-  const { data: stats, isLoading: statsLoading, isError: statsError, refetch } = usePlatformStats();
-  const { data: systemStatus } = useSystemStatus();
-  const { data: health } = useMarketplaceHealth();
-  const { data: vendors = [] } = useAdminVendors();
-  const { data: products = [] } = useAdminProducts();
-  const { data: orders = [] } = useAdminOrders();
-  const { data: payments } = useAdminPayments();
-  const { data: activities = [] } = useAdminActivities();
-  const { data: analytics } = useAdminAnalytics(activeTimeframe);
+  const { data: stats, isLoading: statsLoading, isError: statsError, refetch: refetchStats } = usePlatformStats();
+  const { data: systemStatus, isLoading: statusLoading, isError: statusError, refetch: refetchStatus } = useSystemStatus();
+  const { data: health, isLoading: healthLoading, isError: healthError, refetch: refetchHealth } = useMarketplaceHealth();
+  const { data: vendors = [], isLoading: vendorsLoading, isError: vendorsError, refetch: refetchVendors } = useAdminVendors();
+  const { data: products = [], isLoading: productsLoading, isError: productsError, refetch: refetchProducts } = useAdminProducts();
+  const { data: orders = [], isLoading: ordersLoading, isError: ordersError, refetch: refetchOrders } = useAdminOrders();
+  const { data: payments, isLoading: paymentsLoading, isError: paymentsError, refetch: refetchPayments } = useAdminPayments();
+  const { data: activities = [], isLoading: activitiesLoading, isError: activitiesError, refetch: refetchActivities } = useAdminActivities();
+  const { data: analytics, isLoading: analyticsLoading, isError: analyticsError, refetch: refetchAnalytics } = useAdminAnalytics(activeTimeframe);
 
   const approveVendorMutation = useApproveVendor();
   const approveProductMutation = useApproveProduct();
@@ -60,22 +60,33 @@ export default function AdminDashboardPage() {
     if (el) el.scrollIntoView({ behavior: "smooth" });
   };
 
-  if (statsLoading || !stats || !systemStatus || !health || !payments || !analytics) {
-    return <DashboardSkeleton />;
-  }
+  const isError = statsError || statusError || healthError || vendorsError || productsError || ordersError || paymentsError || activitiesError || analyticsError;
+  const isLoading = statsLoading || statusLoading || healthLoading || vendorsLoading || productsLoading || ordersLoading || paymentsLoading || activitiesLoading || analyticsLoading;
 
-  if (statsError) {
+  const handleRetryAll = () => {
+    refetchStats();
+    refetchStatus();
+    refetchHealth();
+    refetchVendors();
+    refetchProducts();
+    refetchOrders();
+    refetchPayments();
+    refetchActivities();
+    refetchAnalytics();
+  };
+
+  if (isError) {
     return (
-      <div className="max-w-xl mx-auto my-12 p-8 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800 rounded-3xl text-center space-y-4">
+      <div className="max-w-xl mx-auto my-12 p-8 bg-rose-50 border border-rose-200 rounded-3xl text-center space-y-4 font-sans">
         <AlertCircle className="w-12 h-12 text-rose-500 mx-auto" />
-        <h3 className="text-lg font-bold text-rose-900 dark:text-rose-200">
+        <h3 className="text-lg font-bold text-rose-900">
           Unable to Load Admin Dashboard Data
         </h3>
-        <p className="text-xs text-rose-600 dark:text-rose-400">
-          The API Gateway encountered a temporary connection timeout.
+        <p className="text-xs text-rose-600">
+          The application encountered a database connection error. Please verify MongoDB is running.
         </p>
         <button
-          onClick={() => refetch()}
+          onClick={handleRetryAll}
           className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-md transition-colors inline-flex items-center gap-2"
         >
           <RefreshCw className="w-4 h-4" />
@@ -83,6 +94,10 @@ export default function AdminDashboardPage() {
         </button>
       </div>
     );
+  }
+
+  if (isLoading || !stats || !systemStatus || !health || !payments || !analytics) {
+    return <DashboardSkeleton />;
   }
 
   return (
