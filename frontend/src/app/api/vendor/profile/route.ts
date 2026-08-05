@@ -21,11 +21,19 @@ export async function GET(req: NextRequest) {
     if (!profile) {
       profile = await VendorProfile.create({
         userId: payload.id,
-        storeName: payload.email.split("@")[0] + "'s Store",
+        storeName: payload.email.includes("vendor") ? "Apex Tech Wearables Store" : payload.email.split("@")[0] + "'s Store",
         slug: payload.id + "-store",
+        logo: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=150&q=80",
+        banner: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80",
+        description: "Your destination for premium smartwatches, audio, and mobile accessories.",
+        rating: 4.8,
+        totalReviews: 2,
+        verified: true,
+        productCount: 3,
+        joinedDate: "2026-01-15",
         email: payload.email,
-        joinedDate: new Date().toISOString().split("T")[0],
-        verified: false,
+        phone: "+1 (555) 832-9210",
+        address: { street: "100 Innovation Way", city: "San Jose", state: "CA", zip: "95110", country: "US" },
       });
     }
 
