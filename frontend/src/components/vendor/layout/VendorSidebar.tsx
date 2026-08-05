@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useVendorStore } from "@/store/vendorStore";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { vendorApi } from "@/services/api/vendorApi";
 import {
   LayoutDashboard,
   Package,
@@ -31,11 +33,24 @@ export default function VendorSidebar({ isMobile = false, onCloseMobile }: Sideb
   const pathname = usePathname();
   const { isSidebarCollapsed, toggleSidebar } = useVendorStore();
 
+  const { data: profile } = useQuery({
+    queryKey: ["vendor-profile"],
+    queryFn: vendorApi.getProfile,
+  });
+
+  const { data: metrics } = useQuery({
+    queryKey: ["vendor-metrics"],
+    queryFn: vendorApi.getMetrics,
+  });
+
+  const pendingOrders = (metrics?.pendingOrdersCount ?? 0) + (metrics?.processingOrdersCount ?? 0);
+  const ordersBadge = pendingOrders > 0 ? String(pendingOrders) : undefined;
+
   const navItems = [
     { label: "Dashboard", href: "/vendor/dashboard", icon: LayoutDashboard },
     { label: "Products", href: "/vendor/products", icon: Package },
     { label: "Inventory", href: "/vendor/inventory", icon: Boxes },
-    { label: "Orders", href: "/vendor/orders", icon: ShoppingBag, badge: "12" },
+    { label: "Orders", href: "/vendor/orders", icon: ShoppingBag, badge: ordersBadge },
     { label: "Customers", href: "/vendor/customers", icon: Users },
     { label: "Reviews", href: "/vendor/reviews", icon: MessageSquareText },
     { label: "Analytics", href: "/vendor/analytics", icon: LineChart },
@@ -58,13 +73,17 @@ export default function VendorSidebar({ isMobile = false, onCloseMobile }: Sideb
           onClick={onCloseMobile}
           className="flex items-center gap-3 overflow-hidden"
         >
-          <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-blue-500/20 font-bold text-lg">
-            <Store className="w-5 h-5" />
+          <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-blue-500/20 font-bold text-lg overflow-hidden">
+            {profile?.logo ? (
+              <img src={profile.logo} alt="logo" className="w-full h-full object-cover" />
+            ) : (
+              <Store className="w-5 h-5" />
+            )}
           </div>
           {(!isSidebarCollapsed || isMobile) && (
-            <div className="min-w-0">
+            <div className="min-w-0 font-sans">
               <div className="flex items-center gap-1.5 font-bold text-slate-900  text-base truncate">
-                Apex Tech Labs
+                {profile?.storeName || "My Store"}
                 <BadgeCheck className="w-4 h-4 text-blue-500 shrink-0" />
               </div>
               <span className="text-xs text-slate-500  font-medium">Seller Portal</span>
