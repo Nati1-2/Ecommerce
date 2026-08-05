@@ -31,16 +31,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ success: true, profile });
   } catch (err: any) {
-    console.warn("MongoDB profile fallback:", err.message);
-    const profile = global.inMemoryProfile || {
-      userId: payload.id,
-      storeName: payload.email.split("@")[0] + "'s Store",
-      slug: payload.id + "-store",
-      email: payload.email,
-      joinedDate: new Date().toISOString().split("T")[0],
-      verified: true,
-    };
-    return NextResponse.json({ success: true, profile });
+    return NextResponse.json({ error: `Database error: ${err.message}` }, { status: 500 });
   }
 }
 
@@ -64,13 +55,6 @@ export async function PUT(req: NextRequest) {
 
     return NextResponse.json({ success: true, profile: updated });
   } catch (err: any) {
-    console.warn("MongoDB profile update fallback:", err.message);
-    const body = await req.json().catch(() => ({}));
-    global.inMemoryProfile = {
-      ...(global.inMemoryProfile || {}),
-      ...body,
-      userId: payload.id,
-    };
-    return NextResponse.json({ success: true, profile: global.inMemoryProfile });
+    return NextResponse.json({ error: `Database error: ${err.message}` }, { status: 500 });
   }
 }

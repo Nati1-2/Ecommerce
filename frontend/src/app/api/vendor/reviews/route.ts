@@ -14,8 +14,6 @@ export async function GET(req: NextRequest) {
     const reviews = await Review.find({ vendorId: payload.id }).sort({ createdAt: -1 });
     return NextResponse.json({ success: true, reviews });
   } catch (err: any) {
-    console.warn("MongoDB reviews fallback:", err.message);
-    const reviews = global.inMemoryReviews || [];
-    return NextResponse.json({ success: true, reviews });
+    return NextResponse.json({ error: `Database error: ${err.message}` }, { status: 500 });
   }
 }

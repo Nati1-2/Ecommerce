@@ -50,3 +50,13 @@ export function requireVendor(req: NextRequest): { payload: TokenPayload } | { e
   }
   return { payload };
 }
+
+export function requireAdmin(req: NextRequest): { payload: TokenPayload } | { error: string; status: number } {
+  const payload = getTokenPayload(req);
+  if (!payload) return { error: "Unauthorized", status: 401 };
+  if (payload.role !== "ADMIN") {
+    return { error: "Forbidden: Admin access required", status: 403 };
+  }
+  return { payload };
+}
+

@@ -62,34 +62,6 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ success: true, orders: mapped, total, page });
   } catch (err: any) {
-    console.warn("MongoDB orders fallback:", err.message);
-    const rawOrders = global.inMemoryOrders || [];
-    const mapped = rawOrders.map(o => ({
-      id: o.id || o._id,
-      orderNumber: o.orderId,
-      customerId: o.userId,
-      customerName: o.customerName || "Customer",
-      customerEmail: o.customerEmail || "",
-      items: (o.items || []).map((item: any) => ({
-        id: item.productId || item.id,
-        productId: item.productId || item.id,
-        productName: item.productName || item.name || "Product",
-        productImage: item.productImage || item.image || "/iphone17.png",
-        quantity: item.quantity || 1,
-        unitPrice: item.unitPrice || item.price || 0,
-      })),
-      totalAmount: o.totalAmount || o.grandTotal || 0,
-      paymentStatus: o.paymentStatus || "Paid",
-      status: o.orderStatus || o.status || "Pending",
-      shippingAddress: o.shippingAddress
-        ? typeof o.shippingAddress === "string"
-          ? o.shippingAddress
-          : `${o.shippingAddress.street}, ${o.shippingAddress.city}, ${o.shippingAddress.state} ${o.shippingAddress.zipCode}`
-        : "",
-      trackingNumber: o.trackingNumber,
-      createdAt: typeof o.createdAt === "string" ? o.createdAt : (o.createdAt?.toISOString() || new Date().toISOString()),
-      updatedAt: typeof o.updatedAt === "string" ? o.updatedAt : (o.updatedAt?.toISOString() || new Date().toISOString()),
-    }));
-    return NextResponse.json({ success: true, orders: mapped, total: mapped.length, page: 1 });
+    return NextResponse.json({ error: `Database error: ${err.message}` }, { status: 500 });
   }
 }

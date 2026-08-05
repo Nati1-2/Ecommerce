@@ -79,8 +79,6 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ success: true, customers });
   } catch (err: any) {
-    console.warn("MongoDB customers fallback:", err.message);
-    const customers = global.inMemoryCustomers || [];
-    return NextResponse.json({ success: true, customers });
+    return NextResponse.json({ error: `Database error: ${err.message}` }, { status: 500 });
   }
 }

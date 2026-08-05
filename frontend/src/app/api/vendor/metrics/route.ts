@@ -54,24 +54,6 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ success: true, metrics });
   } catch (err: any) {
-    console.warn("MongoDB metrics fallback:", err.message);
-    const metrics = global.inMemoryMetrics || {
-      totalRevenue: 67765.53,
-      revenueChangePercent: 12.8,
-      totalOrders: 237,
-      ordersChangePercent: 8.5,
-      productsSold: 447,
-      productsSoldChangePercent: 14.2,
-      totalCustomers: 182,
-      customersChangePercent: 5.6,
-      pendingOrdersCount: 0,
-      processingOrdersCount: 1,
-      shippedOrdersCount: 1,
-      deliveredOrdersCount: 235,
-      cancelledOrdersCount: 0,
-      lowStockCount: 1,
-      outOfStockCount: 1,
-    };
-    return NextResponse.json({ success: true, metrics });
+    return NextResponse.json({ error: `Database error: ${err.message}` }, { status: 500 });
   }
 }

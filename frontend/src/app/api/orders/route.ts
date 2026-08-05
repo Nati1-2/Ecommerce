@@ -66,13 +66,7 @@ export async function GET(req: NextRequest) {
       const orders = await Order.find(query).sort({ createdAt: -1 });
       return NextResponse.json({ success: true, data: orders });
     } catch (dbErr: any) {
-      console.warn("MongoDB order fetch failed, falling back to in-memory store:", dbErr);
-      
-      let filtered = global.inMemoryOrders || [];
-      if (userId) {
-        filtered = filtered.filter((o: any) => o.userId === userId || o.userId === "usr-demo-customer");
-      }
-      return NextResponse.json({ success: true, data: filtered });
+      return NextResponse.json({ error: `Database error: ${dbErr.message}` }, { status: 500 });
     }
   } catch (error: any) {
     return NextResponse.json({ error: error.message || "Failed to fetch orders" }, { status: 500 });
@@ -173,29 +167,7 @@ export async function POST(req: NextRequest) {
 
       return NextResponse.json({ success: true, data: newOrder }, { status: 201 });
     } catch (dbErr: any) {
-      console.warn("MongoDB order save failed, falling back to in-memory store:", dbErr);
-      
-      const orderId = `ORD-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-      const inMemoryOrder = {
-        ...body,
-        id: orderId,
-        _id: orderId,
-        orderId,
-        userId,
-        paymentStatus: body.paymentStatus || "PENDING",
-        orderStatus: body.orderStatus || "PENDING",
-        status: body.orderStatus || "PENDING",
-        totalAmount: body.grandTotal || body.totalAmount || 0,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      
-      if (!global.inMemoryOrders) {
-        global.inMemoryOrders = [];
-      }
-      global.inMemoryOrders.push(inMemoryOrder);
-      
-      return NextResponse.json({ success: true, data: inMemoryOrder }, { status: 201 });
+      return NextResponse.json({ error: `Database error: ${dbErr.message}` }, { status: 500 });
     }
   } catch (error: any) {
     return NextResponse.json({ error: error.message || "Failed to create order" }, { status: 400 });
