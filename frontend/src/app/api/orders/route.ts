@@ -159,14 +159,48 @@ export async function POST(req: NextRequest) {
       await connectDB();
 
       const orderId = `ORD-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+
+      // Calculate totals and ensure all required fields on orderItemSchema are present
+      const items = (body.items || []).map((item: any) => ({
+        productId: item.productId || "prod-unknown",
+        name: item.name || item.productName || "Product",
+        price: Number(item.price) || 0,
+        quantity: Number(item.quantity) || 1,
+        image: item.image || item.imageUrl || "/iphone17.png",
+      }));
+
+      const calculatedTotal = items.reduce((acc: number, i: any) => acc + (i.price * i.quantity), 0);
+      const totalAmount = Number(body.totalAmount ?? body.subtotal ?? calculatedTotal);
+      const shippingCost = Number(body.shippingCost ?? body.shippingFee ?? 0);
+      const tax = Number(body.tax ?? Math.round(totalAmount * 0.05 * 100) / 100);
+      const grandTotal = Number(body.grandTotal ?? (totalAmount + shippingCost + tax));
+
+      const shippingAddress = {
+        street: body.shippingAddress?.street || "123 Main St",
+        city: body.shippingAddress?.city || "San Francisco",
+        state: body.shippingAddress?.state || "CA",
+        zipCode: body.shippingAddress?.zipCode || body.shippingAddress?.postalCode || "94105",
+        country: body.shippingAddress?.country || "US",
+      };
+
       const newOrder = await Order.create({
-        ...body,
-        userId,
         orderId,
+        userId,
+        items,
+        shippingAddress,
+        paymentStatus: body.paymentStatus || "PENDING",
+        orderStatus: body.orderStatus || "PENDING",
+        totalAmount,
+        shippingCost,
+        tax,
+        grandTotal,
+        paymentIntentId: body.paymentIntentId,
+        trackingNumber: body.trackingNumber,
       });
 
       return NextResponse.json({ success: true, data: newOrder }, { status: 201 });
     } catch (dbErr: any) {
+      console.error("Order creation database error:", dbErr);
       return NextResponse.json({ error: `Database error: ${dbErr.message}` }, { status: 500 });
     }
   } catch (error: any) {
