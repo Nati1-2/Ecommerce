@@ -351,6 +351,7 @@ export async function connectDB() {
 
   try {
     cached!.conn = await cached!.promise;
+    import("./dbSeeder").then(m => m.seedDatabaseCollections()).catch(console.error);
   } catch (e) {
     cached!.promise = null;
     throw e;
@@ -499,7 +500,6 @@ export async function safeUpdateUser(id: string, updateData: Record<string, any>
     console.warn("MongoDB update notice:", err?.message || err);
   }
 
-  await seedDemoUsers();
   for (const [email, u] of global.inMemoryUsers!.entries()) {
     if (u.id === id || u._id === id) {
       const updatedUser = { ...u, ...updateData };
@@ -510,3 +510,4 @@ export async function safeUpdateUser(id: string, updateData: Record<string, any>
   }
   return null;
 }
+
