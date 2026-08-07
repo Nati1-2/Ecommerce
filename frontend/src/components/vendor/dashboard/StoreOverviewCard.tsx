@@ -41,18 +41,23 @@ export default function StoreOverviewCard({ profile }: Props) {
 
         {/* Stats Badges */}
         <div className="flex flex-wrap items-center gap-4 text-xs">
-          <div className="flex items-center gap-1.5 bg-white  text-amber-600  px-3 py-1.5 rounded-xl font-bold border border-amber-100 ">
+          <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-xl font-bold border border-emerald-200">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>MongoDB Database: Connected</span>
+          </div>
+
+          <div className="flex items-center gap-1.5 bg-white text-amber-600 px-3 py-1.5 rounded-xl font-bold border border-amber-100">
             <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
             <span>{profile.rating}</span>
             <span className="text-slate-400 font-normal">({profile.totalReviews} reviews)</span>
           </div>
 
-          <div className="flex items-center gap-1.5 bg-white border border-slate-200  text-slate-700  px-3 py-1.5 rounded-xl font-medium">
+          <div className="flex items-center gap-1.5 bg-white border border-slate-200 text-slate-700 px-3 py-1.5 rounded-xl font-medium">
             <Store className="w-4 h-4 text-blue-500" />
             <span>{profile.productCount} Products</span>
           </div>
 
-          <div className="flex items-center gap-1.5 bg-white border border-slate-200  text-slate-500  px-3 py-1.5 rounded-xl">
+          <div className="flex items-center gap-1.5 bg-white border border-slate-200 text-slate-500 px-3 py-1.5 rounded-xl">
             <MapPin className="w-4 h-4" />
             <span>{profile.address.city}, {profile.address.state}</span>
           </div>

@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useVendorStore } from "@/store/vendorStore";
+import { useQuery } from "@tanstack/react-query";
+import { vendorApi } from "@/services/api/vendorApi";
 import {
   Menu,
   Search,
@@ -21,6 +23,11 @@ interface HeaderProps {
 export default function VendorHeader({ onOpenMobileMenu }: HeaderProps) {
   const { searchQuery, setSearchQuery, notifications, markNotificationRead } = useVendorStore();
   const [showNotifications, setShowNotifications] = useState(false);
+
+  const { data: profile } = useQuery({
+    queryKey: ["vendor-profile"],
+    queryFn: vendorApi.getProfile,
+  });
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -133,20 +140,35 @@ export default function VendorHeader({ onOpenMobileMenu }: HeaderProps) {
 
         {/* Profile Avatar */}
         <div className="flex items-center gap-3 pl-2 border-l border-slate-200 ">
-          <img
-            src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=120&h=120&q=80"
-            alt="Apex Tech Labs"
-            className="w-9 h-9 rounded-xl object-cover ring-2 ring-blue-600/30"
-          />
-          <div className="hidden lg:block text-left">
-            <p className="text-xs font-bold text-slate-900  leading-tight">Apex Tech</p>
-            <div className="flex items-center gap-1 text-[10px] text-green-600  font-semibold mt-0.5">
-              <CheckCircle2 className="w-3 h-3" />
-              Verified Seller
+          {profile?.logo ? (
+            <img
+              src={profile.logo}
+              alt={profile.storeName || "Store"}
+              className="w-9 h-9 rounded-xl object-cover ring-2 ring-blue-600/30"
+            />
+          ) : (
+            <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm">
+              {(profile?.storeName || "S")[0]}
             </div>
+          )}
+          <div className="hidden lg:block text-left">
+            <p className="text-xs font-bold text-slate-900  leading-tight">
+              {profile?.storeName || "Vendor Store"}
+            </p>
+            {profile?.verified ? (
+              <div className="flex items-center gap-1 text-[10px] text-green-600  font-semibold mt-0.5">
+                <CheckCircle2 className="w-3 h-3" />
+                Verified Seller
+              </div>
+            ) : (
+              <span className="text-[10px] text-amber-600 font-semibold mt-0.5">
+                Pending Verification
+              </span>
+            )}
           </div>
         </div>
       </div>
     </header>
   );
 }
+
