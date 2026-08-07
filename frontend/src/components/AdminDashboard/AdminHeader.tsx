@@ -108,7 +108,7 @@ export default function AdminHeader({ onOpenMobileMenu }: HeaderProps) {
           />
           <div className="hidden lg:block text-left">
             <p className="text-xs font-bold text-slate-900 leading-tight">
-              Sarah Jenkins
+              Nati Demo Admin
             </p>
             <div className="flex items-center gap-1 text-[10px] text-blue-600 font-bold mt-0.5">
               <ShieldCheck className="w-3 h-3 text-blue-500" />

@@ -109,28 +109,29 @@ export const adminVendorApi = {
     try {
       const data = await apiFetch<{ vendors: any[] }>("/api/admin/vendors");
       const list = data.vendors || [];
-      const active = list.filter((v) => v.status === "Active" || v.status === "Approved").length;
-      const pending = list.filter((v) => v.status === "Pending").length;
+      const active = list.filter((v) => v.status === "Active" || v.status === "Approved" || v.verified).length;
+      const pending = list.filter((v) => v.status === "Pending" || !v.verified).length;
+      const suspended = list.filter((v) => v.status === "Suspended" || v.status === "Flagged").length;
       return {
-        totalVendors: list.length || 12500,
-        totalGrowth: 14.2,
-        activeVendors: active || 11800,
-        activeGrowth: 11.5,
-        pendingApproval: pending || 18,
-        pendingNewToday: 18,
-        suspendedVendors: 50,
-        suspendedChange: -2.4,
+        totalVendors: list.length,
+        totalGrowth: 0,
+        activeVendors: active,
+        activeGrowth: 0,
+        pendingApproval: pending,
+        pendingNewToday: 0,
+        suspendedVendors: suspended,
+        suspendedChange: 0,
       };
     } catch {
       return {
-        totalVendors: 12500,
-        totalGrowth: 14.2,
-        activeVendors: 11800,
-        activeGrowth: 11.5,
-        pendingApproval: 18,
-        pendingNewToday: 18,
-        suspendedVendors: 50,
-        suspendedChange: -2.4,
+        totalVendors: 0,
+        totalGrowth: 0,
+        activeVendors: 0,
+        activeGrowth: 0,
+        pendingApproval: 0,
+        pendingNewToday: 0,
+        suspendedVendors: 0,
+        suspendedChange: 0,
       };
     }
   },
@@ -144,17 +145,17 @@ export const adminVendorApi = {
         logo: v.logo || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=150&q=80",
         banner: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=1200&h=300&q=80",
         ownerName: v.ownerName || "Merchant",
-        email: v.email || "vendor@natistore.com",
-        phone: "+1 (800) 555-0199",
-        category: "Electronics",
-        rating: v.rating || 4.8,
-        salesCount: v.sales || 447,
-        revenue: v.revenue || 67765.53,
-        ordersCount: v.orders || 237,
+        email: v.email || "",
+        phone: v.phone || "",
+        category: v.category || "Electronics",
+        rating: v.rating || 5.0,
+        salesCount: v.sales || 0,
+        revenue: Math.round((v.revenue || 0) * 100) / 100,
+        ordersCount: v.orders || 0,
         status: v.status === "Active" ? "Approved" : v.status || "Approved",
-        verified: v.status === "Active" || v.status === "Approved",
+        verified: v.verified ?? true,
         verificationDetails: { identity: true, business: true, payment: true },
-        joinedDate: v.joinedDate || "2026-01-15",
+        joinedDate: v.joinedDate || new Date().toISOString().split("T")[0],
         businessName: `${v.storeName} LLC`,
         taxId: "EIN-892341908",
         bankAccountLast4: "4092",
@@ -163,7 +164,7 @@ export const adminVendorApi = {
         identityDocumentUrl: "https://example.com/docs/id.pdf",
       }));
     } catch {
-      return [...mockVendorsFallback];
+      return [];
     }
   },
 

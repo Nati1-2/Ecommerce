@@ -86,10 +86,10 @@ export default function AdminSidebar({
           {(!isSidebarCollapsed || isMobile) && (
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 font-bold text-slate-900 text-base truncate tracking-tight">
-                Apex Admin
+                Nati Store Admin
               </div>
               <span className="text-[11px] text-blue-600 font-semibold tracking-wide">
-                Marketplace Engine
+                SuperAdmin Portal
               </span>
             </div>
           )}
