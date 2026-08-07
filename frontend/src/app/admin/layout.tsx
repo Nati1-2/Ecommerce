@@ -21,7 +21,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useAdminRealtime();
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 font-sans antialiased">
+    <div className="min-h-screen bg-slate-50/70 text-slate-900 font-sans antialiased flex flex-col lg:flex-row">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <AdminSidebar />
