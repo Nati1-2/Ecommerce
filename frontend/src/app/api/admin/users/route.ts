@@ -36,8 +36,8 @@ export async function GET(req: NextRequest) {
           role: roleMap[u.role] || "Customer",
           status: u.isVerified !== false ? "Active" : "Pending Verification",
           location: u.address || "United States",
-          totalOrders: totalOrders || (u.role === "VENDOR" ? 8900 : 6),
-          totalSpent: Math.round(totalSpent * 100) / 100 || (u.role === "VENDOR" ? 3450000 : 1240),
+          totalOrders: totalOrders,
+          totalSpent: Math.round(totalSpent * 100) / 100,
           createdAt: u.createdAt ? u.createdAt.toISOString().split("T")[0] : "2026-01-15",
           lastLogin: "Active recently",
           lastLoginIp: "192.168.1.45",
@@ -46,60 +46,7 @@ export async function GET(req: NextRequest) {
       })
     );
   } catch (err: any) {
-    console.warn("Admin Users API DB notice (using fallback user list):", err?.message || err);
-  }
-
-  if (!users || users.length === 0) {
-    users = [
-      {
-        id: "usr-demo-admin",
-        name: "Nati Demo Admin",
-        email: "nati@admin.com",
-        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
-        phone: "+1 (415) 890-1234",
-        role: "Admin",
-        status: "Active",
-        location: "San Francisco, CA",
-        totalOrders: 14,
-        totalSpent: 12490.00,
-        createdAt: "2026-01-15",
-        lastLogin: "Just now",
-        lastLoginIp: "192.168.1.45",
-        lastLoginLocation: "San Francisco, US",
-      },
-      {
-        id: "usr-demo-vendor",
-        name: "Apex Tech Wearables Store",
-        email: "vendor@natistore.com",
-        avatar: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=150&q=80",
-        phone: "+1 (800) 555-0199",
-        role: "Vendor",
-        status: "Active",
-        location: "San Jose, CA",
-        totalOrders: 8900,
-        totalSpent: 3450000.00,
-        createdAt: "2026-01-15",
-        lastLogin: "14 mins ago",
-        lastLoginIp: "172.16.0.12",
-        lastLoginLocation: "San Jose, US",
-      },
-      {
-        id: "usr-demo-customer",
-        name: "John Smith",
-        email: "john.smith@gmail.com",
-        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
-        phone: "+1 (206) 555-9012",
-        role: "Customer",
-        status: "Active",
-        location: "Seattle, WA",
-        totalOrders: 6,
-        totalSpent: 3420.50,
-        createdAt: "2026-01-15",
-        lastLogin: "1 hour ago",
-        lastLoginIp: "198.51.100.24",
-        lastLoginLocation: "Seattle, US",
-      },
-    ];
+    console.warn("Admin Users API DB notice:", err?.message || err);
   }
 
   return NextResponse.json({ success: true, users });
