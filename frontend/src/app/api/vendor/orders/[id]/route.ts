@@ -31,6 +31,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     order.orderStatus = status.toUpperCase();
     await order.save();
 
+    const { notifyOrderStatusChanged } = await import("@/lib/notifications");
+    await notifyOrderStatusChanged(order.orderId || order._id.toString(), status, order.userId, payload.id).catch(
+      (err) => console.warn("Notify status update error:", err)
+    );
+
     return NextResponse.json({
       success: true,
       order: {

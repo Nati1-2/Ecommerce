@@ -198,6 +198,9 @@ export async function POST(req: NextRequest) {
         trackingNumber: body.trackingNumber,
       });
 
+      const { notifyOrderCreated } = await import("@/lib/notifications");
+      await notifyOrderCreated(newOrder).catch((err) => console.warn("Notify error:", err));
+
       return NextResponse.json({ success: true, data: newOrder }, { status: 201 });
     } catch (dbErr: any) {
       console.error("Order creation database error:", dbErr);
