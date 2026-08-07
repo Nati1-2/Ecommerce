@@ -19,21 +19,63 @@ export async function GET(req: NextRequest) {
   let totalRevenue = 0;
   let isDbConnected = false;
 
+  // For growth calculation
+  let usersGrowth = 0;
+  let vendorsGrowth = 0;
+  let productsGrowth = 0;
+  let ordersGrowth = 0;
+  let revenueGrowth = 0;
+
   try {
     await connectDB();
     isDbConnected = true;
 
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+
+    // ---- Total counts ----
     userCount = await User.countDocuments();
     vendorCount = await VendorProfile.countDocuments();
     productCount = await VendorProduct.countDocuments();
     orderCount = await Order.countDocuments();
 
-    // Sum order amounts
-    const revenueStats = await Order.aggregate([
+    // ---- Revenue from paid orders ----
+    const revenueAgg = await Order.aggregate([
       { $match: { paymentStatus: "PAID" } },
       { $group: { _id: null, total: { $sum: "$grandTotal" } } }
     ]);
-    totalRevenue = revenueStats[0]?.total || 0;
+    totalRevenue = Math.round((revenueAgg[0]?.total || 0) * 100) / 100;
+
+    // ---- Growth: new records this month vs previous month ----
+    const usersThisMonth = await User.countDocuments({ createdAt: { $gte: thirtyDaysAgo } });
+    const usersPrevMonth = await User.countDocuments({ createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo } });
+    usersGrowth = usersPrevMonth > 0 ? Math.round(((usersThisMonth - usersPrevMonth) / usersPrevMonth) * 1000) / 10 : (usersThisMonth > 0 ? 100 : 0);
+
+    const vendorsThisMonth = await VendorProfile.countDocuments({ createdAt: { $gte: thirtyDaysAgo } });
+    const vendorsPrevMonth = await VendorProfile.countDocuments({ createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo } });
+    vendorsGrowth = vendorsPrevMonth > 0 ? Math.round(((vendorsThisMonth - vendorsPrevMonth) / vendorsPrevMonth) * 1000) / 10 : (vendorsThisMonth > 0 ? 100 : 0);
+
+    const productsThisMonth = await VendorProduct.countDocuments({ createdAt: { $gte: thirtyDaysAgo } });
+    const productsPrevMonth = await VendorProduct.countDocuments({ createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo } });
+    productsGrowth = productsPrevMonth > 0 ? Math.round(((productsThisMonth - productsPrevMonth) / productsPrevMonth) * 1000) / 10 : (productsThisMonth > 0 ? 100 : 0);
+
+    const ordersThisMonth = await Order.countDocuments({ createdAt: { $gte: thirtyDaysAgo } });
+    const ordersPrevMonth = await Order.countDocuments({ createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo } });
+    ordersGrowth = ordersPrevMonth > 0 ? Math.round(((ordersThisMonth - ordersPrevMonth) / ordersPrevMonth) * 1000) / 10 : (ordersThisMonth > 0 ? 100 : 0);
+
+    const revThisMonth = await Order.aggregate([
+      { $match: { paymentStatus: "PAID", createdAt: { $gte: thirtyDaysAgo } } },
+      { $group: { _id: null, total: { $sum: "$grandTotal" } } }
+    ]);
+    const revPrevMonth = await Order.aggregate([
+      { $match: { paymentStatus: "PAID", createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo } } },
+      { $group: { _id: null, total: { $sum: "$grandTotal" } } }
+    ]);
+    const revThis = revThisMonth[0]?.total || 0;
+    const revPrev = revPrevMonth[0]?.total || 0;
+    revenueGrowth = revPrev > 0 ? Math.round(((revThis - revPrev) / revPrev) * 1000) / 10 : (revThis > 0 ? 100 : 0);
+
   } catch (err: any) {
     console.warn("Admin Stats DB notice (using fallback stats):", err?.message || err);
   }
@@ -42,16 +84,17 @@ export async function GET(req: NextRequest) {
     success: true,
     isFallback: !isDbConnected,
     stats: {
-      users: userCount || 125000,
-      usersGrowth: 15.8,
-      vendors: vendorCount || 4500,
-      vendorsGrowth: 8.2,
-      products: productCount || 850000,
-      productsGrowth: 12.4,
-      orders: orderCount || 320000,
-      ordersGrowth: 18.5,
-      revenue: Math.round(totalRevenue * 100) / 100 || 12500000,
-      revenueGrowth: 22.1,
+      users: userCount,
+      usersGrowth,
+      vendors: vendorCount,
+      vendorsGrowth,
+      products: productCount,
+      productsGrowth,
+      orders: orderCount,
+      ordersGrowth,
+      revenue: totalRevenue,
+      revenueGrowth,
     }
   });
 }
+

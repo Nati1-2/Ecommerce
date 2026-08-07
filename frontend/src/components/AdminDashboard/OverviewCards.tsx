@@ -1,10 +1,16 @@
 "use client";
 
 import { PlatformStats } from "@/types/admin";
-import { Users, Store, Package, ShoppingBag, DollarSign, TrendingUp } from "lucide-react";
+import { Users, Store, Package, ShoppingBag, DollarSign, TrendingUp, TrendingDown, Minus } from "lucide-react";
 
 interface Props {
   stats: PlatformStats;
+}
+
+function formatRevenue(amount: number): string {
+  if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(1)}M`;
+  if (amount >= 1_000) return `$${(amount / 1_000).toFixed(1)}K`;
+  return `$${amount.toFixed(2)}`;
 }
 
 export default function OverviewCards({ stats }: Props) {
@@ -43,7 +49,7 @@ export default function OverviewCards({ stats }: Props) {
     },
     {
       title: "Platform Gross Revenue",
-      value: `$${(stats.revenue / 1000000).toFixed(1)}M`,
+      value: formatRevenue(stats.revenue),
       growth: stats.revenueGrowth,
       icon: DollarSign,
       color: "from-emerald-600 to-green-600",
@@ -55,6 +61,14 @@ export default function OverviewCards({ stats }: Props) {
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
       {cards.map((card) => {
         const Icon = card.icon;
+        const isPositive = card.growth > 0;
+        const isNeutral = card.growth === 0;
+        const GrowthIcon = isNeutral ? Minus : isPositive ? TrendingUp : TrendingDown;
+        const growthColor = isNeutral
+          ? "text-slate-400 dark:text-slate-500"
+          : isPositive
+          ? "text-emerald-600 dark:text-emerald-400"
+          : "text-red-500 dark:text-red-400";
 
         return (
           <div
@@ -75,9 +89,13 @@ export default function OverviewCards({ stats }: Props) {
                 {card.value}
               </p>
 
-              <div className="flex items-center gap-1 mt-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                <TrendingUp className="w-3.5 h-3.5" />
-                <span>↑ {card.growth}% this month</span>
+              <div className={`flex items-center gap-1 mt-1.5 text-xs font-bold ${growthColor}`}>
+                <GrowthIcon className="w-3.5 h-3.5" />
+                <span>
+                  {isNeutral
+                    ? "No change this month"
+                    : `${isPositive ? "↑" : "↓"} ${Math.abs(card.growth)}% this month`}
+                </span>
               </div>
             </div>
           </div>
@@ -86,3 +104,4 @@ export default function OverviewCards({ stats }: Props) {
     </div>
   );
 }
+
