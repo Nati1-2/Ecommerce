@@ -11,7 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 const DEMO_ACCOUNTS = {
   "john.smith@gmail.com": { password: "password123", name: "John Smith", role: "CUSTOMER" as const },
   "vendor@natistore.com": { password: "vendor123", name: "Apex Tech Vendor Store", role: "VENDOR" as const },
-  "admin@natistore.com": { password: "admin123", name: "Nati System Admin", role: "ADMIN" as const },
+  "nati@admin.com": { password: "nati1234", name: "Nati Demo Admin", role: "ADMIN" as const },
 };
 
 export default function LoginPage() {
@@ -38,10 +38,10 @@ export default function LoginPage() {
       setRole("CUSTOMER");
       if (isRegistering) setName("John Smith");
     } else if (type === "admin") {
-      setEmail("admin@natistore.com");
-      setPassword("admin123");
+      setEmail("nati@admin.com");
+      setPassword("nati1234");
       setRole("ADMIN");
-      if (isRegistering) setName("Nati System Admin");
+      if (isRegistering) setName("Nati Demo Admin");
     } else if (type === "vendor") {
       setEmail("vendor@natistore.com");
       setPassword("vendor123");

@@ -57,9 +57,9 @@ async function seedDemoUsers() {
       points: 450,
     },
     {
-      email: "admin@natistore.com",
-      plainPassword: "admin123",
-      name: "Nati SuperAdmin",
+      email: "nati@admin.com",
+      plainPassword: "nati1234",
+      name: "Nati Demo Admin",
       role: "ADMIN" as const,
       id: "usr-demo-admin",
       membership: "SuperAdmin Tier 👑",

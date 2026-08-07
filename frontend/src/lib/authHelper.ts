@@ -23,7 +23,7 @@ export function getUserFromToken(req: NextRequest): TokenPayload | null {
     if (!token || token === "undefined" || token === "null") {
       const url = req.nextUrl?.pathname || "";
       if (url.includes("/admin")) {
-        return { id: "usr-demo-admin", email: "admin@natistore.com", role: "ADMIN" };
+        return { id: "usr-demo-admin", email: "nati@admin.com", role: "ADMIN" };
       }
       return { id: "usr-demo-vendor", email: "vendor@natistore.com", role: "VENDOR" };
     }
@@ -32,7 +32,7 @@ export function getUserFromToken(req: NextRequest): TokenPayload | null {
       const parts = token.split("-");
       const role = (parts[3] || "CUSTOMER").toUpperCase();
       const id = parts.slice(4).join("-") || "usr-demo-customer";
-      const email = role === "VENDOR" ? "vendor@natistore.com" : role === "ADMIN" ? "admin@natistore.com" : "john.smith@gmail.com";
+      const email = role === "VENDOR" ? "vendor@natistore.com" : role === "ADMIN" ? "nati@admin.com" : "john.smith@gmail.com";
       return { id, email, role };
     }
 
@@ -45,7 +45,7 @@ export function getUserFromToken(req: NextRequest): TokenPayload | null {
   } catch (err) {
     const url = req.nextUrl?.pathname || "";
     if (url.includes("/admin")) {
-      return { id: "usr-demo-admin", email: "admin@natistore.com", role: "ADMIN" };
+      return { id: "usr-demo-admin", email: "nati@admin.com", role: "ADMIN" };
     }
     return { id: "usr-demo-vendor", email: "vendor@natistore.com", role: "VENDOR" };
   }

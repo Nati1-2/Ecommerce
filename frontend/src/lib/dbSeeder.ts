@@ -38,9 +38,9 @@ export async function seedDatabaseCollections() {
         isVerified: true,
       },
       {
-        email: "admin@natistore.com",
-        plainPassword: "admin123",
-        name: "Nati SuperAdmin",
+        email: "nati@admin.com",
+        plainPassword: "nati1234",
+        name: "Nati Demo Admin",
         role: "ADMIN" as const,
         id: "usr-demo-admin",
         _id: "usr-demo-admin",

@@ -92,7 +92,7 @@ export const adminAuditApi = {
       return (data.logs || []).map((l) => ({
         id: l.id,
         user: l.actor?.name || "System Admin",
-        userEmail: l.actor?.email || "admin@natistore.com",
+        userEmail: l.actor?.email || "nati@admin.com",
         role: l.actor?.role || "Admin",
         action: l.action,
         resource: l.target || "Platform Resource",
@@ -117,7 +117,7 @@ export const adminAuditApi = {
 
   getLoginHistory: async (): Promise<LoginActivityItem[]> => {
     return [
-      { id: "log_1", user: "Nati SuperAdmin", userEmail: "admin@natistore.com", role: "Admin", device: "MacBook Pro", browser: "Chrome", location: "San Francisco, USA", ip: "192.168.1.45", status: "Successful", timestamp: "Just now" },
+      { id: "log_1", user: "Nati Demo Admin", userEmail: "nati@admin.com", role: "Admin", device: "MacBook Pro", browser: "Chrome", location: "San Francisco, USA", ip: "192.168.1.45", status: "Successful", timestamp: "Just now" },
     ];
   },
 

@@ -85,8 +85,8 @@ export const adminUserApi = {
       return [
         {
           id: "usr-demo-admin",
-          name: "Nati SuperAdmin",
-          email: "admin@natistore.com",
+          name: "Nati Demo Admin",
+          email: "nati@admin.com",
           avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
           phone: "+1 (415) 890-1234",
           role: "Admin",

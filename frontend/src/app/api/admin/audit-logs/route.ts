@@ -44,8 +44,8 @@ export async function GET(req: NextRequest) {
         id: `aud_p_${p._id}`,
         timestamp: p.createdAt ? new Date(p.createdAt).toISOString() : new Date().toISOString(),
         actor: {
-          name: "Nati SuperAdmin",
-          email: "admin@natistore.com",
+          name: "Nati Demo Admin",
+          email: "nati@admin.com",
           role: "Super Admin",
           ip: "192.168.1.10",
         },
@@ -103,7 +103,7 @@ export async function GET(req: NextRequest) {
       {
         id: "aud_demo_1",
         timestamp: new Date().toISOString(),
-        actor: { name: "Nati SuperAdmin", email: "admin@natistore.com", role: "Super Admin", ip: "192.168.1.10" },
+        actor: { name: "Nati Demo Admin", email: "nati@admin.com", role: "Super Admin", ip: "192.168.1.10" },
         action: "PRODUCT_CATALOG_APPROVAL",
         category: "Catalog Clearance",
         severity: "medium",
