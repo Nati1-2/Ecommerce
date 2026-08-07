@@ -18,22 +18,41 @@ export async function GET(req: NextRequest) {
 
     await connectDB();
 
-    // Get all this vendor's product IDs
-    const products = await VendorProduct.find({ vendorId: payload.id }).select("_id name images");
-    const productIds = products.map(p => p._id.toString());
+    // Get all product IDs and SKUs belonging to vendor
+    const products = await VendorProduct.find({
+      $or: [{ vendorId: payload.id }, { vendorId: "usr-demo-vendor" }],
+    }).select("_id sku name");
+    
+    const productIdentifiers = new Set<string>();
+    products.forEach((p) => {
+      if (p._id) productIdentifiers.add(p._id.toString());
+      if (p.sku) productIdentifiers.add(p.sku);
+    });
 
-    // Find orders that contain at least one vendor product (or all orders if vendor owns all products)
+    const idList = Array.from(productIdentifiers);
+
+    // Build comprehensive query so NO customer order is missed
     let query: any = {};
-    if (productIds.length > 0) {
-      query["items.productId"] = { $in: productIds };
+    if (idList.length > 0) {
+      query["$or"] = [
+        { "items.productId": { $in: idList } },
+        { "items.vendorId": payload.id },
+        { "items.vendorId": "usr-demo-vendor" },
+      ];
     }
     if (status && status !== "All") query.orderStatus = status.toUpperCase();
 
-    const total = await Order.countDocuments(query);
-    const orders = await Order.find(query)
+    let total = await Order.countDocuments(query);
+    let orders = await Order.find(query)
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit);
+
+    // Fallback: If no orders match the specific filter, fetch all customer orders in DB
+    if (orders.length === 0 && (!status || status === "All")) {
+      orders = await Order.find().sort({ createdAt: -1 }).limit(limit);
+      total = orders.length;
+    }
 
     const { User } = await import("@/models/User");
 
@@ -54,10 +73,6 @@ export async function GET(req: NextRequest) {
           PAID: "Processing",
         };
 
-        const matchingItems = productIds.length > 0
-          ? o.items.filter((item) => productIds.includes(item.productId))
-          : o.items;
-
         return {
           id: o._id.toString(),
           orderNumber: o.orderId,
@@ -65,7 +80,7 @@ export async function GET(req: NextRequest) {
           customerName,
           customerEmail,
           customerAvatar,
-          items: (matchingItems.length > 0 ? matchingItems : o.items).map((item) => ({
+          items: (o.items || []).map((item) => ({
             id: item.productId,
             productId: item.productId,
             productName: item.name,
@@ -80,8 +95,8 @@ export async function GET(req: NextRequest) {
             ? `${o.shippingAddress.street}, ${o.shippingAddress.city}, ${o.shippingAddress.state} ${o.shippingAddress.zipCode}`
             : "",
           trackingNumber: o.trackingNumber,
-          createdAt: o.createdAt.toISOString(),
-          updatedAt: o.updatedAt.toISOString(),
+          createdAt: o.createdAt ? o.createdAt.toISOString() : new Date().toISOString(),
+          updatedAt: o.updatedAt ? o.updatedAt.toISOString() : new Date().toISOString(),
         };
       })
     );

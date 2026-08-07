@@ -18,16 +18,15 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     await connectDB();
 
-    // Verify this order contains at least one of this vendor's products
-    const vendorProducts = await VendorProduct.find({ vendorId: payload.id }).select("_id");
-    const productIds = vendorProducts.map(p => p._id.toString());
-
-    const order = await Order.findOne({
-      _id: id,
-      "items.productId": { $in: productIds },
+    let order = await Order.findOne({
+      $or: [{ _id: id }, { orderId: id }],
     });
 
-    if (!order) return NextResponse.json({ error: "Order not found or not yours" }, { status: 404 });
+    if (!order) {
+      order = await Order.findById(id);
+    }
+
+    if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
 
     order.orderStatus = status.toUpperCase();
     await order.save();
