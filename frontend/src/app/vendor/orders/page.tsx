@@ -155,52 +155,60 @@ export default function VendorOrdersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 ">
-              {filteredOrders.map((order) => (
-                <tr key={order.id} className="hover:bg-slate-50/50  transition-colors">
-                  <td className="py-4 px-6 font-mono font-bold text-xs text-slate-900 ">
-                    {order.orderNumber}
-                  </td>
-                  <td className="py-4 px-6">
-                    <p className="font-bold text-slate-900  text-xs">{order.customerName}</p>
-                    <p className="text-[11px] text-slate-400">{order.customerEmail}</p>
-                  </td>
-                  <td className="py-4 px-6 max-w-xs">
-                    <span className="text-xs text-slate-700  font-medium">
-                      {order.items[0]?.productName} ({order.items.length} item{order.items.length > 1 ? "s" : ""})
-                    </span>
-                  </td>
-                  <td className="py-4 px-6 font-extrabold text-slate-900 ">
-                    ${order.totalAmount.toFixed(2)}
-                  </td>
-                  <td className="py-4 px-6">
-                    <span className="text-[11px] font-bold text-emerald-600  bg-emerald-50  px-2 py-0.5 rounded-md">
-                      {order.paymentStatus} ({order.paymentMethod})
-                    </span>
-                  </td>
-                  <td className="py-4 px-6">
-                    <select
-                      value={order.status}
-                      onChange={(e) => updateStatusMutation.mutate({ id: order.id, status: e.target.value as OrderStatus })}
-                      className="text-xs bg-slate-100  text-slate-700  border-none rounded-lg px-2.5 py-1 font-semibold outline-none focus:ring-2 focus:ring-blue-600"
-                    >
-                      <option value="Pending">Pending</option>
-                      <option value="Processing">Processing</option>
-                      <option value="Shipped">Shipped</option>
-                      <option value="Delivered">Delivered</option>
-                      <option value="Cancelled">Cancelled</option>
-                    </select>
-                  </td>
-                  <td className="py-4 px-6 text-right">
-                    <button
-                      onClick={() => setActiveModalOrder(order)}
-                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-colors inline-flex items-center gap-1 shadow-sm"
-                    >
-                      <Eye className="w-3.5 h-3.5" />
-                      Details
-                    </button>
+              {filteredOrders.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-8 text-center text-slate-400 text-xs font-semibold">
+                    No customer orders found.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filteredOrders.map((order) => (
+                  <tr key={order.id} className="hover:bg-slate-50/50  transition-colors">
+                    <td className="py-4 px-6 font-mono font-bold text-xs text-slate-900 ">
+                      {order.orderNumber}
+                    </td>
+                    <td className="py-4 px-6">
+                      <p className="font-bold text-slate-900  text-xs">{order.customerName}</p>
+                      <p className="text-[11px] text-slate-400">{order.customerEmail}</p>
+                    </td>
+                    <td className="py-4 px-6 max-w-xs">
+                      <span className="text-xs text-slate-700  font-medium">
+                        {order.items[0]?.productName} ({order.items.length} item{order.items.length > 1 ? "s" : ""})
+                      </span>
+                    </td>
+                    <td className="py-4 px-6 font-extrabold text-slate-900 ">
+                      ${order.totalAmount.toFixed(2)}
+                    </td>
+                    <td className="py-4 px-6">
+                      <span className="text-[11px] font-bold text-emerald-600  bg-emerald-50  px-2 py-0.5 rounded-md">
+                        {order.paymentStatus} ({order.paymentMethod})
+                      </span>
+                    </td>
+                    <td className="py-4 px-6">
+                      <select
+                        value={order.status}
+                        onChange={(e) => updateStatusMutation.mutate({ id: order.id, status: e.target.value as OrderStatus })}
+                        className="text-xs bg-slate-100  text-slate-700  border-none rounded-lg px-2.5 py-1 font-semibold outline-none focus:ring-2 focus:ring-blue-600"
+                      >
+                        <option value="Pending">Pending</option>
+                        <option value="Processing">Processing</option>
+                        <option value="Shipped">Shipped</option>
+                        <option value="Delivered">Delivered</option>
+                        <option value="Cancelled">Cancelled</option>
+                      </select>
+                    </td>
+                    <td className="py-4 px-6 text-right">
+                      <button
+                        onClick={() => setActiveModalOrder(order)}
+                        className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-colors inline-flex items-center gap-1 shadow-sm"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        Details
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
