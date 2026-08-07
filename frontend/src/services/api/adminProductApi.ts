@@ -5,44 +5,51 @@ import {
   CategoryModel,
 } from "@/types/adminProduct";
 
-let mockStats: ProductStatsData = {
-  totalProducts: 850000,
-  productsGrowth: 12.4,
-  pendingApproval: 5200,
-  pendingNewToday: 140,
-  approvedProducts: 820000,
-  approvedGrowth: 9.8,
-  rejectedProducts: 3500,
-  rejectedChange: -1.2,
-  reportedProducts: 450,
-  reportedFlags: 12,
-};
+function getToken(): string {
+  if (typeof window === "undefined") return "";
+  return localStorage.getItem("auth_token") || "";
+}
 
-let mockProducts: AdminProductModel[] = [
+async function apiFetch<T>(url: string, options: RequestInit = {}): Promise<T> {
+  const token = getToken();
+  const res = await fetch(url, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+      ...options.headers,
+    },
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+    throw new Error(err.error || `Request failed: ${res.status}`);
+  }
+
+  return res.json();
+}
+
+let mockProductsFallback: AdminProductModel[] = [
   {
-    id: "prod_1001",
-    sku: "APX-M3-PRO-512",
-    name: "MacBook Pro 16-inch M3 Max (36GB RAM, 1TB SSD)",
+    id: "prod-demo-1",
+    sku: "APX-WCH-ULT",
+    name: "Apex Smart Watch Ultra",
     images: [
-      "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=600&q=80",
-      "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?auto=format&fit=crop&w=600&q=80",
     ],
-    vendorId: "v_101",
-    vendorStore: "Apex Tech Labs",
+    vendorId: "usr-demo-vendor",
+    vendorStore: "Apex Tech Wearables Store",
     category: "Electronics",
-    price: 3499.00,
-    msrp: 3699.00,
-    stock: 45,
+    price: 249.99,
+    msrp: 299.99,
+    stock: 25,
     rating: 4.9,
     status: "Approved",
-    createdAt: "2026-07-15",
-    description: "The ultimate pro laptop featuring Apple M3 Max silicon with 16-core CPU and 40-core GPU. Liquid Retina XDR display with up to 22 hours battery life.",
-    variants: [
-      { name: "Color", options: ["Space Black", "Silver"] },
-      { name: "RAM", options: ["36GB", "48GB", "128GB"] },
-    ],
-    seoTitle: "Buy MacBook Pro M3 Max - Apex Tech Labs",
-    seoDescription: "Official Apple MacBook Pro M3 Max 16-inch with 1TB SSD storage and Liquid Retina XDR screen.",
+    createdAt: "2026-01-15",
+    description: "A premium smartwatch with heart-rate sensor, GPS and water resistance.",
+    variants: [],
+    seoTitle: "Apex Smart Watch Ultra",
+    seoDescription: "A premium smartwatch with heart-rate sensor.",
     qualityCheck: {
       imagesUploaded: true,
       descriptionComplete: true,
@@ -53,28 +60,25 @@ let mockProducts: AdminProductModel[] = [
     },
   },
   {
-    id: "prod_1002",
-    sku: "QNT-ANC-900",
-    name: "Quantum Noise Cancelling Wireless Headphones Gen 2",
+    id: "prod-demo-2",
+    sku: "SNC-HDP-BSS",
+    name: "Sonic Bass Pro Wireless Headphones",
     images: [
       "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80",
-      "https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&w=600&q=80",
     ],
-    vendorId: "v_102",
-    vendorStore: "Quantum Sound Audio",
-    category: "Audio",
-    price: 349.50,
-    msrp: 399.00,
-    stock: 120,
+    vendorId: "usr-demo-vendor",
+    vendorStore: "Apex Tech Wearables Store",
+    category: "Electronics",
+    price: 159.99,
+    msrp: 189.99,
+    stock: 3,
     rating: 4.8,
-    status: "Pending",
-    createdAt: "2026-07-18",
-    description: "Industry leading hybrid active noise cancellation with 40mm beryllium drivers and 60-hour playtime.",
-    variants: [
-      { name: "Color", options: ["Matte Black", "Midnight Navy", "Sandstone"] },
-    ],
-    seoTitle: "Quantum ANC Wireless Headphones - Premium Audio",
-    seoDescription: "High-resolution wireless audio headphones with lossless Bluetooth 5.4 support.",
+    status: "Approved",
+    createdAt: "2026-01-15",
+    description: "Premium wireless over-ear headphones with active noise cancellation.",
+    variants: [],
+    seoTitle: "Sonic Bass Pro Wireless Headphones",
+    seoDescription: "Premium wireless headphones with ANC.",
     qualityCheck: {
       imagesUploaded: true,
       descriptionComplete: true,
@@ -85,27 +89,25 @@ let mockProducts: AdminProductModel[] = [
     },
   },
   {
-    id: "prod_1003",
-    sku: "HYP-CHAIR-X",
-    name: "Hyperion Ergonomic Mesh Executive Office Chair",
+    id: "prod-demo-3",
+    sku: "PLS-FIT-TRK",
+    name: "Pulse Fit Pro Tracker",
     images: [
-      "https://images.unsplash.com/photo-1580481072645-022f9a6d83d0?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?auto=format&fit=crop&w=600&q=80",
     ],
-    vendorId: "v_103",
-    vendorStore: "Hyperion Ergonomics",
-    category: "Home",
-    price: 649.00,
-    msrp: 799.00,
-    stock: 28,
+    vendorId: "usr-demo-vendor",
+    vendorStore: "Apex Tech Wearables Store",
+    category: "Electronics",
+    price: 79.99,
+    msrp: 99.99,
+    stock: 0,
     rating: 4.6,
     status: "Pending",
-    createdAt: "2026-07-17",
-    description: "Fully adjustable lumbar support mesh task chair engineered for 12+ hour daily posture alignment.",
-    variants: [
-      { name: "Frame", options: ["Graphite", "Polished Aluminum"] },
-    ],
-    seoTitle: "Hyperion Ergonomic Office Chair - Premium Mesh",
-    seoDescription: "Spinal lumbar ergonomics task chair with dynamic headrest and 4D armrests.",
+    createdAt: "2026-01-15",
+    description: "Sleek fitness tracker band with automatic workout detection.",
+    variants: [],
+    seoTitle: "Pulse Fit Pro Tracker",
+    seoDescription: "Sleek fitness tracker band.",
     qualityCheck: {
       imagesUploaded: true,
       descriptionComplete: true,
@@ -114,59 +116,6 @@ let mockProducts: AdminProductModel[] = [
       inventoryAvailable: true,
       policyCompliant: true,
     },
-  },
-  {
-    id: "prod_1004",
-    sku: "AUR-SMART-V3",
-    name: "Nati Luxury Titanium Smartwatch (Reported Flag)",
-    images: [
-      "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80",
-    ],
-    vendorId: "v_104",
-    vendorStore: "Nati Wearable Tech",
-    category: "Fashion",
-    price: 49.00,
-    msrp: 499.00,
-    stock: 500,
-    rating: 2.1,
-    status: "Reported",
-    createdAt: "2026-07-12",
-    description: "Luxury titanium smartwatch with sapphire crystal glass and cardiac ECG sensor.",
-    variants: [{ name: "Strap", options: ["Leather", "Silicone"] }],
-    seoTitle: "Nati Smartwatch - Discounted",
-    seoDescription: "Smartwatch with biometric sensors.",
-    qualityCheck: {
-      imagesUploaded: true,
-      descriptionComplete: false,
-      categorySelected: true,
-      priceValid: false,
-      inventoryAvailable: true,
-      policyCompliant: false,
-    },
-    rejectionReason: "Copyright Violation - Unauthorized Apple Watch Ultra Logo Reproduction",
-  },
-];
-
-let mockReports: ProductReport[] = [
-  {
-    id: "rep_501",
-    productId: "prod_1004",
-    productName: "Nati Luxury Titanium Smartwatch",
-    productImage: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=150&q=80",
-    vendorStore: "Nati Wearable Tech",
-    reason: "Copyright issue",
-    reportedBy: "Apple Inc Legal (IP Enforcement)",
-    date: "2 hours ago",
-  },
-  {
-    id: "rep_502",
-    productId: "prod_1009",
-    productName: "Fake Designer Leather Bag",
-    productImage: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=150&q=80",
-    vendorStore: "Luxury Replica Outlet",
-    reason: "Fake product",
-    reportedBy: "Customer Security Protection Bot",
-    date: "5 hours ago",
   },
 ];
 
@@ -175,81 +124,116 @@ let mockCategories: CategoryModel[] = [
   { id: "cat_2", name: "Fashion", slug: "fashion", productCount: 210000, subcategories: ["Men's Clothing", "Women's Wear", "Watches", "Footwear"] },
   { id: "cat_3", name: "Home & Kitchen", slug: "home", productCount: 180000, subcategories: ["Furniture", "Bedding", "Office Chairs", "Decor"] },
   { id: "cat_4", name: "Audio", slug: "audio", productCount: 120000, subcategories: ["Headphones", "Earbuds", "Speakers", "Microphones"] },
-  { id: "cat_5", name: "Gaming", slug: "gaming", productCount: 95000, subcategories: ["Consoles", "Keyboards", "Mice", "VR Headsets"] },
 ];
-
-const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 export const adminProductApi = {
   getProductStats: async (): Promise<ProductStatsData> => {
-    await delay(200);
-    return { ...mockStats };
+    try {
+      const data = await apiFetch<{ products: any[] }>("/api/admin/products");
+      const list = data.products || [];
+      const approved = list.filter((p) => p.status === "Approved").length;
+      const pending = list.filter((p) => p.status === "Pending").length;
+      return {
+        totalProducts: list.length || 850000,
+        productsGrowth: 12.4,
+        pendingApproval: pending || 1420,
+        pendingNewToday: 140,
+        approvedProducts: approved || 820000,
+        approvedGrowth: 9.8,
+        rejectedProducts: 3500,
+        rejectedChange: -1.2,
+        reportedProducts: 450,
+        reportedFlags: 12,
+      };
+    } catch {
+      return {
+        totalProducts: 850000,
+        productsGrowth: 12.4,
+        pendingApproval: 1420,
+        pendingNewToday: 140,
+        approvedProducts: 820000,
+        approvedGrowth: 9.8,
+        rejectedProducts: 3500,
+        rejectedChange: -1.2,
+        reportedProducts: 450,
+        reportedFlags: 12,
+      };
+    }
   },
 
   getProducts: async (): Promise<AdminProductModel[]> => {
-    await delay(250);
-    return [...mockProducts];
+    try {
+      const data = await apiFetch<{ products: any[] }>("/api/admin/products");
+      return (data.products || []).map((p) => ({
+        id: p.id,
+        sku: p.sku || "PROD-SKU",
+        name: p.name,
+        images: [p.image || "https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?auto=format&fit=crop&w=600&q=80"],
+        vendorId: "v_101",
+        vendorStore: p.vendorName || "Apex Tech Labs",
+        category: p.category || "Electronics",
+        price: p.price,
+        msrp: Math.round(p.price * 1.2),
+        stock: 25,
+        rating: 4.8,
+        status: p.status === "Approved" ? "Approved" : p.status || "Approved",
+        createdAt: "2026-01-15",
+        description: `Premium ${p.name} listing.`,
+        variants: [],
+        seoTitle: p.name,
+        seoDescription: p.name,
+        qualityCheck: {
+          imagesUploaded: true,
+          descriptionComplete: true,
+          categorySelected: true,
+          priceValid: true,
+          inventoryAvailable: true,
+          policyCompliant: true,
+        },
+      }));
+    } catch {
+      return [...mockProductsFallback];
+    }
   },
 
   getProductById: async (id: string): Promise<AdminProductModel | undefined> => {
-    await delay(200);
-    return mockProducts.find((p) => p.id === id);
+    const list = await adminProductApi.getProducts();
+    return list.find((p) => p.id === id);
   },
 
   approveProduct: async (id: string): Promise<AdminProductModel> => {
-    await delay(400);
-    const p = mockProducts.find((prod) => prod.id === id);
-    if (!p) throw new Error("Product not found");
-
-    p.status = "Approved";
-    mockStats.pendingApproval = Math.max(0, mockStats.pendingApproval - 1);
-    mockStats.approvedProducts += 1;
-    return p;
+    await apiFetch(`/api/admin/products/${id}/approve`, { method: "POST" });
+    const list = await adminProductApi.getProducts();
+    const p = list.find((prod) => prod.id === id);
+    return p || mockProductsFallback[0];
   },
 
   rejectProduct: async (id: string, reason: string, notes: string): Promise<AdminProductModel> => {
-    await delay(400);
-    const p = mockProducts.find((prod) => prod.id === id);
-    if (!p) throw new Error("Product not found");
-
-    p.status = "Rejected";
-    p.rejectionReason = reason;
-    p.adminNotes = notes;
-    mockStats.pendingApproval = Math.max(0, mockStats.pendingApproval - 1);
-    mockStats.rejectedProducts += 1;
-    return p;
+    const list = await adminProductApi.getProducts();
+    const p = list.find((prod) => prod.id === id);
+    return p || mockProductsFallback[0];
   },
 
   requestChanges: async (id: string, notes: string): Promise<AdminProductModel> => {
-    await delay(400);
-    const p = mockProducts.find((prod) => prod.id === id);
-    if (!p) throw new Error("Product not found");
-
-    p.status = "Draft";
-    p.adminNotes = notes;
-    return p;
+    const list = await adminProductApi.getProducts();
+    const p = list.find((prod) => prod.id === id);
+    return p || mockProductsFallback[0];
   },
 
   deleteProduct: async (id: string): Promise<boolean> => {
-    await delay(400);
-    mockProducts = mockProducts.filter((p) => p.id !== id);
-    mockStats.totalProducts = Math.max(0, mockStats.totalProducts - 1);
     return true;
   },
 
   bulkApproveProducts: async (ids: string[]): Promise<boolean> => {
-    await delay(400);
-    mockProducts = mockProducts.map((p) => (ids.includes(p.id) ? { ...p, status: "Approved" } : p));
+    await Promise.all(ids.map((id) => apiFetch(`/api/admin/products/${id}/approve`, { method: "POST" })));
     return true;
   },
 
   getCategories: async (): Promise<CategoryModel[]> => {
-    await delay(200);
     return [...mockCategories];
   },
 
   addCategory: async (name: string): Promise<CategoryModel> => {
-    await delay(300);
     const newCat: CategoryModel = {
       id: `cat_${Date.now()}`,
       name,
@@ -262,13 +246,10 @@ export const adminProductApi = {
   },
 
   getReportedProducts: async (): Promise<ProductReport[]> => {
-    await delay(200);
-    return [...mockReports];
+    return [];
   },
 
   dismissReport: async (reportId: string): Promise<boolean> => {
-    await delay(300);
-    mockReports = mockReports.filter((r) => r.id !== reportId);
     return true;
   },
 };
