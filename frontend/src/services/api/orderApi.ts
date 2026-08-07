@@ -1,28 +1,41 @@
-import axios from 'axios';
+function getToken(): string {
+  if (typeof window === "undefined") return "";
+  return localStorage.getItem("auth_token") || "";
+}
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+async function apiFetch<T>(url: string, options: RequestInit = {}): Promise<T> {
+  const token = getToken();
+  const res = await fetch(url, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...options.headers,
+    },
+  });
 
-const getHeaders = () => {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-  return {
-    'Content-Type': 'application/json',
-    ...(token && { Authorization: `Bearer ${token}` }),
-  };
-};
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+    throw new Error(err.error || `Request failed: ${res.status}`);
+  }
+
+  return res.json();
+}
 
 export const orderApi = {
   createOrder: async (orderData: any) => {
-    const response = await axios.post(`${API_BASE_URL}/v1/orders`, orderData, { headers: getHeaders() });
-    return response.data;
-  },
-  
-  getOrder: async (orderId: string) => {
-    const response = await axios.get(`${API_BASE_URL}/v1/orders/${orderId}`, { headers: getHeaders() });
-    return response.data;
+    return apiFetch<{ success: boolean; data: any }>("/api/orders", {
+      method: "POST",
+      body: JSON.stringify(orderData),
+    });
   },
 
-  getUserOrders: async () => {
-    const response = await axios.get(`${API_BASE_URL}/v1/orders`, { headers: getHeaders() });
-    return response.data;
-  }
+  getOrder: async (orderId: string) => {
+    return apiFetch<{ success: boolean; data: any }>(`/api/orders/${orderId}`);
+  },
+
+  getUserOrders: async (userId?: string) => {
+    const query = userId ? `?userId=${userId}` : "";
+    return apiFetch<{ success: boolean; data: any[] }>(`/api/orders${query}`);
+  },
 };
