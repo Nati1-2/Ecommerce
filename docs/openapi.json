@@ -1,0 +1,61 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Nati Store E-Commerce Marketplace API",
+    "version": "2.5.0",
+    "description": "Production Serverless Marketplace API for Customers, Vendors, and Admins"
+  },
+  "servers": [
+    {
+      "url": "https://natistore.com/api",
+      "description": "Production Serverless API"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health Check & Database Ping",
+        "responses": {
+          "200": { "description": "System Healthy" }
+        }
+      }
+    },
+    "/products": {
+      "get": {
+        "summary": "Search & Filter Products",
+        "parameters": [
+          { "name": "query", "in": "query", "schema": { "type": "string" } },
+          { "name": "category", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "List of catalog products" }
+        }
+      }
+    },
+    "/orders": {
+      "get": {
+        "summary": "Customer Order History",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "List of user orders" }
+        }
+      },
+      "post": {
+        "summary": "Create Order",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "201": { "description": "Order Created" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}
