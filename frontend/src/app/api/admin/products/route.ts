@@ -24,21 +24,27 @@ export async function GET(req: NextRequest) {
           Active: "Approved",
           Pending: "Pending",
           Draft: "Draft",
-          Rejected: "Draft",
+          Rejected: "Rejected",
+          Paused: "Draft",
         };
 
         return {
           id: p._id.toString(),
           name: p.name,
           image: p.images?.[0] || "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=300&q=80",
-          vendorName: store?.storeName || "Unknown Vendor",
+          vendorId: p.vendorId,
+          vendorName: store?.storeName || "Vendor Store",
           sku: p.sku,
           category: p.category,
           price: p.price,
+          msrp: p.discountPrice || Math.round(p.price * 1.2),
+          stock: p.stock ?? 0,
           sales: p.salesCount || 0,
           revenue: p.revenueGenerated || 0,
           views: (p as any).views || p.salesCount || 0,
           status: statusMap[p.status] || "Pending",
+          createdAt: p.createdAt ? p.createdAt.toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
+          description: p.description || "",
         };
       })
     );
@@ -49,4 +55,5 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({ success: true, products: products || [] });
 }
+
 

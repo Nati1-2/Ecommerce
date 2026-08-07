@@ -131,32 +131,35 @@ export const adminProductApi = {
     try {
       const data = await apiFetch<{ products: any[] }>("/api/admin/products");
       const list = data.products || [];
-      const approved = list.filter((p) => p.status === "Approved").length;
+      const approved = list.filter((p) => p.status === "Approved" || p.status === "Active").length;
       const pending = list.filter((p) => p.status === "Pending").length;
+      const rejected = list.filter((p) => p.status === "Rejected" || p.status === "Draft").length;
+      const reported = list.filter((p) => p.status === "Reported").length;
+
       return {
-        totalProducts: list.length || 850000,
-        productsGrowth: 12.4,
-        pendingApproval: pending || 1420,
-        pendingNewToday: 140,
-        approvedProducts: approved || 820000,
-        approvedGrowth: 9.8,
-        rejectedProducts: 3500,
-        rejectedChange: -1.2,
-        reportedProducts: 450,
-        reportedFlags: 12,
+        totalProducts: list.length,
+        productsGrowth: 0,
+        pendingApproval: pending,
+        pendingNewToday: 0,
+        approvedProducts: approved,
+        approvedGrowth: 0,
+        rejectedProducts: rejected,
+        rejectedChange: 0,
+        reportedProducts: reported,
+        reportedFlags: 0,
       };
     } catch {
       return {
-        totalProducts: 850000,
-        productsGrowth: 12.4,
-        pendingApproval: 1420,
-        pendingNewToday: 140,
-        approvedProducts: 820000,
-        approvedGrowth: 9.8,
-        rejectedProducts: 3500,
-        rejectedChange: -1.2,
-        reportedProducts: 450,
-        reportedFlags: 12,
+        totalProducts: 0,
+        productsGrowth: 0,
+        pendingApproval: 0,
+        pendingNewToday: 0,
+        approvedProducts: 0,
+        approvedGrowth: 0,
+        rejectedProducts: 0,
+        rejectedChange: 0,
+        reportedProducts: 0,
+        reportedFlags: 0,
       };
     }
   },
@@ -169,17 +172,17 @@ export const adminProductApi = {
         sku: p.sku || "PROD-SKU",
         name: p.name,
         images: [p.image || "https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?auto=format&fit=crop&w=600&q=80"],
-        vendorId: "v_101",
-        vendorStore: p.vendorName || "Apex Tech Labs",
-        category: p.category || "Electronics",
-        price: p.price,
-        msrp: Math.round(p.price * 1.2),
-        stock: 25,
-        rating: 4.8,
-        status: p.status === "Approved" ? "Approved" : p.status || "Approved",
-        createdAt: "2026-01-15",
-        description: `Premium ${p.name} listing.`,
-        variants: [],
+        vendorId: p.vendorId || "v_101",
+        vendorStore: p.vendorName || "Vendor Store",
+        category: p.category || "General",
+        price: p.price || 0,
+        msrp: p.msrp || Math.round((p.price || 0) * 1.2),
+        stock: p.stock ?? 0,
+        rating: p.rating || 5.0,
+        status: p.status === "Active" ? "Approved" : p.status || "Approved",
+        createdAt: p.createdAt || new Date().toISOString().split("T")[0],
+        description: p.description || `Listing for ${p.name}.`,
+        variants: p.variants || [],
         seoTitle: p.name,
         seoDescription: p.name,
         qualityCheck: {
@@ -187,12 +190,12 @@ export const adminProductApi = {
           descriptionComplete: true,
           categorySelected: true,
           priceValid: true,
-          inventoryAvailable: true,
+          inventoryAvailable: (p.stock ?? 0) > 0,
           policyCompliant: true,
         },
       }));
     } catch {
-      return [...mockProductsFallback];
+      return [];
     }
   },
 
