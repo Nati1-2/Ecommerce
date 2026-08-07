@@ -74,23 +74,23 @@ export const adminReviewApi = {
       const data = await apiFetch<{ reviews: any[] }>("/api/admin/reviews");
       const list = data.reviews || [];
       const totalRating = list.reduce((sum, r) => sum + (r.rating || 5), 0);
-      const avgRating = list.length ? Math.round((totalRating / list.length) * 10) / 10 : 4.8;
+      const avgRating = list.length ? Math.round((totalRating / list.length) * 10) / 10 : 0;
       return {
-        totalReviews: list.length || 5000000,
-        totalGrowth: 12.4,
+        totalReviews: list.length,
+        totalGrowth: 0,
         avgRating,
-        pendingCount: list.filter((r) => r.status === "Pending").length || 2500,
-        reportedCount: list.filter((r) => r.status === "Reported").length || 300,
-        removedCount: list.filter((r) => r.status === "Removed").length || 150,
+        pendingCount: list.filter((r) => r.status === "Pending").length,
+        reportedCount: list.filter((r) => r.status === "Reported").length,
+        removedCount: list.filter((r) => r.status === "Removed").length,
       };
     } catch {
       return {
-        totalReviews: 5000000,
-        totalGrowth: 12.4,
-        avgRating: 4.8,
-        pendingCount: 2500,
-        reportedCount: 300,
-        removedCount: 150,
+        totalReviews: 0,
+        totalGrowth: 0,
+        avgRating: 0,
+        pendingCount: 0,
+        reportedCount: 0,
+        removedCount: 0,
       };
     }
   },
@@ -101,13 +101,13 @@ export const adminReviewApi = {
       return (data.reviews || []).map((r) => ({
         id: r.id,
         customerName: r.customerName || "Customer",
-        customerEmail: r.customerEmail || "customer@natistore.com",
+        customerEmail: r.customerEmail || "",
         customerAvatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
         isVerifiedBuyer: true,
         productName: r.productName || "Marketplace Product",
         productSku: "PROD-SKU",
         productImage: r.productImage || "https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?auto=format&fit=crop&w=150&q=80",
-        vendorStore: r.vendorName || "Apex Tech Labs",
+        vendorStore: r.vendorName || "Vendor Store",
         rating: r.rating || 5,
         comment: r.comment || "Great product!",
         images: [],
@@ -115,7 +115,7 @@ export const adminReviewApi = {
         createdAt: r.createdAt || "Just now",
       }));
     } catch {
-      return [...mockReviewsFallback];
+      return [];
     }
   },
 

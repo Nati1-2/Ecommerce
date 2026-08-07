@@ -51,8 +51,8 @@ export async function GET(req: NextRequest) {
       revenue: Math.round(data.revenue * 100) / 100,
       orders: data.orders,
       profit: Math.round(data.profit * 100) / 100,
-      conversionRate: data.orders > 0 ? 3 + Math.random() * 2 : 0,
-      views: Math.floor(data.orders * 20 + Math.random() * 200),
+      conversionRate: data.orders > 0 ? 3.5 : 0,
+      views: data.orders * 25,
     }));
 
     // Category breakdown from products

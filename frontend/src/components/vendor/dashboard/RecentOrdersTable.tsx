@@ -57,65 +57,73 @@ export default function RecentOrdersTable({ orders, onUpdateStatus }: Props) {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50 ">
-            {orders.slice(0, 5).map((order) => (
-              <tr key={order.id} className="hover:bg-slate-50/50  transition-colors">
-                <td className="py-4 px-6 font-bold text-slate-900  font-mono text-xs">
-                  {order.orderNumber}
-                </td>
-                <td className="py-4 px-6">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={order.customerAvatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=80&q=80"}
-                      alt={order.customerName}
-                      className="w-8 h-8 rounded-full object-cover"
-                    />
-                    <div>
-                      <p className="font-semibold text-slate-900  text-xs">{order.customerName}</p>
-                      <p className="text-[11px] text-slate-400">{order.customerEmail}</p>
-                    </div>
-                  </div>
-                </td>
-                <td className="py-4 px-6 max-w-xs">
-                  <div className="flex items-center gap-2">
-                    <img
-                      src={order.items[0]?.productImage}
-                      alt={order.items[0]?.productName}
-                      className="w-8 h-8 rounded-lg object-cover bg-slate-100 shrink-0"
-                    />
-                    <span className="text-xs text-slate-700  font-medium truncate">
-                      {order.items[0]?.productName}
-                      {order.items.length > 1 && ` (+${order.items.length - 1} more)`}
-                    </span>
-                  </div>
-                </td>
-                <td className="py-4 px-6 font-bold text-slate-900 ">
-                  ${order.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                </td>
-                <td className="py-4 px-6">
-                  <span
-                    className={cn(
-                      "text-[11px] font-bold px-2.5 py-1 rounded-full border",
-                      getStatusBadge(order.status)
-                    )}
-                  >
-                    {order.status}
-                  </span>
-                </td>
-                <td className="py-4 px-6 text-right">
-                  <select
-                    value={order.status}
-                    onChange={(e) => onUpdateStatus && onUpdateStatus(order.id, e.target.value as OrderStatus)}
-                    className="text-xs bg-slate-100  text-slate-700  border-none rounded-lg px-2.5 py-1 font-medium focus:ring-2 focus:ring-blue-600 outline-none"
-                  >
-                    <option value="Pending">Pending</option>
-                    <option value="Processing">Processing</option>
-                    <option value="Shipped">Shipped</option>
-                    <option value="Delivered">Delivered</option>
-                    <option value="Cancelled">Cancelled</option>
-                  </select>
+            {orders.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="py-8 text-center text-slate-400 text-xs font-semibold">
+                  No orders found in your store yet.
                 </td>
               </tr>
-            ))}
+            ) : (
+              orders.slice(0, 5).map((order) => (
+                <tr key={order.id} className="hover:bg-slate-50/50  transition-colors">
+                  <td className="py-4 px-6 font-bold text-slate-900  font-mono text-xs">
+                    {order.orderNumber}
+                  </td>
+                  <td className="py-4 px-6">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={order.customerAvatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=80&q=80"}
+                        alt={order.customerName}
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                      <div>
+                        <p className="font-semibold text-slate-900  text-xs">{order.customerName}</p>
+                        <p className="text-[11px] text-slate-400">{order.customerEmail}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-4 px-6 max-w-xs">
+                    <div className="flex items-center gap-2">
+                      <img
+                        src={order.items[0]?.productImage}
+                        alt={order.items[0]?.productName}
+                        className="w-8 h-8 rounded-lg object-cover bg-slate-100 shrink-0"
+                      />
+                      <span className="text-xs text-slate-700  font-medium truncate">
+                        {order.items[0]?.productName}
+                        {order.items.length > 1 && ` (+${order.items.length - 1} more)`}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="py-4 px-6 font-bold text-slate-900 ">
+                    ${order.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  </td>
+                  <td className="py-4 px-6">
+                    <span
+                      className={cn(
+                        "text-[11px] font-bold px-2.5 py-1 rounded-full border",
+                        getStatusBadge(order.status)
+                      )}
+                    >
+                      {order.status}
+                    </span>
+                  </td>
+                  <td className="py-4 px-6 text-right">
+                    <select
+                      value={order.status}
+                      onChange={(e) => onUpdateStatus && onUpdateStatus(order.id, e.target.value as OrderStatus)}
+                      className="text-xs bg-slate-100  text-slate-700  border-none rounded-lg px-2.5 py-1 font-medium focus:ring-2 focus:ring-blue-600 outline-none"
+                    >
+                      <option value="Pending">Pending</option>
+                      <option value="Processing">Processing</option>
+                      <option value="Shipped">Shipped</option>
+                      <option value="Delivered">Delivered</option>
+                      <option value="Cancelled">Cancelled</option>
+                    </select>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
