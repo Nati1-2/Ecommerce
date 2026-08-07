@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import { Order, PaymentStatus, OrderStatus } from "@/models/Order";
+import { PaymentEvent } from "@/models/PaymentEvent";
 import { notifyOrderCreated } from "@/lib/notifications";
 import Stripe from "stripe";
 
@@ -29,6 +30,20 @@ export async function POST(req: NextRequest) {
     }
 
     await connectDB();
+
+    // Idempotency check: Skip if event already processed
+    const existingEvent = await PaymentEvent.findOne({ stripeEventId: event.id });
+    if (existingEvent && existingEvent.processed) {
+      return NextResponse.json({ received: true, idempotent: true });
+    }
+
+    // Save event record
+    await PaymentEvent.create({
+      stripeEventId: event.id,
+      eventType: event.type,
+      processed: false,
+      payload: event.data.object as any,
+    }).catch(() => null);
 
     switch (event.type) {
       case "checkout.session.completed":
@@ -75,6 +90,12 @@ export async function POST(req: NextRequest) {
       default:
         console.log(`Unhandled Stripe event type: ${event.type}`);
     }
+
+    // Mark event as processed
+    await PaymentEvent.findOneAndUpdate(
+      { stripeEventId: event.id },
+      { $set: { processed: true } }
+    ).catch(() => null);
 
     return NextResponse.json({ received: true });
   } catch (error: any) {
