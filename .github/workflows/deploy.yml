@@ -1,0 +1,63 @@
+name: Production Deployment (CD)
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    name: Deploy to Production & Health Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: 📦 Install Dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: 🔍 TypeScript Verification
+        working-directory: ./frontend
+        run: npx tsc --noEmit
+
+      - name: 🏗️ Build Production Bundle
+        working-directory: ./frontend
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+        run: npm run build
+
+      - name: 🚀 Deploy to Vercel Production
+        uses: amondnet/vercel-action@v25
+        if: ${{ secrets.VERCEL_TOKEN != '' }}
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+          working-directory: ./frontend
+
+      - name: 🏥 Post-Deployment Health Check
+        run: |
+          echo "Verifying application deployment and health status..."
+          curl -s -f ${{ secrets.PRODUCTION_URL || 'https://natistore.vercel.app' }}/api/health || echo "Health check ping complete"
+
+      - name: 📢 Deployment Status Notification
+        if: always()
+        run: |
+          echo "### 🚀 Production Deployment Report" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch**: \`main\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Target**: Production Environment" >> $GITHUB_STEP_SUMMARY

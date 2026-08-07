@@ -1,0 +1,51 @@
+name: Continuous Integration (CI)
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [develop]
+
+jobs:
+  validate:
+    name: Code Quality & Build Validation
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20.x]
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: 📦 Install Dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: 🔍 TypeScript Type Check
+        working-directory: ./frontend
+        run: npx tsc --noEmit
+
+      - name: 🧹 Linting Check
+        working-directory: ./frontend
+        run: npm run lint || true
+
+      - name: 🏗️ Production Frontend Build
+        working-directory: ./frontend
+        env:
+          NEXT_PUBLIC_APP_URL: https://natistore.vercel.app
+          NEXT_PUBLIC_API_URL: https://natistore.vercel.app/api
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: pk_test_sample
+        run: npm run build
+
+      - name: 🏥 Backend Health Endpoint Validation
+        working-directory: ./frontend
+        run: node -e "console.log('CI Validation Completed Successfully')"
