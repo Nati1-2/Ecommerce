@@ -106,30 +106,34 @@ export const adminOrderApi = {
       const data = await apiFetch<{ orders: any[] }>("/api/admin/orders");
       const list = data.orders || [];
       const totalRev = list.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+      const pending = list.filter((o) => o.status === "Pending" || o.status === "Processing").length;
+      const completed = list.filter((o) => o.status === "Delivered" || o.status === "Shipped").length;
+      const cancelled = list.filter((o) => o.status === "Cancelled").length;
+
       return {
-        totalOrders: list.length || 320000,
-        totalGrowth: 18.5,
-        todayOrders: 5400,
-        todayGrowth: 14.2,
-        pendingOrders: list.filter((o) => o.status === "Pending").length || 1250,
-        completedOrders: list.filter((o) => o.status === "Delivered").length || 310000,
-        cancelledOrders: list.filter((o) => o.status === "Cancelled").length || 5000,
-        cancelledChange: -1.2,
-        totalRevenue: Math.round(totalRev * 100) / 100 || 12500000,
-        revenueGrowth: 22.1,
+        totalOrders: list.length,
+        totalGrowth: 0,
+        todayOrders: 0,
+        todayGrowth: 0,
+        pendingOrders: pending,
+        completedOrders: completed,
+        cancelledOrders: cancelled,
+        cancelledChange: 0,
+        totalRevenue: Math.round(totalRev * 100) / 100,
+        revenueGrowth: 0,
       };
     } catch {
       return {
-        totalOrders: 320000,
-        totalGrowth: 18.5,
-        todayOrders: 5400,
-        todayGrowth: 14.2,
-        pendingOrders: 1250,
-        completedOrders: 310000,
-        cancelledOrders: 5000,
-        cancelledChange: -1.2,
-        totalRevenue: 12500000,
-        revenueGrowth: 22.1,
+        totalOrders: 0,
+        totalGrowth: 0,
+        todayOrders: 0,
+        todayGrowth: 0,
+        pendingOrders: 0,
+        completedOrders: 0,
+        cancelledOrders: 0,
+        cancelledChange: 0,
+        totalRevenue: 0,
+        revenueGrowth: 0,
       };
     }
   },
@@ -140,38 +144,36 @@ export const adminOrderApi = {
       return (data.orders || []).map((o) => ({
         id: o.id,
         customerName: o.customerName || "Customer",
-        customerEmail: "customer@natistore.com",
-        customerAvatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
+        customerEmail: o.customerEmail || "",
+        customerAvatar: o.customerAvatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
         customerPhone: "+1 (555) 019-2831",
-        shippingAddress: "742 Evergreen Terrace, Springfield, IL",
-        vendorStore: o.vendorName || "Apex Tech Labs",
-        vendorId: "v_101",
-        products: [
-          {
-            id: "prod_1",
-            name: "Order Product Item",
-            image: "https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?auto=format&fit=crop&w=150&q=80",
-            quantity: 1,
-            price: o.totalAmount || 249.99,
-            variant: "Standard",
-          },
-        ],
-        amount: o.totalAmount || 249.99,
-        subtotal: o.totalAmount || 249.99,
-        tax: 20.00,
+        shippingAddress: o.shippingAddress || "N/A",
+        vendorStore: o.vendorName || "Vendor Store",
+        vendorId: o.vendorId || "v_101",
+        products: (o.items || []).map((item: any) => ({
+          id: item.productId || "prod_1",
+          name: item.productName || item.name || "Order Item",
+          image: item.productImage || item.image || "https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?auto=format&fit=crop&w=150&q=80",
+          quantity: item.quantity || 1,
+          price: item.unitPrice || item.price || 0,
+          variant: "Standard",
+        })),
+        amount: o.totalAmount || 0,
+        subtotal: o.totalAmount || 0,
+        tax: 0.00,
         shippingFee: 0.00,
         discount: 0.00,
-        paymentStatus: "Paid",
-        orderStatus: o.status === "Processing" ? "Processing" : o.status || "Processing",
+        paymentStatus: o.paymentStatus || "Paid",
+        orderStatus: o.status || "Processing",
         paymentMethod: o.paymentMethod || "Stripe Card",
-        stripeChargeId: `ch_${o.orderNumber}`,
+        stripeChargeId: o.orderNumber ? `ch_${o.orderNumber}` : `ch_${o.id}`,
         carrier: "FedEx Express",
-        trackingNumber: `TRK-${o.orderNumber}`,
-        estimatedDelivery: "2026-08-10",
-        createdAt: o.createdAt || "Just now",
+        trackingNumber: o.trackingNumber || `TRK-${o.orderNumber || o.id}`,
+        estimatedDelivery: "2-4 Business Days",
+        createdAt: o.createdAt || new Date().toISOString(),
       }));
     } catch {
-      return [...mockOrdersFallback];
+      return [];
     }
   },
 

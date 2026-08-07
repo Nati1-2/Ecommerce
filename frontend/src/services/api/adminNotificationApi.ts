@@ -73,24 +73,25 @@ export const adminNotificationApi = {
   getStats: async (): Promise<NotificationStatsData> => {
     try {
       const data = await apiFetch<{ notifications: any[] }>("/api/admin/notifications");
+      const list = data.notifications || [];
       return {
-        totalSent: 1500000,
-        totalGrowth: 14.5,
-        delivered: 1420000,
-        deliveryRate: 94.6,
-        failed: 8000,
-        openRate: 72,
-        clickRate: 35,
+        totalSent: list.length,
+        totalGrowth: 0,
+        delivered: list.length,
+        deliveryRate: 100,
+        failed: 0,
+        openRate: 0,
+        clickRate: 0,
       };
     } catch {
       return {
-        totalSent: 1500000,
-        totalGrowth: 14.5,
-        delivered: 1420000,
-        deliveryRate: 94.6,
-        failed: 8000,
-        openRate: 72,
-        clickRate: 35,
+        totalSent: 0,
+        totalGrowth: 0,
+        delivered: 0,
+        deliveryRate: 0,
+        failed: 0,
+        openRate: 0,
+        clickRate: 0,
       };
     }
   },

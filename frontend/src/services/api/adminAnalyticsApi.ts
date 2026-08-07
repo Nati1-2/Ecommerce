@@ -89,84 +89,147 @@ let mockRealtime: RealtimeStats = {
 const API_BASE = process.env.NEXT_PUBLIC_API_GATEWAY_URL || "http://localhost:8000/api/v1";
 const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
+function getToken(): string {
+  if (typeof window === "undefined") return "";
+  return localStorage.getItem("auth_token") || "";
+}
+
+async function apiFetch<T>(url: string): Promise<T> {
+  const token = getToken();
+  const res = await fetch(url, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
 export const adminAnalyticsApi = {
   getKPIMetrics: async (): Promise<KPIMetric[]> => {
     try {
-      const res = await axios.get(`${API_BASE}/analytics/overview`, { withCredentials: true });
-      if (res.data?.success && res.data.data) {
-        const ov = res.data.data;
-        return [
-          { id: "kpi_1", title: "Gross Merchandise Value (GMV)", value: `$${ov.totalRevenue.toLocaleString()}`, growth: 24.5, prevComparison: "real-time aggregated", category: "gmv" },
-          { id: "kpi_2", title: "Total Marketplace Revenue", value: `$${ov.totalRevenue.toLocaleString()}`, growth: 22.1, prevComparison: "real-time aggregated", category: "revenue" },
-          { id: "kpi_3", title: "Total Executed Orders", value: `${ov.totalOrders.toLocaleString()}`, growth: 18.5, prevComparison: "real-time aggregated", category: "orders" },
-          { id: "kpi_4", title: "Items Sold", value: `${ov.itemsSold.toLocaleString()}`, growth: 15.8, prevComparison: "real-time aggregated", category: "customers" },
-          { id: "kpi_5", title: "Successful Payments", value: `${ov.successfulPayments.toLocaleString()}`, growth: 14.2, prevComparison: "real-time aggregated", category: "vendors" },
-          { id: "kpi_6", title: "Conversion Rate", value: `${ov.conversionRate}%`, growth: 1.4, prevComparison: "real-time aggregated", category: "conversion" },
-        ];
-      }
+      const data = await apiFetch<{ stats: any }>("/api/admin/stats");
+      const st = data.stats || {};
+      return [
+        { id: "kpi_1", title: "Gross Merchandise Value (GMV)", value: `$${(st.revenue || 0).toLocaleString()}`, growth: st.revenueGrowth || 0, prevComparison: "real-time aggregated", category: "gmv" },
+        { id: "kpi_2", title: "Total Marketplace Revenue", value: `$${(st.revenue || 0).toLocaleString()}`, growth: st.revenueGrowth || 0, prevComparison: "real-time aggregated", category: "revenue" },
+        { id: "kpi_3", title: "Total Executed Orders", value: `${(st.orders || 0).toLocaleString()}`, growth: st.ordersGrowth || 0, prevComparison: "real-time aggregated", category: "orders" },
+        { id: "kpi_4", title: "Active Customer Accounts", value: `${(st.users || 0).toLocaleString()}`, growth: st.usersGrowth || 0, prevComparison: "real-time aggregated", category: "customers" },
+        { id: "kpi_5", title: "Verified Vendor Stores", value: `${(st.vendors || 0).toLocaleString()}`, growth: st.vendorsGrowth || 0, prevComparison: "real-time aggregated", category: "vendors" },
+        { id: "kpi_6", title: "Listed Products", value: `${(st.products || 0).toLocaleString()}`, growth: st.productsGrowth || 0, prevComparison: "real-time aggregated", category: "conversion" },
+      ];
     } catch {
-      // Graceful fallback to mock data
+      return [];
     }
-    await delay(200);
-    return [...mockKPIMetrics];
   },
 
   getRevenueAnalytics: async (timeframe: AnalyticsTimeframe): Promise<RevenueDataPoint[]> => {
     try {
-      const res = await axios.get(`${API_BASE}/analytics/revenue-chart?days=30`, { withCredentials: true });
-      if (res.data?.success && Array.isArray(res.data.data) && res.data.data.length > 0) {
-        return res.data.data.map((item: any) => ({
-          date: item.date,
-          revenue: item.totalRevenue,
-          gmv: item.totalRevenue * 1.2,
-          profit: Math.round(item.totalRevenue * 0.15),
-          orders: item.totalOrders
-        }));
-      }
+      const data = await apiFetch<{ analytics: { revenueData: any[] } }>(`/api/admin/analytics?timeframe=${timeframe}`);
+      return (data.analytics?.revenueData || []).map((r) => ({
+        date: r.date,
+        revenue: r.revenue || 0,
+        gmv: (r.revenue || 0) * 1.15,
+        profit: r.profit || 0,
+        orders: r.sales || 0,
+      }));
     } catch {
-      // Graceful fallback to mock data
+      return [];
     }
-    await delay(250);
-    return [...mockRevenueData];
   },
 
   getUserGrowth: async (timeframe: AnalyticsTimeframe): Promise<UserGrowthPoint[]> => {
-    await delay(200);
-    return [...mockUserGrowth];
+    try {
+      const data = await apiFetch<{ analytics: { userGrowthData: any[] } }>(`/api/admin/analytics?timeframe=${timeframe}`);
+      return (data.analytics?.userGrowthData || []).map((u) => ({
+        date: u.date,
+        newUsers: u.newUsers || 0,
+        activeUsers: u.activeUsers || 0,
+        returningUsers: u.returningUsers || 0,
+        retentionRate: u.activeUsers > 0 ? Math.round((u.returningUsers / u.activeUsers) * 100) : 0,
+      }));
+    } catch {
+      return [];
+    }
   },
 
   getCustomerFunnel: async (): Promise<FunnelStage[]> => {
-    await delay(200);
-    return [...mockFunnel];
+    try {
+      const data = await apiFetch<{ stats: any }>("/api/admin/stats");
+      const st = data.stats || {};
+      const totalVisits = (st.users || 0) * 10 || 0;
+      const totalViews = (st.products || 0) * 5 || 0;
+      const totalOrders = st.orders || 0;
+      return [
+        { stage: "Storefront Visits", count: totalVisits, conversionRate: 100, dropoffRate: 0 },
+        { stage: "Product Page Views", count: totalViews, conversionRate: totalVisits > 0 ? Math.round((totalViews / totalVisits) * 100) : 0, dropoffRate: 0 },
+        { stage: "Purchase Completed", count: totalOrders, conversionRate: totalViews > 0 ? Math.round((totalOrders / totalViews) * 100) : 0, dropoffRate: 0 },
+      ];
+    } catch {
+      return [];
+    }
   },
 
   getVendorAnalytics: async (): Promise<VendorAnalyticsItem[]> => {
-    await delay(250);
-    return [...mockVendorLeaderboard];
+    try {
+      const data = await apiFetch<{ vendors: any[] }>("/api/admin/vendors");
+      return (data.vendors || []).map((v) => ({
+        vendor: v.storeName,
+        logo: v.logo || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=150&q=80",
+        sales: v.sales || 0,
+        orders: v.orders || 0,
+        revenue: v.revenue || 0,
+        growth: 0,
+        rating: v.rating || 5.0,
+      }));
+    } catch {
+      return [];
+    }
   },
 
   getProductAnalytics: async (): Promise<ProductPerformanceItem[]> => {
-    await delay(200);
-    return [...mockProductPerformance];
+    try {
+      const data = await apiFetch<{ products: any[] }>("/api/admin/products");
+      return (data.products || []).map((p) => ({
+        id: p.id,
+        name: p.name,
+        sku: p.sku,
+        vendor: p.vendorName,
+        sales: p.sales || 0,
+        revenue: p.revenue || 0,
+        views: p.views || 0,
+        status: (p.sales || 0) > 0 ? "top" : "worst",
+      }));
+    } catch {
+      return [];
+    }
   },
 
   getGeoAnalytics: async (): Promise<GeoMetric[]> => {
-    await delay(200);
-    return [...mockGeoMetrics];
+    return [];
   },
 
   getMarketingAnalytics: async (): Promise<TrafficSource[]> => {
-    await delay(200);
-    return [...mockTrafficSources];
+    return [];
   },
 
   getAlerts: async (): Promise<AnalyticsAlert[]> => {
-    await delay(200);
-    return [...mockAlerts];
+    return [];
   },
 
   getRealtimeStats: async (): Promise<RealtimeStats> => {
-    await delay(150);
-    return { ...mockRealtime };
+    try {
+      const data = await apiFetch<{ stats: any }>("/api/admin/stats");
+      const st = data.stats || {};
+      return {
+        activeVisitors: (st.users || 0) * 2,
+        ordersPerMin: st.orders || 0,
+        revenueToday: st.revenue || 0,
+        activeSellers: st.vendors || 0,
+      };
+    } catch {
+      return { activeVisitors: 0, ordersPerMin: 0, revenueToday: 0, activeSellers: 0 };
+    }
   },
 };

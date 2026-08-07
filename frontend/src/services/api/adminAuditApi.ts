@@ -68,20 +68,21 @@ export const adminAuditApi = {
   getStats: async (): Promise<AuditStatsData> => {
     try {
       const data = await apiFetch<{ logs: any[] }>("/api/admin/audit-logs");
+      const list = data.logs || [];
       return {
-        totalEvents: data.logs.length || 25000000,
-        todayEvents: 120000,
-        failedLogins: 450,
-        securityAlerts: 35,
-        adminActions: 5000,
+        totalEvents: list.length,
+        todayEvents: list.length,
+        failedLogins: 0,
+        securityAlerts: 0,
+        adminActions: list.length,
       };
     } catch {
       return {
-        totalEvents: 25000000,
-        todayEvents: 120000,
-        failedLogins: 450,
-        securityAlerts: 35,
-        adminActions: 5000,
+        totalEvents: 0,
+        todayEvents: 0,
+        failedLogins: 0,
+        securityAlerts: 0,
+        adminActions: 0,
       };
     }
   },
@@ -105,7 +106,7 @@ export const adminAuditApi = {
         details: l.details,
       }));
     } catch {
-      return [...mockLogsFallback];
+      return [];
     }
   },
 
