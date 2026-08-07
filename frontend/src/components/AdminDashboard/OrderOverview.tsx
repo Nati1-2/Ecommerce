@@ -8,19 +8,20 @@ interface Props {
 }
 
 export default function OrderOverview({ orders }: Props) {
-  const total = orders.length || 1;
-  const pending = orders.filter((o) => o.status === "Pending").length;
-  const processing = orders.filter((o) => o.status === "Processing").length;
-  const shipped = orders.filter((o) => o.status === "Shipped").length;
-  const delivered = orders.filter((o) => o.status === "Delivered").length;
-  const cancelled = orders.filter((o) => o.status === "Cancelled").length;
+  const safeOrders = orders || [];
+  const total = safeOrders.length;
+  const pending = safeOrders.filter((o) => o.status === "Pending").length;
+  const processing = safeOrders.filter((o) => o.status === "Processing").length;
+  const shipped = safeOrders.filter((o) => o.status === "Shipped").length;
+  const delivered = safeOrders.filter((o) => o.status === "Delivered").length;
+  const cancelled = safeOrders.filter((o) => o.status === "Cancelled").length;
 
   const statuses = [
-    { label: "Pending", count: pending, percent: Math.round((pending / total) * 100), color: "bg-amber-500", text: "text-amber-500", icon: Clock },
-    { label: "Processing", count: processing, percent: Math.round((processing / total) * 100), color: "bg-blue-500", text: "text-blue-500", icon: PackageCheck },
-    { label: "Shipped", count: shipped, percent: Math.round((shipped / total) * 100), color: "bg-purple-500", text: "text-purple-500", icon: Truck },
-    { label: "Delivered", count: delivered, percent: Math.round((delivered / total) * 100), color: "bg-emerald-500", text: "text-emerald-500", icon: CheckCircle2 },
-    { label: "Cancelled", count: cancelled, percent: Math.round((cancelled / total) * 100), color: "bg-rose-500", text: "text-rose-500", icon: XCircle },
+    { label: "Pending", count: pending, percent: total > 0 ? Math.round((pending / total) * 100) : 0, color: "bg-amber-500", text: "text-amber-500", icon: Clock },
+    { label: "Processing", count: processing, percent: total > 0 ? Math.round((processing / total) * 100) : 0, color: "bg-blue-500", text: "text-blue-500", icon: PackageCheck },
+    { label: "Shipped", count: shipped, percent: total > 0 ? Math.round((shipped / total) * 100) : 0, color: "bg-purple-500", text: "text-purple-500", icon: Truck },
+    { label: "Delivered", count: delivered, percent: total > 0 ? Math.round((delivered / total) * 100) : 0, color: "bg-emerald-500", text: "text-emerald-500", icon: CheckCircle2 },
+    { label: "Cancelled", count: cancelled, percent: total > 0 ? Math.round((cancelled / total) * 100) : 0, color: "bg-rose-500", text: "text-rose-500", icon: XCircle },
   ];
 
   return (
@@ -54,7 +55,7 @@ export default function OrderOverview({ orders }: Props) {
               <div className="w-full h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                 <div
                   className={`h-full ${st.color} rounded-full transition-all duration-500`}
-                  style={{ width: `${Math.max(st.percent, 4)}%` }}
+                  style={{ width: `${st.count > 0 ? Math.max(st.percent, 4) : 0}%` }}
                 />
               </div>
             </div>

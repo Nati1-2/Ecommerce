@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
         const user = await User.findById(o.userId).select("name email");
         const customerName = user?.name || user?.email?.split("@")[0] || "Customer";
 
-        let vendorName = "Apex Tech Labs";
+        let vendorName = "Direct Store";
         if (o.items?.[0]?.productId) {
           const product = await VendorProduct.findById(o.items[0].productId).select("vendorId");
           if (product?.vendorId) {
@@ -64,33 +64,10 @@ export async function GET(req: NextRequest) {
       })
     );
   } catch (err: any) {
-    console.warn("Admin Orders DB notice (using fallback orders):", err?.message || err);
+    console.warn("Admin Orders DB notice:", err?.message || err);
+    orders = [];
   }
 
-  if (!orders || orders.length === 0) {
-    orders = [
-      {
-        id: "ord-demo-1001",
-        orderNumber: "NATI-1001",
-        customerName: "Sarah Connor",
-        vendorName: "Apex Tech Wearables Store",
-        totalAmount: 249.99,
-        paymentMethod: "Stripe Card",
-        status: "Processing",
-        createdAt: "2 mins ago",
-      },
-      {
-        id: "ord-demo-1002",
-        orderNumber: "NATI-1002",
-        customerName: "John Connor",
-        vendorName: "Apex Tech Wearables Store",
-        totalAmount: 319.98,
-        paymentMethod: "Stripe Card",
-        status: "Shipped",
-        createdAt: "1 day ago",
-      },
-    ];
-  }
-
-  return NextResponse.json({ success: true, orders });
+  return NextResponse.json({ success: true, orders: orders || [] });
 }
+

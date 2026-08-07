@@ -33,6 +33,8 @@ export async function GET(req: NextRequest) {
     await connectDB();
 
     const orders = await Order.find({ paymentStatus: "PAID" });
+    const userOrderCounts = new Map<string, number>();
+
     orders.forEach((o) => {
       const date = new Date(o.createdAt);
       const mIdx = date.getMonth();
@@ -40,6 +42,10 @@ export async function GET(req: NextRequest) {
       revenueData[mIdx].revenue += rev;
       revenueData[mIdx].sales += 1;
       revenueData[mIdx].profit += Math.round(rev * 0.15 * 100) / 100;
+
+      if (o.userId) {
+        userOrderCounts.set(o.userId, (userOrderCounts.get(o.userId) || 0) + 1);
+      }
     });
 
     revenueData.forEach((item) => {
@@ -52,29 +58,17 @@ export async function GET(req: NextRequest) {
       const date = new Date(u.createdAt);
       const dIdx = date.getDay();
       userGrowthData[dIdx].newUsers += 1;
+
+      const orderCount = userOrderCounts.get(u._id.toString()) || 0;
+      if (orderCount > 0) {
+        userGrowthData[dIdx].activeUsers += 1;
+      }
+      if (orderCount > 1) {
+        userGrowthData[dIdx].returningUsers += 1;
+      }
     });
   } catch (err: any) {
-    console.warn("Admin Analytics DB notice (using fallback analytics):", err?.message || err);
-  }
-
-  // Fill simulated baseline values if empty
-  userGrowthData.forEach((day, idx) => {
-    if (day.newUsers === 0) {
-      day.newUsers = 10 + idx * 3;
-    }
-    day.activeUsers = day.newUsers * 12 + 50;
-    day.returningUsers = day.newUsers * 8 + 30;
-  });
-
-  const totalRev = revenueData.reduce((s, r) => s + r.revenue, 0);
-  if (totalRev === 0) {
-    revenueData[0] = { date: "Jan", revenue: 840, sales: 24, profit: 168 };
-    revenueData[1] = { date: "Feb", revenue: 920, sales: 26, profit: 184 };
-    revenueData[2] = { date: "Mar", revenue: 1050, sales: 29, profit: 210 };
-    revenueData[3] = { date: "Apr", revenue: 1120, sales: 31, profit: 224 };
-    revenueData[4] = { date: "May", revenue: 1280, sales: 35, profit: 256 };
-    revenueData[5] = { date: "Jun", revenue: 1410, sales: 38, profit: 282 };
-    revenueData[6] = { date: "Jul", revenue: 1650, sales: 44, profit: 330 };
+    console.warn("Admin Analytics DB notice:", err?.message || err);
   }
 
   return NextResponse.json({
@@ -86,3 +80,4 @@ export async function GET(req: NextRequest) {
     }
   });
 }
+

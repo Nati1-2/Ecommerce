@@ -17,14 +17,14 @@ export default function MarketplaceHealth({
   const items = [
     {
       title: "Active Verified Vendors",
-      count: data.activeVendors.toLocaleString(),
+      count: (data?.activeVendors ?? 0).toLocaleString(),
       status: "Healthy",
       icon: Store,
       color: "text-emerald-500 bg-emerald-50 dark:bg-emerald-950/30",
     },
     {
       title: "Pending Vendor Applications",
-      count: data.pendingVendors,
+      count: data?.pendingVendors ?? 0,
       action: "Review Vendors",
       onClick: onApproveVendorClick,
       icon: Store,
@@ -32,7 +32,7 @@ export default function MarketplaceHealth({
     },
     {
       title: "Pending Product Approvals",
-      count: data.pendingProducts,
+      count: data?.pendingProducts ?? 0,
       action: "Review Catalog",
       onClick: onApproveProductClick,
       icon: Package,
@@ -40,14 +40,14 @@ export default function MarketplaceHealth({
     },
     {
       title: "Customer Complaints Flagged",
-      count: data.customerComplaints,
+      count: data?.customerComplaints ?? 0,
       status: "Attention Required",
       icon: AlertTriangle,
       color: "text-rose-500 bg-rose-50 dark:bg-rose-950/30",
     },
     {
       title: "Open Refund Requests",
-      count: data.refundRequests,
+      count: data?.refundRequests ?? 0,
       status: "Processing",
       icon: RotateCcw,
       color: "text-purple-500 bg-purple-50 dark:bg-purple-950/30",

@@ -5,7 +5,7 @@ import AdminSidebar from "@/components/AdminDashboard/AdminSidebar";
 import AdminHeader from "@/components/AdminDashboard/AdminHeader";
 import AnnouncementModal from "@/components/AdminDashboard/AnnouncementModal";
 import { useAdminDashboardStore } from "@/store/adminDashboardStore";
-import { useBroadcastAnnouncement } from "@/hooks/useAdminQuery";
+import { useBroadcastAnnouncement, usePlatformStats, useMarketplaceHealth } from "@/hooks/useAdminQuery";
 import { useAdminRealtime } from "@/hooks/useAdminRealtime";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2, AlertCircle, Info, X } from "lucide-react";
@@ -16,15 +16,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     useAdminDashboardStore();
 
   const broadcastMutation = useBroadcastAnnouncement();
+  const { data: stats } = usePlatformStats();
+  const { data: health } = useMarketplaceHealth();
 
   // Initialize Socket.IO real-time alerts
   useAdminRealtime();
+
+  const usersCount = stats?.users ?? 0;
+  const pendingVendorsCount = health?.pendingVendors ? `${health.pendingVendors} pending` : undefined;
 
   return (
     <div className="min-h-screen bg-slate-50/70 text-slate-900 font-sans antialiased flex flex-col lg:flex-row">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
-        <AdminSidebar />
+        <AdminSidebar usersBadge={usersCount} vendorsBadge={pendingVendorsCount} />
       </div>
 
       {/* Mobile Sidebar Drawer */}
@@ -45,7 +50,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
               className="fixed inset-y-0 left-0 w-72 bg-slate-950 z-50 lg:hidden shadow-2xl"
             >
-              <AdminSidebar isMobile onCloseMobile={() => setIsMobileMenuOpen(false)} />
+              <AdminSidebar
+                isMobile
+                onCloseMobile={() => setIsMobileMenuOpen(false)}
+                usersBadge={usersCount}
+                vendorsBadge={pendingVendorsCount}
+              />
             </motion.div>
           </>
         )}

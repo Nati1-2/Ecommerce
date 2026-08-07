@@ -80,70 +80,47 @@ export default function AdminDashboardPage() {
   }
 
   const safeStats = stats || {
-    users: 125000,
-    usersGrowth: 15.8,
-    vendors: 4500,
-    vendorsGrowth: 8.2,
-    products: 850000,
-    productsGrowth: 12.4,
-    orders: 320000,
-    ordersGrowth: 18.5,
-    revenue: 12500000,
-    revenueGrowth: 22.1,
+    users: 0,
+    usersGrowth: 0,
+    vendors: 0,
+    vendorsGrowth: 0,
+    products: 0,
+    productsGrowth: 0,
+    orders: 0,
+    ordersGrowth: 0,
+    revenue: 0,
+    revenueGrowth: 0,
   };
 
   const safeSystemStatus = systemStatus || {
     api: "Operational",
-    database: "Connected",
-    redis: "Running",
-    rabbitmq: "Connected",
-    microservices: [
-      { name: "Auth Service", status: "Healthy", latencyMs: 14, uptimePercent: 99.99 },
-      { name: "Product Service", status: "Healthy", latencyMs: 22, uptimePercent: 99.98 },
-      { name: "Order Service", status: "Healthy", latencyMs: 18, uptimePercent: 99.95 },
-      { name: "Payment Service", status: "Healthy", latencyMs: 31, uptimePercent: 99.99 },
-      { name: "Analytics Service", status: "Healthy", latencyMs: 45, uptimePercent: 99.90 },
-      { name: "Notification Service", status: "Healthy", latencyMs: 12, uptimePercent: 100 },
-    ],
+    database: "Disconnected",
+    redis: "Disconnected",
+    rabbitmq: "Disconnected",
+    microservices: [],
   };
 
   const safeHealth = health || {
-    activeVendors: 4320,
-    pendingVendors: 180,
-    pendingProducts: 1420,
-    customerComplaints: 24,
-    refundRequests: 42,
+    activeVendors: 0,
+    pendingVendors: 0,
+    pendingProducts: 0,
+    customerComplaints: 0,
+    refundRequests: 0,
   };
 
   const safePayments = payments || {
-    totalTransactions: 320000,
-    successfulPayments: 316800,
-    failedPayments: 3200,
-    refundsProcessed: 1450,
-    pendingPayoutsAmount: 1480000,
-    gatewayStatus: "Online",
+    totalTransactions: 0,
+    successfulPayments: 0,
+    failedPayments: 0,
+    refundsProcessed: 0,
+    pendingPayoutsAmount: 0,
+    gatewayStatus: "Offline",
   };
 
   const safeAnalytics = analytics || {
     timeframe: activeTimeframe,
-    revenueData: [
-      { date: "Jan", revenue: 840, sales: 24, profit: 168 },
-      { date: "Feb", revenue: 920, sales: 26, profit: 184 },
-      { date: "Mar", revenue: 1050, sales: 29, profit: 210 },
-      { date: "Apr", revenue: 1120, sales: 31, profit: 224 },
-      { date: "May", revenue: 1280, sales: 35, profit: 256 },
-      { date: "Jun", revenue: 1410, sales: 38, profit: 282 },
-      { date: "Jul", revenue: 1650, sales: 44, profit: 330 },
-    ],
-    userGrowthData: [
-      { date: "Sun", newUsers: 10, activeUsers: 170, returningUsers: 110 },
-      { date: "Mon", newUsers: 13, activeUsers: 206, returningUsers: 134 },
-      { date: "Tue", newUsers: 16, activeUsers: 242, returningUsers: 158 },
-      { date: "Wed", newUsers: 19, activeUsers: 278, returningUsers: 182 },
-      { date: "Thu", newUsers: 22, activeUsers: 314, returningUsers: 206 },
-      { date: "Fri", newUsers: 25, activeUsers: 350, returningUsers: 230 },
-      { date: "Sat", newUsers: 28, activeUsers: 386, returningUsers: 254 },
-    ],
+    revenueData: [],
+    userGrowthData: [],
   };
 
   const isDbConnected = safeSystemStatus.database === "Connected";
@@ -198,7 +175,7 @@ export default function AdminDashboardPage() {
       {/* 3. Revenue Analytics & User Growth */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
-          <RevenueChart data={safeAnalytics.revenueData} />
+          <RevenueChart data={safeAnalytics.revenueData} totalUsers={safeStats.users} />
         </div>
         <div className="lg:col-span-1">
           <UserAnalytics data={safeAnalytics.userGrowthData} />

@@ -71,7 +71,7 @@ export interface AdminPayment {
   failedPayments: number;
   refundsProcessed: number;
   pendingPayoutsAmount: number;
-  gatewayStatus: "Online" | "Degraded" | "Maintenance";
+  gatewayStatus: "Online" | "Degraded" | "Maintenance" | "Offline";
 }
 
 export interface ActivityItem {

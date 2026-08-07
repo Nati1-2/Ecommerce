@@ -29,18 +29,19 @@ export async function GET(req: NextRequest) {
     ]);
     pendingPayoutsAmount = pendingStats[0]?.total || 0;
   } catch (err: any) {
-    console.warn("Admin Payments DB notice (using fallback payments):", err?.message || err);
+    console.warn("Admin Payments DB notice:", err?.message || err);
   }
 
   return NextResponse.json({
     success: true,
     payments: {
-      totalTransactions: total || 320000,
-      successfulPayments: successful || 316800,
-      failedPayments: failed || 3200,
-      refundsProcessed: refunded || 1450,
-      pendingPayoutsAmount: Math.round(pendingPayoutsAmount * 100) / 100 || 1480000,
+      totalTransactions: total || 0,
+      successfulPayments: successful || 0,
+      failedPayments: failed || 0,
+      refundsProcessed: refunded || 0,
+      pendingPayoutsAmount: Math.round(pendingPayoutsAmount * 100) / 100 || 0,
       gatewayStatus: "Online",
     }
   });
 }
+

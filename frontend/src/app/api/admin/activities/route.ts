@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
-  const activities: any[] = [];
+  let rawActivities: any[] = [];
 
   const getRelativeTimeStr = (date: Date) => {
     const timeDiff = Date.now() - new Date(date).getTime();
@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
     const latestOrders = await Order.find().sort({ createdAt: -1 }).limit(5);
 
     latestVendors.forEach((v) => {
-      activities.push({
+      rawActivities.push({
         id: `act_vendor_${v._id}`,
         user: v.email?.split("@")[0] || "Vendor Onboarding",
         userAvatar: v.logo || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80",
@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
     });
 
     latestProducts.forEach((p) => {
-      activities.push({
+      rawActivities.push({
         id: `act_product_${p._id}`,
         user: "Vendor Merchant",
         userAvatar: p.images?.[0] || "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=80",
@@ -59,7 +59,7 @@ export async function GET(req: NextRequest) {
     await Promise.all(
       latestOrders.map(async (o) => {
         const u = await User.findById(o.userId).select("name email");
-        activities.push({
+        rawActivities.push({
           id: `act_order_${o._id}`,
           user: u?.name || u?.email?.split("@")[0] || "Buyer",
           userAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80",
@@ -71,42 +71,17 @@ export async function GET(req: NextRequest) {
       })
     );
 
-    activities.sort((a, b) => new Date(b.rawDate).getTime() - new Date(a.rawDate).getTime());
+    rawActivities.sort((a, b) => new Date(b.rawDate).getTime() - new Date(a.rawDate).getTime());
   } catch (err: any) {
-    console.warn("Admin Activities DB notice (using fallback activity logs):", err?.message || err);
+    console.warn("Admin Activities DB notice:", err?.message || err);
+    rawActivities = [];
   }
 
-  if (activities.length === 0) {
-    activities.push(
-      {
-        id: "act_demo_1",
-        user: "Alexander Vance",
-        userAvatar: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=120&q=80",
-        action: "Onboarded vendor store: Apex Tech Wearables Store",
-        timestamp: "10 mins ago",
-        category: "vendor",
-      },
-      {
-        id: "act_demo_2",
-        user: "Sarah Connor",
-        userAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80",
-        action: "Placed order #NATI-1001 totaling $249.99",
-        timestamp: "30 mins ago",
-        category: "payment",
-      },
-      {
-        id: "act_demo_3",
-        user: "System Monitor",
-        userAvatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80",
-        action: "Executed daily platform security audit scan",
-        timestamp: "2 hours ago",
-        category: "security",
-      }
-    );
-  }
+  const activities = rawActivities.slice(0, 10).map(({ rawDate, ...item }) => item);
 
   return NextResponse.json({
     success: true,
-    activities: activities.slice(0, 10),
+    activities,
   });
 }
+

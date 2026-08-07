@@ -25,16 +25,36 @@ import {
 interface SidebarProps {
   isMobile?: boolean;
   onCloseMobile?: () => void;
+  usersBadge?: string | number;
+  vendorsBadge?: string | number;
 }
 
-export default function AdminSidebar({ isMobile = false, onCloseMobile }: SidebarProps) {
+function formatBadge(val?: string | number): string | undefined {
+  if (val === undefined || val === null) return undefined;
+  if (typeof val === "number") {
+    if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}M`;
+    if (val >= 1_000) return `${(val / 1_000).toFixed(1)}k`;
+    return `${val}`;
+  }
+  return val;
+}
+
+export default function AdminSidebar({
+  isMobile = false,
+  onCloseMobile,
+  usersBadge,
+  vendorsBadge,
+}: SidebarProps) {
   const pathname = usePathname();
   const { isSidebarCollapsed, toggleSidebar } = useAdminDashboardStore();
 
+  const formattedUsersBadge = formatBadge(usersBadge);
+  const formattedVendorsBadge = formatBadge(vendorsBadge);
+
   const navItems = [
     { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
-    { label: "Users", href: "/admin/users", icon: Users, badge: "125k" },
-    { label: "Vendors", href: "/admin/vendors", icon: Store, badge: "18 pending" },
+    { label: "Users", href: "/admin/users", icon: Users, badge: formattedUsersBadge },
+    { label: "Vendors", href: "/admin/vendors", icon: Store, badge: formattedVendorsBadge },
     { label: "Products", href: "/admin/products", icon: Package },
     { label: "Orders", href: "/admin/orders", icon: ShoppingBag },
     { label: "Payments", href: "/admin/payments", icon: CreditCard },

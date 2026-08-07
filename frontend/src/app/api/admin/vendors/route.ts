@@ -33,45 +33,16 @@ export async function GET(req: NextRequest) {
           revenue: Math.round(revenue * 100) / 100 || 0,
           rating: p.rating || 5.0,
           orders: sales || 0,
-          joinedDate: p.joinedDate || p.createdAt?.toISOString()?.split("T")?.[0] || "2026-01-15",
+          joinedDate: p.joinedDate || (p.createdAt ? new Date(p.createdAt).toISOString().split("T")[0] : new Date().toISOString().split("T")[0]),
           status: p.verified ? "Active" : "Pending",
         };
       })
     );
   } catch (err: any) {
-    console.warn("Admin Vendors DB notice (using fallback vendors):", err?.message || err);
+    console.warn("Admin Vendors DB notice:", err?.message || err);
+    vendors = [];
   }
 
-  if (!vendors || vendors.length === 0) {
-    vendors = [
-      {
-        id: "v_1001",
-        storeName: "Apex Tech Wearables Store",
-        logo: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=150&q=80",
-        ownerName: "Alexander Vance",
-        email: "vendor@natistore.com",
-        sales: 447,
-        revenue: 67765.53,
-        rating: 4.8,
-        orders: 237,
-        joinedDate: "2026-01-15",
-        status: "Active",
-      },
-      {
-        id: "v_1002",
-        storeName: "Lumina Optics & Audio",
-        logo: "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=150&q=80",
-        ownerName: "Marcus Sterling",
-        email: "marcus@luminavision.com",
-        sales: 210,
-        revenue: 34500.00,
-        rating: 4.6,
-        orders: 195,
-        joinedDate: "2026-02-01",
-        status: "Pending",
-      },
-    ];
-  }
-
-  return NextResponse.json({ success: true, vendors });
+  return NextResponse.json({ success: true, vendors: vendors || [] });
 }
+

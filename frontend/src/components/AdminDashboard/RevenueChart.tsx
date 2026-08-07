@@ -17,13 +17,26 @@ import { DollarSign, TrendingUp, Filter } from "lucide-react";
 
 interface Props {
   data: RevenuePoint[];
+  totalUsers?: number;
 }
 
-export default function RevenueChart({ data }: Props) {
+function formatCurrency(amount: number): string {
+  if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(2)}M`;
+  if (amount >= 1_000) return `$${(amount / 1_000).toFixed(1)}k`;
+  return `$${amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+export default function RevenueChart({ data, totalUsers }: Props) {
   const { activeTimeframe, setActiveTimeframe } = useAdminDashboardStore();
 
   const totalPeriodRevenue = data.reduce((acc, d) => acc + d.revenue, 0);
   const totalPeriodProfit = data.reduce((acc, d) => acc + d.profit, 0);
+  const totalPeriodSales = data.reduce((acc, d) => acc + d.sales, 0);
+
+  const conversionRate =
+    totalUsers && totalUsers > 0
+      ? `${((totalPeriodSales / totalUsers) * 100).toFixed(2)}%`
+      : "0.00%";
 
   return (
     <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
@@ -64,19 +77,19 @@ export default function RevenueChart({ data }: Props) {
         <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-2xl">
           <p className="text-xs text-slate-400 font-medium">Period GMV Revenue</p>
           <p className="text-xl font-extrabold text-slate-900 dark:text-white mt-0.5">
-            ${(totalPeriodRevenue / 1000000).toFixed(2)}M
+            {formatCurrency(totalPeriodRevenue)}
           </p>
         </div>
         <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-2xl">
           <p className="text-xs text-slate-400 font-medium">Platform Net Commission (15%)</p>
           <p className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">
-            ${(totalPeriodProfit / 1000).toFixed(0)}k
+            {formatCurrency(totalPeriodProfit)}
           </p>
         </div>
         <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-2xl col-span-2 sm:col-span-1">
           <p className="text-xs text-slate-400 font-medium">Avg Conversion Rate</p>
           <p className="text-xl font-extrabold text-blue-600 dark:text-blue-400 mt-0.5">
-            4.82%
+            {conversionRate}
           </p>
         </div>
       </div>
@@ -97,7 +110,13 @@ export default function RevenueChart({ data }: Props) {
             </defs>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" opacity={0.2} />
             <XAxis dataKey="date" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
-            <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(val) => `$${val / 1000}k`} />
+            <YAxis
+              stroke="#94a3b8"
+              fontSize={11}
+              tickLine={false}
+              axisLine={false}
+              tickFormatter={(val) => (val >= 1000 ? `$${val / 1000}k` : `$${val}`)}
+            />
             <Tooltip
               contentStyle={{
                 backgroundColor: "#0f172a",

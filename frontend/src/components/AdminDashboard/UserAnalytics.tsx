@@ -17,7 +17,7 @@ interface Props {
 }
 
 export default function UserAnalytics({ data }: Props) {
-  const latest = data[data.length - 1] || { newUsers: 950, activeUsers: 36800, returningUsers: 27800 };
+  const latest = data[data.length - 1] || { newUsers: 0, activeUsers: 0, returningUsers: 0 };
 
   return (
     <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
