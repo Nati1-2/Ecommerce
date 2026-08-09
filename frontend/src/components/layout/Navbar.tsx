@@ -89,10 +89,10 @@ export default function Navbar() {
         )}
       >
         {/* Top bar */}
-        <div className="bg-[#111827] text-white text-xs py-2 text-center hidden md:block">
-          <span>🚚 Free shipping on orders over $50 &nbsp;|&nbsp; Use code </span>
+        <div className="bg-[#111827] text-white text-[10px] sm:text-xs py-1.5 sm:py-2 text-center px-2 truncate">
+          <span>🚚 Free shipping on orders $50+ &nbsp;|&nbsp; Use code </span>
           <span className="font-bold text-[#5AA8FF]">NATI10</span>
-          <span> for 10% off your first order</span>
+          <span> for 10% off</span>
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">

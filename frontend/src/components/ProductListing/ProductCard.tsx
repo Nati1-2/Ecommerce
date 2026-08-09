@@ -205,8 +205,20 @@ export function ProductCard({ product, index, viewMode, onQuickView }: ProductCa
             </span>
           )}
 
-          {/* Action trigger overlay */}
-          <div className="z-20 absolute inset-0 bg-black/10 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 backdrop-blur-[2px]">
+          {/* Wishlist button - visible on touch/mobile, hover on desktop */}
+          <button
+            onClick={handleWishlist}
+            className={cn(
+              "z-20 absolute top-3 right-3 sm:hidden w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all cursor-pointer",
+              wishlisted ? "bg-rose-500 text-white" : "bg-white/90 backdrop-blur-sm text-gray-700"
+            )}
+            title="Wishlist"
+          >
+            <Heart className={cn("w-3.5 h-3.5", wishlisted && "fill-current")} />
+          </button>
+
+          {/* Action trigger overlay (Desktop Hover) */}
+          <div className="z-20 absolute inset-0 bg-black/10 hidden sm:flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 backdrop-blur-[2px]">
             <button
               onClick={handleWishlist}
               className={cn(
