@@ -57,11 +57,11 @@ Traditional e-commerce platforms often encounter major technical limitations dur
 
 | Desktop Storefront View | Mobile 320px Responsive View |
 | :---: | :---: |
-| ![Desktop Preview](https://via.placeholder.com/600x340/111827/ffffff?text=Nati.+Desktop+Storefront) | ![Mobile Preview](https://via.placeholder.com/300x500/111827/ffffff?text=Nati.+Mobile+320px+View) |
+| ![Desktop Storefront View](docs/screenshots/desktop-storefront.jpg) | ![Mobile Responsive View](docs/screenshots/mobile-view.jpg) |
 
 | Super Admin Telemetry Control Center | Seller Vendor Inventory Management |
 | :---: | :---: |
-| ![Admin Dashboard](https://via.placeholder.com/600x340/007BFF/ffffff?text=Admin+Telemetry+Control+Center) | ![Vendor Portal](https://via.placeholder.com/600x340/10B981/ffffff?text=Seller+Vendor+Catalog+Manager) |
+| ![Super Admin Control Center](docs/screenshots/admin-dashboard.jpg) | ![Seller Vendor Portal](docs/screenshots/vendor-portal.jpg) |
 
 ---
 
