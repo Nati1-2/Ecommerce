@@ -53,7 +53,6 @@ Traditional e-commerce platforms often encounter major technical limitations dur
 
 ## Screenshots / Demo
 
-- **Live Web Application Demo**: [https://nati-ecommerce.vercel.app](https://nati-ecommerce.vercel.app) *(Placeholder)*
 - **GitHub Source Code Repository**: [https://github.com/Nati1-2/Ecommerce](https://github.com/Nati1-2/Ecommerce)
 
 | Desktop Storefront View | Mobile 320px Responsive View |
@@ -332,5 +331,4 @@ This project is licensed under the MIT License - see the [`LICENSE`](LICENSE) fi
 
 - **GitHub**: [github.com/Nati1-2](https://github.com/Nati1-2)
 - **Repository**: [github.com/Nati1-2/Ecommerce](https://github.com/Nati1-2/Ecommerce)
-- **LinkedIn**: [linkedin.com/in/your-linkedin-profile](#) *(Placeholder)*
-- **Email**: [contact@nati.shop](mailto:contact@nati.shop)
+- **Email**: [natnaelman368@gmail.com](mailto:natnaelman368@gmail.com)
