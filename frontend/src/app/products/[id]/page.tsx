@@ -4,6 +4,7 @@ import { use, useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRight, Home, RefreshCw, Star, AlertTriangle, Share2 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { fetchProductById } from "@/lib/api";
 import { Product } from "@/types";
@@ -31,10 +32,22 @@ interface ProductPageProps {
 }
 
 function ProductDetailsContent({ id }: { id: string }) {
+  const router = useRouter();
+
+  // Redirect special routing slugs
+  useEffect(() => {
+    if (id === "new") {
+      router.replace("/new");
+    } else if (id === "bestsellers") {
+      router.replace("/bestsellers");
+    }
+  }, [id, router]);
+
   // 1. Fetch Product Data via React Query
   const { data: product, isLoading, isError, refetch } = useQuery({
     queryKey: ["product", id],
     queryFn: () => fetchProductById(id),
+    enabled: id !== "new" && id !== "bestsellers",
   });
 
   // State for quantity and variants

@@ -52,10 +52,10 @@ const footerLinks = {
 };
 
 const socials = [
-  { icon: FacebookIcon, href: "#", label: "Facebook", color: "hover:bg-[#1877f2]" },
-  { icon: InstagramIcon, href: "#", label: "Instagram", color: "hover:bg-[#bc1888]" },
-  { icon: TwitterIcon, href: "#", label: "Twitter", color: "hover:bg-[#1da1f2]" },
-  { icon: LinkedinIcon, href: "#", label: "LinkedIn", color: "hover:bg-[#0077b5]" },
+  { icon: FacebookIcon, href: "https://facebook.com", label: "Facebook", color: "hover:bg-[#1877f2]" },
+  { icon: InstagramIcon, href: "https://instagram.com", label: "Instagram", color: "hover:bg-[#bc1888]" },
+  { icon: TwitterIcon, href: "https://x.com", label: "Twitter", color: "hover:bg-[#1da1f2]" },
+  { icon: LinkedinIcon, href: "https://linkedin.com", label: "LinkedIn", color: "hover:bg-[#0077b5]" },
 ];
 
 export function Footer() {
