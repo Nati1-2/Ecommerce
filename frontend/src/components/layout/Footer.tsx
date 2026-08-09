@@ -62,8 +62,8 @@ export function Footer() {
   return (
     <footer className="bg-[#111827] text-gray-400">
       {/* Main footer */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+        <div className="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-5 gap-8 sm:gap-10">
           {/* Brand */}
           <div className="lg:col-span-2">
             <Link href="/" className="inline-block mb-4">

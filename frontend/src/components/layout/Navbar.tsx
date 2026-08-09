@@ -89,13 +89,13 @@ export default function Navbar() {
         )}
       >
         {/* Top bar */}
-        <div className="bg-[#111827] text-white text-[10px] sm:text-xs py-1.5 sm:py-2 text-center px-2 truncate">
+        <div className="bg-[#111827] text-white text-[10px] sm:text-xs py-1.5 sm:py-2 text-center px-2 flex items-center justify-center flex-wrap gap-x-1">
           <span>🚚 Free shipping on orders $50+ &nbsp;|&nbsp; Use code </span>
           <span className="font-bold text-[#5AA8FF]">NATI10</span>
           <span> for 10% off</span>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-2.5 min-[400px]:px-4 sm:px-6 h-16 flex items-center justify-between gap-1.5 min-[400px]:gap-4">
           {/* Left: Logo + Categories */}
           <div className="flex items-center gap-6">
             <button
@@ -260,7 +260,7 @@ export default function Navbar() {
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed top-0 left-0 bottom-0 w-[280px] bg-white z-50 shadow-2xl flex flex-col md:hidden"
+              className="fixed top-0 left-0 bottom-0 w-[85vw] max-w-[320px] bg-white z-50 shadow-2xl flex flex-col md:hidden"
             >
               <div className="flex items-center justify-between p-5 border-b border-gray-100">
                 <span className="text-xl font-black text-[#111827]">
@@ -329,7 +329,7 @@ export default function Navbar() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed top-0 right-0 bottom-0 w-full max-w-[400px] bg-white z-50 shadow-2xl flex flex-col"
+              className="fixed top-0 right-0 bottom-0 w-full sm:max-w-[400px] bg-white z-50 shadow-2xl flex flex-col"
             >
               <div className="flex items-center justify-between p-5 border-b border-gray-100">
                 <h2 className="text-lg font-bold text-gray-900">

@@ -117,7 +117,7 @@ export default function ProductPreview() {
               <span>Add to Cart (Storefront Mockup)</span>
             </button>
 
-            <div className="grid grid-cols-3 gap-2 text-[10px] text-slate-500 pt-2 border-t border-slate-100 dark:border-slate-800">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[10px] text-slate-500 pt-2 border-t border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-1">
                 <Truck className="w-3.5 h-3.5 text-blue-500" />
                 <span>Free Express Shipping</span>

@@ -47,7 +47,7 @@ export default function ExportReports() {
         <div className="space-y-4 text-xs">
           <div>
             <label className="font-bold text-slate-700 dark:text-slate-300">Select Export Format</label>
-            <div className="grid grid-cols-3 gap-2 mt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
               {formatsList.map((f) => {
                 const isSel = format === f.name;
 

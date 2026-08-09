@@ -73,7 +73,7 @@ export function ProductCarousel({
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {products.map((product, i) => (
-            <div key={product.id} className="shrink-0 w-[240px] sm:w-[260px]">
+            <div key={product.id} className="shrink-0 w-[200px] min-[400px]:w-[240px] sm:w-[260px]">
               <ProductCard product={product} index={i} />
             </div>
           ))}

@@ -18,7 +18,7 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
       {!isMinimal && <Navbar />}
       <main
         className={`flex-1 flex flex-col ${
-          isMinimal ? "" : "pt-[104px] md:pt-[104px] pb-16 md:pb-0"
+          isMinimal ? "" : "pt-[92px] sm:pt-[100px] md:pt-[104px] pb-16 md:pb-0"
         }`}
       >
         {children}

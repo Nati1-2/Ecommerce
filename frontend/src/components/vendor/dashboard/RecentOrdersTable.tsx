@@ -45,7 +45,7 @@ export default function RecentOrdersTable({ orders, onUpdateStatus }: Props) {
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm">
+        <table className="w-full min-w-[650px] text-left text-sm">
           <thead className="bg-white  border-b border-slate-50 text-slate-400  text-[10px] uppercase font-bold tracking-wider">
             <tr>
               <th className="py-3.5 px-6">Order ID</th>

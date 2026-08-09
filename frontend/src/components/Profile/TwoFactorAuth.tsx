@@ -134,7 +134,7 @@ export default function TwoFactorAuth() {
             </button>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 p-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-mono text-[10px] text-gray-900 font-black text-center">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-mono text-[10px] text-gray-900 font-black text-center">
             {backupCodes.map((code) => (
               <span key={code} className="p-1.5 bg-white border border-gray-200/50 rounded-lg select-all">
                 {code}

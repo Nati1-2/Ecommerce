@@ -129,7 +129,7 @@ export default function AddressForm({ initialData, onSubmit, onCancel }: Address
         </div>
 
         {/* City & State Fields Row */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1.5">
               City
@@ -165,7 +165,7 @@ export default function AddressForm({ initialData, onSubmit, onCancel }: Address
         </div>
 
         {/* Country & Zip Fields Row */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1.5">
               Country

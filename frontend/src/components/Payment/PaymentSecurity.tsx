@@ -27,7 +27,7 @@ export default function PaymentSecurity() {
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-4 p-5 bg-gray-50 border border-gray-100 rounded-2xl select-none">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-5 bg-gray-50 border border-gray-100 rounded-2xl select-none">
       {securityItems.map((item, idx) => {
         const Icon = item.icon;
         return (

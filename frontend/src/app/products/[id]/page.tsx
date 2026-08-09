@@ -165,7 +165,7 @@ function ProductDetailsContent({ id }: { id: string }) {
       {/* ── BREADCRUMBS ────────────────────────────────────────────────── */}
       <div className="bg-[#F5F7FA] border-b border-gray-100 py-5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <nav className="flex items-center gap-2 text-xs font-semibold text-gray-400">
+          <nav className="flex items-center flex-wrap gap-2 text-xs font-semibold text-gray-400">
             <Link href="/" className="hover:text-[#007BFF] flex items-center gap-1 transition-colors">
               <Home className="w-3.5 h-3.5" />
               Home
@@ -181,8 +181,8 @@ function ProductDetailsContent({ id }: { id: string }) {
       </div>
 
       {/* ── MAIN PRODUCT SPLIT ────────────────────────────────────────── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+      <div className="max-w-7xl mx-auto px-3 min-[400px]:px-4 sm:px-6 py-6 sm:py-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
           {/* Left Column: Image Gallery */}
           <ProductGallery images={product.images} name={product.name} />
 
@@ -212,7 +212,7 @@ function ProductDetailsContent({ id }: { id: string }) {
             />
 
             {/* Checkout & Wishlist Actions */}
-            <div className="flex gap-3">
+            <div className="flex flex-wrap sm:flex-nowrap gap-2.5 sm:gap-3">
               <AddToCartButton onAdd={handleAddToCart} inStock={realTimeStock > 0} />
               <WishlistButton productId={product.id} />
               <button

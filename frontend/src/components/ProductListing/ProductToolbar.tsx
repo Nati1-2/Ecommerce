@@ -68,7 +68,7 @@ export function ProductToolbar({
   return (
     <div className="space-y-4">
       {/* Top bar toolbar */}
-      <div className="flex items-center justify-between gap-4 p-4 bg-white border border-gray-100 rounded-2xl shadow-sm">
+      <div className="flex items-center justify-between flex-wrap gap-4 p-4 bg-white border border-gray-100 rounded-2xl shadow-sm">
         {/* Left: Total Count & Mobile Filter Button */}
         <div className="flex items-center gap-3">
           <button

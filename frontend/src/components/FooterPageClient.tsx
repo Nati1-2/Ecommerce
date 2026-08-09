@@ -709,8 +709,8 @@ export default function FooterPageClient({ slug }: FooterPageClientProps) {
 
           <div className="space-y-4">
             <h3 className="text-lg font-black text-gray-900 tracking-tight">Shipping Tier Options</h3>
-            <div className="border border-gray-100 rounded-3xl overflow-hidden shadow-sm bg-white">
-              <table className="w-full text-left text-xs border-collapse">
+            <div className="border border-gray-100 rounded-3xl overflow-hidden overflow-x-auto shadow-sm bg-white">
+              <table className="w-full min-w-[500px] text-left text-xs border-collapse">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-100 text-gray-400 font-bold uppercase tracking-wider">
                     <th className="p-4 sm:p-5">Tier Method</th>
@@ -895,7 +895,7 @@ export default function FooterPageClient({ slug }: FooterPageClientProps) {
 
           {/* Tab switcher */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
-            <div className="flex gap-2 bg-gray-100 p-1 rounded-2xl">
+            <div className="flex flex-wrap gap-2 bg-gray-100 p-1 rounded-2xl">
               {[
                 { id: "men", label: "Men's Apparel" },
                 { id: "women", label: "Women's Apparel" },
@@ -939,8 +939,8 @@ export default function FooterPageClient({ slug }: FooterPageClientProps) {
           </div>
 
           <div className="space-y-6">
-            <div className="border border-gray-100 rounded-3xl overflow-hidden shadow-sm bg-white">
-              <table className="w-full text-left text-xs border-collapse">
+            <div className="border border-gray-100 rounded-3xl overflow-hidden overflow-x-auto shadow-sm bg-white">
+              <table className="w-full min-w-[540px] text-left text-xs border-collapse">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-100 text-gray-400 font-bold uppercase tracking-wider">
                     <th className="p-4 sm:p-5">Size Rating</th>
@@ -1259,7 +1259,7 @@ export default function FooterPageClient({ slug }: FooterPageClientProps) {
               {/* Theme Selector */}
               <div className="space-y-3">
                 <span className="text-xs font-bold text-gray-500">Choose Card Theme Design:</span>
-                <div className="grid grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {[
                     { id: "gold", name: "Amber Gold", color: "bg-amber-500" },
                     { id: "cyber", name: "Cyber Neon", color: "bg-indigo-600" },
@@ -1285,7 +1285,7 @@ export default function FooterPageClient({ slug }: FooterPageClientProps) {
             <div className="p-6 border border-gray-100 rounded-[2rem] bg-gray-50/50 space-y-6">
               <div className="space-y-3">
                 <span className="text-xs font-bold text-gray-500">Select Gift Card Amount:</span>
-                <div className="grid grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {[25, 50, 100, 250].map((amt) => (
                     <button
                       key={amt}
@@ -1395,8 +1395,8 @@ export default function FooterPageClient({ slug }: FooterPageClientProps) {
 
               <div className="space-y-4">
                 <h3 className="text-lg font-black text-gray-900 tracking-tight">Referral Commission Structure</h3>
-                <div className="border border-gray-100 rounded-3xl overflow-hidden bg-white">
-                  <table className="w-full text-left text-xs border-collapse">
+                <div className="border border-gray-100 rounded-3xl overflow-hidden overflow-x-auto bg-white">
+                  <table className="w-full min-w-[500px] text-left text-xs border-collapse">
                     <thead>
                       <tr className="bg-gray-50 border-b border-gray-100 text-gray-400 font-bold uppercase tracking-wider font-mono">
                         <th className="p-4">Volume Tier</th>

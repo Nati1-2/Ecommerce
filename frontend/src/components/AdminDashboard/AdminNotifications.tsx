@@ -30,7 +30,7 @@ export default function AdminNotifications({ isOpen, onClose }: Props) {
   };
 
   return (
-    <div className="absolute right-0 mt-3 w-80 sm:w-96 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 py-3 z-50">
+    <div className="absolute right-0 mt-3 w-[calc(100vw-2rem)] sm:w-96 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 py-3 z-50">
       <div className="px-4 pb-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h3 className="font-bold text-slate-900 dark:text-white text-sm">System Alerts</h3>

@@ -60,7 +60,7 @@ export default function ReviewSection({ productId, initialReviews }: ReviewSecti
   return (
     <div className="space-y-8">
       {/* Overall Review Stats Dashboard */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6 bg-gray-50 border border-gray-100 rounded-3xl">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 p-4 sm:p-6 bg-gray-50 border border-gray-100 rounded-2xl sm:rounded-3xl">
         {/* Average Rating Block */}
         <div className="flex flex-col items-center justify-center text-center p-4 border-b md:border-b-0 md:border-r border-gray-200/60">
           <span className="text-5xl font-black text-gray-900 tracking-tight">{averageRating}</span>

@@ -47,7 +47,7 @@ export function QuickViewModal({ product, onClose }: QuickViewModalProps) {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4">
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -74,7 +74,7 @@ export function QuickViewModal({ product, onClose }: QuickViewModalProps) {
           </button>
 
           {/* Left: Image Container */}
-          <div className="relative bg-[#F5F7FA] aspect-square flex items-center justify-center p-6">
+          <div className="relative bg-[#F5F7FA] aspect-square flex items-center justify-center p-4 sm:p-6">
             <img
               src={product.image}
               alt={product.name}
@@ -88,7 +88,7 @@ export function QuickViewModal({ product, onClose }: QuickViewModalProps) {
           </div>
 
           {/* Right: Product Details */}
-          <div className="p-6 sm:p-8 flex flex-col justify-between">
+          <div className="p-5 sm:p-8 flex flex-col justify-between">
             <div className="space-y-4">
               <div>
                 <p className="text-xs font-bold text-[#007BFF] uppercase tracking-widest">{product.brand}</p>

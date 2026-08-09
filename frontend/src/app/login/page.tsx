@@ -211,7 +211,7 @@ export default function LoginPage() {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10">
-        <div className="bg-white/95 backdrop-blur-xl py-9 px-8 shadow-xl shadow-gray-200/40 rounded-[2rem] sm:px-10 border border-gray-100">
+        <div className="bg-white/95 backdrop-blur-xl py-6 sm:py-9 px-4 sm:px-10 shadow-xl shadow-gray-200/40 rounded-[2rem] border border-gray-100">
           
           {/* Segmented Tab Switcher using Customer dark brand color */}
           <div className="flex bg-gray-100 p-1.5 rounded-2xl mb-7 border border-gray-200/50">
@@ -272,31 +272,31 @@ export default function LoginPage() {
                     <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
                       Account Type
                     </label>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-2 sm:gap-3">
                       <button
                         type="button"
                         onClick={() => setRole("CUSTOMER")}
-                        className={`p-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all duration-200 ${
+                        className={`px-2 py-3 sm:p-3 rounded-xl border text-[11px] sm:text-xs font-bold flex items-center justify-center gap-1.5 transition-all duration-200 ${
                           role === "CUSTOMER"
                             ? "border-[#007BFF] bg-[#007BFF]/8 text-[#007BFF]"
                             : "border-gray-200 text-gray-500 hover:border-gray-300"
                         }`}
                       >
-                        <UserCheck className="w-3.5 h-3.5" />
-                        <span>Customer</span>
+                        <UserCheck className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">Customer</span>
                       </button>
 
                       <button
                         type="button"
                         onClick={() => setRole("VENDOR")}
-                        className={`p-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all duration-200 ${
+                        className={`px-2 py-3 sm:p-3 rounded-xl border text-[11px] sm:text-xs font-bold flex items-center justify-center gap-1.5 transition-all duration-200 ${
                           role === "VENDOR"
                             ? "border-[#007BFF] bg-[#007BFF]/8 text-[#007BFF]"
                             : "border-gray-200 text-gray-500 hover:border-gray-300"
                         }`}
                       >
-                        <Store className="w-3.5 h-3.5" />
-                        <span>Seller Vendor</span>
+                        <Store className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">Seller Vendor</span>
                       </button>
                     </div>
                   </div>

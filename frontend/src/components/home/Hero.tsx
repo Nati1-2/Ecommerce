@@ -27,9 +27,9 @@ export default function Hero() {
     <section className="relative bg-white overflow-hidden">
       {/* Subtle background decoration — light blue & warm orange blobs */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-32 -right-32 w-[520px] h-[520px] bg-orange-500/6 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 -left-40 w-[400px] h-[400px] bg-[#5AA8FF]/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/3 w-[300px] h-[300px] bg-orange-500/4 rounded-full blur-3xl" />
+        <div className="absolute -top-32 -right-32 w-[280px] sm:w-[520px] h-[280px] sm:h-[520px] max-w-full bg-orange-500/6 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 -left-40 w-[240px] sm:w-[400px] h-[240px] sm:h-[400px] max-w-full bg-[#5AA8FF]/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/3 w-[200px] sm:w-[300px] h-[200px] sm:h-[300px] max-w-full bg-orange-500/4 rounded-full blur-3xl" />
       </div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 pt-10 pb-16 lg:pt-14 lg:pb-24">
@@ -55,7 +55,7 @@ export default function Hero() {
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-5xl sm:text-6xl lg:text-[68px] font-black text-[#111827] leading-[1.06] tracking-tight"
+              className="text-3xl min-[400px]:text-4xl sm:text-5xl lg:text-[68px] font-black text-[#111827] leading-[1.06] tracking-tight"
             >
               Shop{" "}
               <span className="relative">
@@ -96,18 +96,18 @@ export default function Hero() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.34 }}
-              className="flex flex-wrap gap-3"
+              className="flex flex-col min-[400px]:flex-row flex-wrap gap-3"
             >
               <Link
                 href="/products"
-                className="group inline-flex items-center gap-2.5 bg-[#007BFF] hover:bg-blue-600 text-white font-bold px-7 py-3.5 rounded-2xl transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:-translate-y-0.5 text-[15px]"
+                className="group inline-flex items-center justify-center gap-2.5 bg-[#007BFF] hover:bg-blue-600 text-white font-bold px-6 sm:px-7 py-3 sm:py-3.5 rounded-2xl transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:-translate-y-0.5 text-sm sm:text-[15px]"
               >
                 Shop Now
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
               <Link
                 href="/categories"
-                className="inline-flex items-center gap-2 border-2 border-gray-200 hover:border-[#007BFF]/40 bg-white hover:bg-blue-50/50 text-[#111827] font-semibold px-7 py-3.5 rounded-2xl transition-all duration-300 hover:-translate-y-0.5 text-[15px]"
+                className="inline-flex items-center justify-center gap-2 border-2 border-gray-200 hover:border-[#007BFF]/40 bg-white hover:bg-blue-50/50 text-[#111827] font-semibold px-6 sm:px-7 py-3 sm:py-3.5 rounded-2xl transition-all duration-300 hover:-translate-y-0.5 text-sm sm:text-[15px]"
               >
                 Explore Categories
               </Link>
@@ -149,7 +149,7 @@ export default function Hero() {
                 transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
               >
                 {/* Card wrapper */}
-                <div className="relative w-[300px] sm:w-[360px] lg:w-[400px] rounded-3xl overflow-hidden bg-[#F5F7FA] border border-gray-100 shadow-2xl shadow-gray-200/80 group">
+                <div className="relative w-full max-w-[280px] min-[360px]:max-w-[320px] sm:max-w-[360px] lg:max-w-[400px] rounded-3xl overflow-hidden bg-[#F5F7FA] border border-gray-100 shadow-2xl shadow-gray-200/80 group">
                   <Link href="/products/0" className="block relative bg-white overflow-hidden">
                     <img
                       src="/iphone17.png"
@@ -246,7 +246,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7, duration: 0.6 }}
-          className="mt-16 lg:mt-20 grid grid-cols-2 sm:grid-cols-4 gap-4"
+          className="mt-12 lg:mt-20 grid grid-cols-2 sm:grid-cols-4 gap-2.5 min-[400px]:gap-4"
         >
           {[
             { value: "500K+", label: "Happy Customers" },
@@ -259,7 +259,7 @@ export default function Hero() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7 + i * 0.08 }}
-              className="flex flex-col items-center justify-center py-5 px-4 bg-[#F5F7FA] rounded-2xl border border-gray-100 text-center"
+              className="flex flex-col items-center justify-center py-4 px-2.5 sm:py-5 sm:px-4 bg-[#F5F7FA] rounded-2xl border border-gray-100 text-center"
             >
               <p className="text-2xl sm:text-3xl font-black text-[#007BFF]">{value}</p>
               <p className="text-xs text-gray-500 mt-1 font-medium">{label}</p>

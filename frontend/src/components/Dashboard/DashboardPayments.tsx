@@ -374,7 +374,7 @@ export default function DashboardPayments() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
                       Expiry Month

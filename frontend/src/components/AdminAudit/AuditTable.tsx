@@ -37,7 +37,7 @@ export default function AuditTable() {
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-xs">
+        <table className="w-full min-w-[650px] text-left text-xs">
           <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 font-semibold uppercase">
             <tr>
               <th className="py-3 px-4">Event ID</th>

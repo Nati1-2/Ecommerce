@@ -83,7 +83,7 @@ export default function VendorReviewDrawer() {
               <ShieldCheck className="w-4 h-4 text-blue-500" />
               Verification Status Checklist
             </h4>
-            <div className="grid grid-cols-3 gap-2 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
               <div className="p-3 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl text-center">
                 <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 block">
                   ✓ Identity Verified

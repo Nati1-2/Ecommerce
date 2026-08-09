@@ -40,7 +40,7 @@ export default function OrderHeader({ orderId, placedDate }: OrderHeaderProps) {
       </div>
 
       {/* Date metadata grid */}
-      <div className="grid grid-cols-2 gap-4 border-t border-gray-100 pt-4 text-xs font-semibold">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-gray-100 pt-4 text-xs font-semibold">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center shrink-0 text-gray-400">
             <Calendar className="w-4 h-4" />

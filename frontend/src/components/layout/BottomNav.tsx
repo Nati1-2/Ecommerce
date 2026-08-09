@@ -38,12 +38,12 @@ export default function BottomNav() {
   return (
     <>
       {/* Mobile Bottom Navigation Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-gray-100 py-1.5 px-2 flex items-center justify-around md:hidden shadow-2xl select-none">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-gray-100 py-1.5 pb-[max(0.375rem,env(safe-area-inset-bottom))] px-1 sm:px-2 flex items-center justify-around md:hidden shadow-2xl select-none">
         {/* 1. Home */}
         <Link
           href="/"
           className={cn(
-            "flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-colors",
+            "flex flex-col items-center gap-1 py-1 px-1.5 min-[380px]:px-3 rounded-xl transition-colors",
             pathname === "/" ? "text-[#007BFF]" : "text-gray-400 hover:text-gray-700"
           )}
         >
@@ -55,7 +55,7 @@ export default function BottomNav() {
         <button
           onClick={() => setCatSheetOpen(true)}
           className={cn(
-            "flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-colors",
+            "flex flex-col items-center gap-1 py-1 px-1.5 min-[380px]:px-3 rounded-xl transition-colors",
             pathname.includes("/products") && !pathname.includes("/account") ? "text-[#007BFF]" : "text-gray-400 hover:text-gray-700"
           )}
         >
@@ -67,13 +67,13 @@ export default function BottomNav() {
         <Link
           href="/wishlist"
           className={cn(
-            "flex flex-col items-center gap-1 py-1 px-3 rounded-xl relative transition-colors",
+            "flex flex-col items-center gap-1 py-1 px-1.5 min-[380px]:px-3 rounded-xl relative transition-colors",
             pathname === "/wishlist" ? "text-[#007BFF]" : "text-gray-400 hover:text-gray-700"
           )}
         >
           <Heart className="w-5 h-5" />
           {wishlistCount > 0 && (
-            <span className="absolute top-0 right-2 w-4 h-4 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+            <span className="absolute top-0 right-1 w-4 h-4 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
               {wishlistCount}
             </span>
           )}
@@ -83,11 +83,11 @@ export default function BottomNav() {
         {/* 4. Cart */}
         <button
           onClick={() => setCartDrawerOpen(true)}
-          className="flex flex-col items-center gap-1 py-1 px-3 text-gray-400 hover:text-gray-700 relative transition-colors"
+          className="flex flex-col items-center gap-1 py-1 px-1.5 min-[380px]:px-3 text-gray-400 hover:text-gray-700 relative transition-colors"
         >
           <ShoppingBag className="w-5 h-5" />
           {totalCartItems > 0 && (
-            <span className="absolute top-0 right-2 w-4 h-4 bg-[#007BFF] text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+            <span className="absolute top-0 right-1 w-4 h-4 bg-[#007BFF] text-white text-[9px] font-bold rounded-full flex items-center justify-center">
               {totalCartItems}
             </span>
           )}
@@ -98,7 +98,7 @@ export default function BottomNav() {
         <Link
           href="/account"
           className={cn(
-            "flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-colors",
+            "flex flex-col items-center gap-1 py-1 px-1.5 min-[380px]:px-3 rounded-xl transition-colors",
             pathname === "/account" || pathname === "/profile" ? "text-[#007BFF]" : "text-gray-400 hover:text-gray-700"
           )}
         >

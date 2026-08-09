@@ -42,7 +42,7 @@ export function FilterDrawer({
             animate={{ x: 0 }}
             exit={{ x: "-100%" }}
             transition={{ type: "spring", damping: 28, stiffness: 260 }}
-            className="fixed top-0 left-0 bottom-0 w-full max-w-[320px] bg-white z-50 shadow-2xl flex flex-col lg:hidden"
+            className="fixed top-0 left-0 bottom-0 w-[85vw] max-w-[320px] bg-white z-50 shadow-2xl flex flex-col lg:hidden"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-5 border-b border-gray-100 shrink-0">
@@ -63,16 +63,14 @@ export function FilterDrawer({
 
             {/* Content body */}
             <div className="flex-1 overflow-y-auto p-5">
-              {/* Force children block view so mobile version renders sidebar in scroll container */}
-              <div className="block lg:block">
-                <FilterSidebar
-                  filters={filters}
-                  onChange={onChange}
-                  onClear={onClear}
-                  availableBrands={availableBrands}
-                  availableCategories={availableCategories}
-                />
-              </div>
+              <FilterSidebar
+                className="block w-full space-y-7"
+                filters={filters}
+                onChange={onChange}
+                onClear={onClear}
+                availableBrands={availableBrands}
+                availableCategories={availableCategories}
+              />
             </div>
 
             {/* Action footer */}

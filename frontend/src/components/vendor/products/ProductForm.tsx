@@ -312,7 +312,7 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting = fals
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <div>
                   <label className="text-[11px] font-bold text-slate-500">L (cm)</label>
                   <input

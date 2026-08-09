@@ -57,7 +57,7 @@ export default function ComplianceReports() {
 
           <div>
             <label className="font-bold text-slate-700 dark:text-slate-300">Export File Format *</label>
-            <div className="grid grid-cols-3 gap-2 mt-1.5">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-1.5">
               {(["pdf", "csv", "excel"] as const).map((fmt) => (
                 <button
                   key={fmt}

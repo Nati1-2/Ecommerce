@@ -52,7 +52,7 @@ export default function ProductTable({
   return (
     <div className="bg-white  rounded-3xl border border-slate-200  shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm">
+        <table className="w-full min-w-[700px] text-left text-sm">
           <thead className="bg-slate-50  text-slate-500  text-xs uppercase font-semibold">
             <tr>
               <th className="py-3.5 px-4 w-10">

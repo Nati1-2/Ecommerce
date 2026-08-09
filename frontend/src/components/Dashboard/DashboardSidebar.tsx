@@ -96,7 +96,7 @@ export default function DashboardSidebar({
   return (
     <>
       {/* Mobile Toggle Button Header */}
-      <div className="flex md:hidden items-center justify-between p-4 bg-white border-b border-gray-100 sticky top-[104px] z-30">
+      <div className="flex md:hidden items-center justify-between p-3.5 sm:p-4 bg-white border-b border-gray-100 sticky top-[64px] z-30 shadow-xs">
         <span className="text-xs font-black text-gray-900 capitalize">
           Account Menu: {activeTab}
         </span>

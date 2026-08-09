@@ -128,7 +128,7 @@ export function ProductCard({ product, index, viewMode, onQuickView }: ProductCa
             </div>
 
             {/* Action buttons */}
-            <div className="flex gap-2">
+            <div className="flex flex-wrap sm:flex-nowrap gap-1.5 min-[360px]:gap-2">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -183,7 +183,7 @@ export function ProductCard({ product, index, viewMode, onQuickView }: ProductCa
     >
       <div>
         {/* Image Container */}
-        <div className="relative aspect-square w-full min-h-[220px] bg-[#F8FAFC] overflow-hidden flex items-center justify-center">
+        <div className="relative aspect-square w-full bg-[#F8FAFC] overflow-hidden flex items-center justify-center">
           <img
             src={imgSrc}
             alt={product.name}

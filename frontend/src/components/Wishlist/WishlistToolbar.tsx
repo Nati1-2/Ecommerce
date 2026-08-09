@@ -25,7 +25,7 @@ export default function WishlistToolbar() {
       </div>
 
       {/* 2. Filters */}
-      <div className="flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
         {/* Category */}
         <div className="flex-1 flex items-center gap-1 bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs font-bold text-gray-700 shadow-sm">
           <SlidersHorizontal className="w-3.5 h-3.5 text-gray-400" />

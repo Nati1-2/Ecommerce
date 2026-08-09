@@ -93,7 +93,7 @@ export default function VendorHeader({ onOpenMobileMenu }: HeaderProps) {
 
           {/* Notifications Dropdown */}
           {showNotifications && (
-            <div className="absolute right-0 mt-3 w-80 sm:w-96 bg-white  rounded-2xl shadow-2xl border border-slate-200  py-3 z-50">
+            <div className="absolute right-0 mt-3 w-[calc(100vw-2rem)] sm:w-96 bg-white  rounded-2xl shadow-2xl border border-slate-200  py-3 z-50">
               <div className="px-4 pb-3 border-b border-slate-100  flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <h3 className="font-bold text-slate-900  text-sm">Notifications</h3>

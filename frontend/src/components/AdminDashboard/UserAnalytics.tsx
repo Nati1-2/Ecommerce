@@ -31,7 +31,7 @@ export default function UserAnalytics({ data }: Props) {
       </div>
 
       {/* Metrics Row */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="p-3.5 bg-blue-50 dark:bg-blue-950/30 rounded-2xl">
           <p className="text-[11px] font-semibold text-blue-600 dark:text-blue-400">Daily New Users</p>
           <p className="text-lg font-black text-slate-900 dark:text-white mt-0.5">

@@ -174,7 +174,7 @@ export default function CheckoutPage() {
       </div>
 
       {/* ── MAIN CONTENT ─────────────────────────────────────────── */}
-      <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-8 pb-36 lg:pb-8">
+      <div className="flex-1 max-w-7xl mx-auto w-full px-3 min-[400px]:px-4 sm:px-6 py-6 sm:py-8 pb-36 lg:pb-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
           {/* Left: Step content */}
           <div className="lg:col-span-2">
@@ -245,11 +245,11 @@ export default function CheckoutPage() {
 
       {/* ── MOBILE STICKY BOTTOM BAR (< lg) ───────────────────────── */}
       {step < 4 && (
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 p-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.12)]">
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 p-3 sm:p-4 pb-[max(1rem,env(safe-area-inset-bottom))] z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.12)]">
           <button
             onClick={goNext}
             disabled={isDisabled[step]}
-            className="w-full py-4 bg-[#007BFF] hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-base rounded-2xl shadow-lg shadow-blue-500/25 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2"
+            className="w-full py-3.5 sm:py-4 bg-[#007BFF] hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm sm:text-base rounded-2xl shadow-lg shadow-blue-500/25 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2"
           >
             <span>{buttonLabels[step]}</span>
           </button>

@@ -56,7 +56,7 @@ export default function NotificationComposer() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="font-bold text-slate-700 dark:text-slate-300">Select Communication Channel *</label>
-            <div className="grid grid-cols-4 gap-2 mt-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
               {(["Email", "Push", "SMS", "Realtime"] as NotificationChannel[]).map((ch) => {
                 const isSel = channel === ch;
 

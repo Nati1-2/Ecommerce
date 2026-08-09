@@ -22,7 +22,7 @@ export default function Toast() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 50, scale: 0.95 }}
           transition={{ type: "spring", bounce: 0.3 }}
-          className="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-white dark:bg-gray-800 shadow-xl border border-gray-100 dark:border-gray-700 rounded-lg px-4 py-3 min-w-[300px]"
+          className="fixed bottom-4 right-4 left-4 sm:left-auto sm:right-6 sm:bottom-6 z-50 flex items-center gap-3 bg-white dark:bg-gray-800 shadow-xl border border-gray-100 dark:border-gray-700 rounded-lg px-4 py-3 sm:min-w-[300px]"
         >
           {icons[toast.type]}
           <p className="flex-1 text-sm font-medium text-gray-900 dark:text-gray-100">

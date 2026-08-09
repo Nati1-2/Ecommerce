@@ -152,7 +152,7 @@ function ProductListingContent() {
       <div className="bg-[#F5F7FA] border-b border-gray-100 py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           {/* Breadcrumbs */}
-          <nav className="flex items-center gap-2 text-xs font-semibold text-gray-400">
+          <nav className="flex items-center flex-wrap gap-2 text-xs font-semibold text-gray-400">
             <Link href="/" className="hover:text-[#007BFF] flex items-center gap-1 transition-colors">
               <Home className="w-3.5 h-3.5" />
               Home

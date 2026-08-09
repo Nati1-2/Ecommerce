@@ -111,7 +111,7 @@ export default function ProductReviewDrawer() {
           </div>
 
           {/* Pricing & Inventory Grid */}
-          <div className="grid grid-cols-3 gap-3 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
             <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-800">
               <p className="text-[10px] text-slate-400 font-semibold">Marketplace Price</p>
               <p className="text-base font-extrabold text-slate-900 dark:text-white mt-0.5">

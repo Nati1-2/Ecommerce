@@ -29,7 +29,7 @@ export default function VendorTable({
   return (
     <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm">
+        <table className="w-full min-w-[700px] text-left text-sm">
           <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase font-semibold">
             <tr>
               <th className="py-3.5 px-4 w-10">

@@ -3,6 +3,8 @@
 import { Star } from "lucide-react";
 import { RatingStars } from "@/components/shared/RatingStars";
 
+import { cn } from "@/lib/utils";
+
 export interface FilterState {
   categories: string[];
   brands: string[];
@@ -18,6 +20,7 @@ interface FilterSidebarProps {
   onClear: () => void;
   availableBrands: string[];
   availableCategories: string[];
+  className?: string;
 }
 
 export function FilterSidebar({
@@ -26,6 +29,7 @@ export function FilterSidebar({
   onClear,
   availableBrands,
   availableCategories,
+  className,
 }: FilterSidebarProps) {
   const toggleCategory = (cat: string) => {
     const next = filters.categories.includes(cat)
@@ -51,7 +55,7 @@ export function FilterSidebar({
   };
 
   return (
-    <aside className="w-64 shrink-0 space-y-7 hidden lg:block">
+    <aside className={cn("w-64 shrink-0 space-y-7 hidden lg:block", className)}>
       {/* Active filters header */}
       <div className="flex items-center justify-between pb-4 border-b border-gray-100">
         <h3 className="font-black text-base text-[#111827]">Filters</h3>
