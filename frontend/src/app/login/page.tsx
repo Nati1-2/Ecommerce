@@ -4,14 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth";
 import { useProfileStore } from "@/store/profileStore";
-import { LogIn, UserPlus, Lock, Mail, User, Eye, EyeOff, Sparkles, CheckCircle2, AlertCircle, Shield, Store, UserCheck, Zap } from "lucide-react";
+import { LogIn, UserPlus, Lock, Mail, User, Eye, EyeOff, Sparkles, CheckCircle2, AlertCircle, UserCheck } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 
 const DEMO_ACCOUNTS = {
   "john.smith@gmail.com": { password: "password123", name: "John Smith", role: "CUSTOMER" as const },
-  "vendor@natistore.com": { password: "vendor123", name: "Apex Tech Vendor Store", role: "VENDOR" as const },
-  "nati@admin.com": { password: "nati1234", name: "Nati Demo Admin", role: "ADMIN" as const },
 };
 
 export default function LoginPage() {
@@ -19,7 +17,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
   const [name, setName] = useState("");
-  const [role, setRole] = useState<"CUSTOMER" | "ADMIN" | "VENDOR">("CUSTOMER");
+  const [role] = useState<"CUSTOMER" | "ADMIN" | "VENDOR">("CUSTOMER");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -28,26 +26,12 @@ export default function LoginPage() {
   const setAuth = useAuthStore((s) => s.setAuth);
   const router = useRouter();
 
-  const handleDemoFill = (type: "customer" | "admin" | "vendor") => {
+  const handleDemoFill = () => {
     setError("");
     setSuccess("");
-
-    if (type === "customer") {
-      setEmail("john.smith@gmail.com");
-      setPassword("password123");
-      setRole("CUSTOMER");
-      if (isRegistering) setName("John Smith");
-    } else if (type === "admin") {
-      setEmail("nati@admin.com");
-      setPassword("nati1234");
-      setRole("ADMIN");
-      if (isRegistering) setName("Nati Demo Admin");
-    } else if (type === "vendor") {
-      setEmail("vendor@natistore.com");
-      setPassword("vendor123");
-      setRole("VENDOR");
-      if (isRegistering) setName("Apex Tech Vendor Store");
-    }
+    setEmail("john.smith@gmail.com");
+    setPassword("password123");
+    if (isRegistering) setName("John Smith");
   };
 
   const redirectByRole = (userRole: "CUSTOMER" | "ADMIN" | "VENDOR") => {
@@ -71,7 +55,7 @@ export default function LoginPage() {
     try {
       const endpoint = isRegistering ? "/api/auth/register" : "/api/auth/login";
       const payload = isRegistering 
-        ? { name, email: normalizedEmail, password, role } 
+        ? { name, email: normalizedEmail, password, role: "CUSTOMER" } 
         : { email: normalizedEmail, password };
 
       const res = await fetch(endpoint, {
@@ -107,7 +91,7 @@ export default function LoginPage() {
           console.warn("Profile sync notice:", storeErr);
         }
 
-        setSuccess(`Signed in successfully as ${data.user.role}! Redirecting...`);
+        setSuccess(`Signed in successfully! Redirecting...`);
         setTimeout(() => redirectByRole(data.user.role), 600);
         return;
       }
@@ -151,7 +135,7 @@ export default function LoginPage() {
             lastName,
             email: demoUser.email,
             phone: "",
-            role: `${demoUser.role} Account`,
+            role: `Customer Member ⭐`,
             avatar: "",
             verified: true,
           });
@@ -159,7 +143,7 @@ export default function LoginPage() {
           console.warn("Demo profile sync notice:", storeErr);
         }
 
-        setSuccess(`Signed in as ${demoAccount.role}! Redirecting...`);
+        setSuccess(`Signed in successfully! Redirecting...`);
         setTimeout(() => redirectByRole(demoAccount.role), 600);
         return;
       }
@@ -267,39 +251,6 @@ export default function LoginPage() {
                       />
                     </div>
                   </div>
-
-                  <div>
-                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
-                      Account Type
-                    </label>
-                    <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                      <button
-                        type="button"
-                        onClick={() => setRole("CUSTOMER")}
-                        className={`px-2 py-3 sm:p-3 rounded-xl border text-[11px] sm:text-xs font-bold flex items-center justify-center gap-1.5 transition-all duration-200 ${
-                          role === "CUSTOMER"
-                            ? "border-[#007BFF] bg-[#007BFF]/8 text-[#007BFF]"
-                            : "border-gray-200 text-gray-500 hover:border-gray-300"
-                        }`}
-                      >
-                        <UserCheck className="w-3.5 h-3.5 shrink-0" />
-                        <span className="truncate">Customer</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setRole("VENDOR")}
-                        className={`px-2 py-3 sm:p-3 rounded-xl border text-[11px] sm:text-xs font-bold flex items-center justify-center gap-1.5 transition-all duration-200 ${
-                          role === "VENDOR"
-                            ? "border-[#007BFF] bg-[#007BFF]/8 text-[#007BFF]"
-                            : "border-gray-200 text-gray-500 hover:border-gray-300"
-                        }`}
-                      >
-                        <Store className="w-3.5 h-3.5 shrink-0" />
-                        <span className="truncate">Seller Vendor</span>
-                      </button>
-                    </div>
-                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -389,7 +340,7 @@ export default function LoginPage() {
                 ) : isRegistering ? (
                   <>
                     <UserPlus className="w-4.5 h-4.5" />
-                    <span>Create Account ({role})</span>
+                    <span>Create Customer Account</span>
                   </>
                 ) : (
                   <>
@@ -408,32 +359,14 @@ export default function LoginPage() {
               <span>Fill Quick Demo Account</span>
             </div>
             
-            <div className="flex items-center justify-center gap-2 flex-wrap">
+            <div className="flex items-center justify-center">
               <button
                 type="button"
-                onClick={() => handleDemoFill("customer")}
-                className="px-3.5 py-2 bg-[#007BFF]/8 hover:bg-[#007BFF]/15 text-[#007BFF] border border-[#007BFF]/20 rounded-xl text-[10px] font-bold transition-all duration-200 flex items-center gap-1.5"
+                onClick={handleDemoFill}
+                className="px-4 py-2.5 bg-[#007BFF]/8 hover:bg-[#007BFF]/15 text-[#007BFF] border border-[#007BFF]/20 rounded-xl text-xs font-bold transition-all duration-200 flex items-center gap-2"
               >
-                <UserCheck className="w-3.5 h-3.5 fill-[#007BFF]" />
-                <span>Customer</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleDemoFill("vendor")}
-                className="px-3.5 py-2 bg-[#007BFF]/8 hover:bg-[#007BFF]/15 text-[#007BFF] border border-[#007BFF]/20 rounded-xl text-[10px] font-bold transition-all duration-200 flex items-center gap-1.5"
-              >
-                <Store className="w-3.5 h-3.5 fill-[#007BFF]" />
-                <span>Vendor</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleDemoFill("admin")}
-                className="px-3.5 py-2 bg-[#007BFF]/8 hover:bg-[#007BFF]/15 text-[#007BFF] border border-[#007BFF]/20 rounded-xl text-[10px] font-bold transition-all duration-200 flex items-center gap-1.5"
-              >
-                <Shield className="w-3.5 h-3.5 fill-[#007BFF]" />
-                <span>Admin</span>
+                <UserCheck className="w-4 h-4 fill-[#007BFF]" />
+                <span>Fill Customer Demo</span>
               </button>
             </div>
           </div>
