@@ -106,12 +106,19 @@ export default function PriceSummary({
         </div>
       </motion.div>
 
-      {/* CTA Button (Desktop lg+ only - mobile/tablet <lg uses fixed sticky bottom bar) */}
+      {/* CTA Button (Desktop lg+ only - strictly hidden on mobile/tablet < 1024px) */}
       <div className="p-5 pt-0 hidden lg:block">
+        <style>{`
+          @media (max-width: 1023px) {
+            .mobile-hide-cta {
+              display: none !important;
+            }
+          }
+        `}</style>
         <button
           onClick={onContinue}
           disabled={disabled}
-          className="w-full py-3.5 bg-[#007BFF] hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm rounded-2xl shadow-lg shadow-blue-500/20 hover:-translate-y-0.5 transition-all cursor-pointer"
+          className="mobile-hide-cta w-full py-3.5 bg-[#007BFF] hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm rounded-2xl shadow-lg shadow-blue-500/20 hover:-translate-y-0.5 transition-all cursor-pointer"
         >
           {buttonLabel}
         </button>
