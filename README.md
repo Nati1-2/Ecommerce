@@ -15,85 +15,100 @@
 
 ---
 
-## 🎯 Executive Summary & Problem Statement
+## Overview
 
-Legacy e-commerce monoliths frequently suffer from single points of failure, slow database lock contention during flash sales, and inflexible UI layouts across varying mobile viewports. **Nati.** addresses these real-world engineering bottlenecks by combining a **distributed, event-driven microservices architecture** on the backend with a **mobile-first, highly responsive Next.js 15 App Router** on the frontend.
+### What the Project Does
+**Nati.** is an end-to-end, multi-vendor e-commerce platform designed to seamlessly connect customers, independent sellers, and platform administrators. It provides a complete online shopping ecosystem including full-text product search, dynamic variant selection, persistent cart/wishlist management, multi-step checkout with Stripe, real-time inventory tracking, seller vendor management, and a live Super Admin telemetry control center.
 
-### The Problem
-- **Database Lock Contention**: High-concurrency checkout spikes cause race conditions and over-selling in traditional databases.
-- **Tight Coupling**: Monolithic architectures slow down deployment velocity and force full platform redeployments for minor updates.
-- **Subpar Mobile UX**: Heavy client bundles and rigid pixel widths lead to layout breaks on smaller devices (320px–480px) and poor mobile conversion rates.
+### Why It Was Built
+Traditional e-commerce platforms often encounter major technical limitations during high-concurrency traffic bursts (such as flash sales), including race conditions that lead to negative stock balances, high database lock contention, slow client bundle loading, and horizontal layout degradation on mobile devices. **Nati.** was engineered from the ground up as a production-grade portfolio project to demonstrate senior software engineering expertise in building event-driven microservices, distributed concurrency control, and mobile-first frontend architectures.
 
-### The Solution
-- **Distributed Concurrency Lock**: Integrated **Redis Redlock** to handle atomic inventory reservations with instant rollback capabilities during peak sales events.
-- **Asynchronous Event-Driven Architecture**: Decoupled 10 microservices using **RabbitMQ AMQP Topic Exchanges**, enabling independent service autoscaling and eventual consistency.
-- **Production-Grade Next.js Storefront**: Designed a fluid, mobile-first design system (**320px to 1440px+**) backed by **Zustand** state persistence, **React Query** caching, and **Socket.IO** real-time inventory telemetry.
+### What Problem It Solves
+1. **Flash Sale Concurrency & Race Conditions**: Solves inventory overselling during concurrent checkouts via distributed Redis Redlock locks.
+2. **System Coupling & Scalability Limits**: Replaces monolithic bottlenecks with 10 independent microservices communicating asynchronously over RabbitMQ AMQP message queues.
+3. **Mobile User Conversion Drop-Off**: Eliminates layout breaks, heavy bundle bloat, and text clipping across 320px–1440px viewports using Next.js 15 App Router dynamic imports and Tailwind CSS design tokens.
 
 ---
 
-## 🌟 Key Features
+## Features
 
-### 🛍️ Customer Storefront & Shopping Experience
-- **Fluid Multi-Device UI**: Fully responsive across mobile (320px–480px), tablet (481px–1024px), and desktop (1025px+) with zero horizontal overflow.
-- **Instant Product Search & Discovery**: Multi-faceted product filtering (category, brand, price range, stock availability) with quick-view modal overlays.
-- **Dynamic Variant Matrix**: Interactive color, size, and storage capacity selectors with real-time price offsets and thumbnail switching.
-- **Persistent Cart & Wishlist**: Real-time badge indicators, dynamic subtotal calculations, and Zustand local storage persistence.
-- **Multi-Step Checkout & Payments**: Multi-tier shipping rules, discount coupon engine, and seamless **Stripe API** Integration with automated webhook confirmation.
+### 🛍️ Customer Storefront Experience
+- **Mobile-First Responsive Layout**: Built to adapt flawlessly across **320px–480px** (Mobile), **481px–1024px** (Tablet), and **1025px+** (Desktop) without horizontal scrollbar overflow.
+- **Dynamic Variant Matrix**: Real-time price delta calculations and gallery updates based on selected product color, storage, or size options.
+- **Instant Product Search & Filtering**: Client-side and server-assisted multi-category filtering by price range, brand, stock level, and user ratings.
+- **Persistent Cart & Wishlist**: Zustand-powered local persistence with instant badge count updates and auto-calculated subtotals.
+- **Multi-Step Checkout & Stripe Payments**: Complete checkout workflow featuring address verification, shipping tier selection, coupon code engine, and Stripe Payment Intent processing.
 
 ### 📊 Super Admin Control Center (`/admin`)
-- **Live Telemetry Dashboard**: Real-time monitoring of Gross Merchandise Value (GMV), active customer growth, and database connectivity.
-- **System Health Mesh**: Direct status telemetry for MongoDB, Redis, RabbitMQ, and active API microservices.
-- **Moderation Queues**: Vendor onboarding verification and product catalog approval workflow.
-- **Security & Audit Logs**: Immutable system activity logging and role-based access controls (RBAC).
+- **Live Platform Telemetry**: Real-time Gross Merchandise Value (GMV), active user growth metrics, and live transaction counters.
+- **System Health Monitor**: Direct connectivity metrics for MongoDB, Redis caches, RabbitMQ queues, and microservice APIs.
+- **Moderation Queues**: Dedicated workflows for verifying seller vendor applications and approving incoming product catalog submissions.
+- **Audit Logs & Security**: Immutable activity tracking logs and fine-grained role-based access control (RBAC).
 
 ### 🏪 Seller Vendor Portal (`/vendor`)
-- **Catalog & Inventory Management**: Add/edit product lines with custom variant options and real-time stock adjustments.
-- **Fulfillment Operations**: Order status updates, customer communication channels, and payout tracking tables.
+- **Inventory & Variant Manager**: Add, update, and manage product lines with multi-variant stock levels and custom SKU pricing.
+- **Fulfillment & Payout Logs**: Track customer orders, manage shipment statuses, and view payout summary metrics.
 
 ---
 
-## 📸 Screenshots & Demos
+## Screenshots / Demo
 
-| Desktop Storefront | Mobile Responsive Viewport |
+- **Live Web Application Demo**: [https://nati-ecommerce.vercel.app](https://nati-ecommerce.vercel.app) *(Placeholder)*
+- **GitHub Source Code Repository**: [https://github.com/Nati1-2/Ecommerce](https://github.com/Nati1-2/Ecommerce)
+
+| Desktop Storefront View | Mobile 320px Responsive View |
 | :---: | :---: |
-| ![Desktop Storefront Preview](https://via.placeholder.com/600x340/111827/ffffff?text=Nati.+Desktop+Storefront+UI) | ![Mobile Storefront Preview](https://via.placeholder.com/300x500/111827/ffffff?text=Nati.+Mobile+320px+Responsive+View) |
+| ![Desktop Preview](https://via.placeholder.com/600x340/111827/ffffff?text=Nati.+Desktop+Storefront) | ![Mobile Preview](https://via.placeholder.com/300x500/111827/ffffff?text=Nati.+Mobile+320px+View) |
 
-| Super Admin Telemetry Dashboard | Seller Vendor Inventory Management |
+| Super Admin Telemetry Control Center | Seller Vendor Inventory Management |
 | :---: | :---: |
-| ![Admin Telemetry Preview](https://via.placeholder.com/600x340/007BFF/ffffff?text=Admin+Control+Center+%26+System+Health) | ![Vendor Inventory Preview](https://via.placeholder.com/600x340/10B981/ffffff?text=Seller+Vendor+Catalog+Editor) |
+| ![Admin Dashboard](https://via.placeholder.com/600x340/007BFF/ffffff?text=Admin+Telemetry+Control+Center) | ![Vendor Portal](https://via.placeholder.com/600x340/10B981/ffffff?text=Seller+Vendor+Catalog+Manager) |
 
 ---
 
-## 🛠️ Technology Stack
+## Tech Stack
 
-| Category | Technologies |
-| :--- | :--- |
-| **Frontend Framework** | Next.js 15 (App Router, React 19, Server & Client Components) |
-| **Language & Types** | TypeScript 5.0 (Strict mode enabled) |
-| **Styling & Design System** | Tailwind CSS v3.4, Vanilla CSS Tokens, Glassmorphism, Responsive Breakpoints |
-| **State Management** | Zustand (with LocalStorage persist middleware) |
-| **Data Fetching & Caching** | React Query (TanStack Query v5), Axios |
-| **Animations & Icons** | Framer Motion, Lucide React Icons |
-| **Backend Services** | Node.js v20+, Express.js, Microservices Monorepo (`@ecom/common`) |
-| **Database Architecture** | MongoDB 8.x (Isolated database per microservice pattern), Mongoose ORM |
-| **Distributed Cache & Locking** | Redis (Redlock distributed lock algorithm & Cart session cache) |
-| **Message Broker** | RabbitMQ (Topic Exchange `ecommerce_events`) |
-| **Real-Time Communication** | Socket.IO (WebSockets with automatic polling fallback) |
-| **Payment Gateway** | Stripe API (PaymentIntents, Webhook handling) |
-| **DevOps & Tooling** | Docker, Docker Compose, Nginx Ingress Proxy, Meilisearch, Playwright E2E |
+### Frontend
+- **Framework**: Next.js 15.5 (App Router, Server Components & Client Components), React 19
+- **Language**: TypeScript 5.0 (Strict mode)
+- **Styling**: Tailwind CSS v3.4, Vanilla CSS Design Tokens, Glassmorphic UI overlays
+- **State Management**: Zustand (Persisted stores for Cart, Wishlist, Auth, Profile)
+- **Data Fetching**: React Query (TanStack Query v5), Axios
+- **Animations & Icons**: Framer Motion, Lucide React Icons
+- **Charts & Data Viz**: Recharts
+
+### Backend
+- **Runtime & Framework**: Node.js v20.x, Express.js
+- **Microservices Monorepo**: Decoupled domain services connected via shared `@ecom/common` package
+- **Real-Time Communication**: Socket.IO WebSockets (with polling fallback)
+- **Authentication**: JWT (Access & Refresh tokens), bcryptjs password hashing
+
+### Database & Messaging
+- **Primary Database**: MongoDB 8.x (Isolated database per service pattern: `auth_db`, `product_db`, `order_db`, etc.)
+- **Caching & Locks**: Redis (Redlock distributed locking algorithm & Session store)
+- **Message Broker**: RabbitMQ (AMQP Topic Exchange `ecommerce_events`)
+- **Search Engine**: Meilisearch
+
+### Tools & Infrastructure
+- **Containerization**: Docker, Docker Compose
+- **Web Server & Ingress**: Nginx Reverse Proxy
+- **E2E Testing**: Playwright
+- **CI/CD**: GitHub Actions workflows
 
 ---
 
-## 🏗️ System Architecture & Data Flow
+## Architecture
+
+The project implements a decoupled, event-driven microservices architecture communicating via asynchronous RabbitMQ message queues and REST API endpoints.
 
 ```mermaid
 graph TD
-    Client[Next.js 15 Mobile & Desktop Client] -->|HTTPS / REST| Nginx[Nginx Reverse Proxy Ingress]
-    Client -->|WSS / Socket.IO| NotificationService
+    Client[Next.js 15 App Router Frontend] -->|HTTPS / REST| Nginx[Nginx Reverse Proxy]
+    Client -->|WSS / Socket.IO| NotificationService[Notification Service - :8009]
     
-    Nginx -->|JWT Extraction / Gateway Route| Gateway[Express API Gateway - :8000]
+    Nginx -->|API Routes| Gateway[Express API Gateway - :8000]
     
-    %% Microservices Routing
+    %% Gateway Proxies
     Gateway --> AuthService[Auth Service - :8001]
     Gateway --> UserService[User Service - :8002]
     Gateway --> ProductService[Product Service - :8003]
@@ -102,10 +117,8 @@ graph TD
     Gateway --> OrderService[Order Service - :8006]
     Gateway --> PaymentService[Payment Service - :8007]
     Gateway --> SearchService[Search Service - :8008]
-    Gateway --> NotificationService[Notification Service - :8009]
-    Gateway --> RecService[Python FastAPI Recommendation - :8010]
     
-    %% Datastores
+    %% Databases
     AuthService -.-> AuthDB[(MongoDB: auth_db)]
     UserService -.-> UserDB[(MongoDB: user_db)]
     ProductService -.-> ProductDB[(MongoDB: product_db)]
@@ -116,7 +129,7 @@ graph TD
     PaymentService -.-> PayDB[(MongoDB: payment_db)]
     SearchService -.-> Meili[Meilisearch Engine]
     
-    %% Event Bus
+    %% Message Broker
     RabbitMQ[RabbitMQ AMQP Broker] <==> AuthService
     RabbitMQ <==> ProductService
     RabbitMQ <==> InventoryService
@@ -127,48 +140,46 @@ graph TD
 
 ---
 
-## ⚡ Quick Start & Installation
+## Installation
 
 ### Prerequisites
+Make sure you have the following installed on your machine:
 - **Node.js**: `>= 20.0.0`
 - **npm**: `>= 10.0.0`
-- **Docker & Docker Compose** *(optional for containerized setup)*
-- **MongoDB** & **Redis** running locally or cloud-hosted instances
+- **Docker & Docker Compose**: *(optional for local container orchestration)*
+- **MongoDB** & **Redis**: *(running locally or via cloud services)*
 
-### 1. Clone the Repository
-```bash
-git clone https://github.com/Nati1-2/Ecommerce.git
-cd Ecommerce
-```
+### Step-by-Step Setup
 
-### 2. Frontend Setup (Next.js 15)
-```bash
-# Navigate to frontend directory
-cd frontend
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/Nati1-2/Ecommerce.git
+   cd Ecommerce
+   ```
 
-# Install dependencies
-npm install
+2. **Setup and run the Next.js Frontend**:
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+   The frontend will be available at `http://localhost:3000`.
 
-# Run local development server
-npm run dev
-```
-Open `http://localhost:3000` in your browser.
+3. **Setup the Microservices Monorepo**:
+   ```bash
+   # From project root directory
+   npm install
+   npm run build:common
+   ```
 
-### 3. Microservices Backend Setup (Monorepo)
-```bash
-# From repository root
-npm install
-
-# Build shared npm package
-npm run build:common
-
-# Start development services via Docker Compose
-npm run docker:up
-```
+4. **Run using Docker Compose** *(Recommended)*:
+   ```bash
+   npm run docker:up
+   ```
 
 ---
 
-## ⚙️ Environment Variables
+## Environment Variables
 
 ### Frontend Environment (`frontend/.env.local`)
 ```env
@@ -193,76 +204,113 @@ STRIPE_WEBHOOK_SECRET=whsec_sample_key_here
 
 ---
 
-## 💡 Engineering Challenges & Solutions
+## Running the Project
 
-### 1. Atomic Inventory Reservations During Concurrency Spikes
-- **Challenge**: Simultaneous user purchases on low-stock items created classic race conditions, allowing stock counts to drop below zero.
-- **Solution**: Implemented **Redis Redlock distributed locking** inside `InventoryService`. When a checkout is initiated, an ephemeral lock (with a 5-second TTL) is acquired before updating MongoDB stock schemas. If payment fails or times out, the stock reservation automatically releases.
+### Development Mode
+```bash
+# Start frontend in development mode
+cd frontend
+npm run dev
 
-### 2. Zero-Layout-Shift Mobile Responsiveness (320px–1440px)
-- **Challenge**: Standard e-commerce templates clip content on small 320px devices (e.g., iPhone SE 1st Gen) and stretch single columns awkwardly on portrait 768px tablets.
-- **Solution**: Engineered a mobile-first Tailwind design system using dynamic container padding (`px-3 min-[400px]:px-4 sm:px-6`), responsive table horizontal scroll wrappers (`min-w-[650px] overflow-x-auto`), and responsive grid column steps (`grid-cols-1 min-[360px]:grid-cols-2 sm:grid-cols-2 lg:grid-cols-4`).
+# Run TypeScript type checker
+npm run lint
+```
 
-### 3. Data Consistency Across Microservices (Saga Pattern)
-- **Challenge**: Maintaining state synchronization between Order, Payment, and Inventory services without distributed transaction overhead.
-- **Solution**: Implemented asynchronous event publishing via **RabbitMQ**. When an order is placed, an `ORDER_CREATED` event triggers stock reservation. Upon successful Stripe webhook validation, a `PAYMENT_COMPLETED` event permanently deducts stock and notifies the customer via WebSockets.
+### Production Mode
+```bash
+# Build frontend production bundle
+cd frontend
+npm run build
+
+# Start production server
+npm run start
+```
 
 ---
 
-## 🔒 Security & Performance Considerations
-
-- **Strict Type Safety**: Full TypeScript strict mode compliance across frontend models, stores, and API clients.
-- **Authentication & RBAC**: Stateless JWT verification with automatic token rotation, HTTP-only cookie support, and route middleware checks (`CUSTOMER`, `VENDOR`, `ADMIN`).
-- **Responsive Touch Targets**: Enforced 44px minimum touch targets and tap highlight removal for iOS/Android viewports.
-- **Optimized Bundle Sizes**: Next.js 15 dynamic imports (`next/dynamic`) for heavy chart components (`Recharts`), keeping initial JS payload size low.
-
----
-
-## 📁 Repository Folder Structure
+## Project Structure
 
 ```text
-Ecomerce/
+Ecommerce/
 ├── frontend/                   # Next.js 15 App Router Frontend
 │   ├── src/
-│   │   ├── app/                # App router pages (Home, Products, Checkout, Admin, Vendor, Login)
-│   │   ├── components/         # Modular React UI components
-│   │   │   ├── AdminDashboard/ # Telemetry, health monitors, revenue charts
+│   │   ├── app/                # Page routes (Home, Products, Checkout, Admin, Vendor, Login)
+│   │   ├── components/         # Reusable React components
+│   │   │   ├── AdminDashboard/ # Telemetry dashboard, health mesh, revenue charts
 │   │   │   ├── Checkout/       # Multi-step checkout & payment forms
 │   │   │   ├── ProductListing/ # Product grids, filters, quick-view modal
-│   │   │   ├── ProductDetails/ # Gallery, variant selector, review section
-│   │   │   ├── Dashboard/      # User account management panels
+│   │   │   ├── ProductDetails/ # Gallery, variant selector, reviews
+│   │   │   ├── Dashboard/      # Customer profile & account panels
 │   │   │   ├── layout/         # Navbar, BottomNav, Footer, LayoutShell
 │   │   │   └── ui/             # Reusable UI primitives & toasts
-│   │   ├── hooks/              # Custom React Query & Socket.IO hooks
-│   │   ├── services/           # Axios API services & Stripe helpers
+│   │   ├── hooks/              # React Query & Socket.IO custom hooks
+│   │   ├── services/           # Axios API services & Stripe helper clients
 │   │   ├── store/              # Zustand state stores (Cart, Wishlist, Auth, Profile)
 │   │   └── types/              # Global TypeScript interfaces
-│   ├── public/                 # Static assets & product images
-│   ├── tailwind.config.ts      # Design system & color tokens
+│   ├── public/                 # Static images & assets
+│   ├── tailwind.config.ts      # Design tokens & breakpoint config
 │   └── tsconfig.json           # TypeScript configuration
-├── backend/                    # Core API endpoints & Node.js services
+├── backend/                    # Core API Gateway & REST endpoints
 ├── services/                   # Microservices monorepo (Auth, Product, Order, Inventory, Cart)
-├── docker-compose.yml          # Container orchestration configuration
+├── docker-compose.yml          # Docker container orchestration setup
 └── README.md                   # Project documentation
 ```
 
 ---
 
-## 🛣️ Product & Engineering Roadmap
+## API Documentation
 
-- [x] **Phase 1**: Decoupled Monorepo Architecture & Shared Library Setup
-- [x] **Phase 2**: Core Microservices (Auth, User, Product, Inventory, Order, Payment)
-- [x] **Phase 3**: Next.js 15 Storefront & Mobile Responsiveness Overhaul (320px–1440px)
-- [x] **Phase 4**: Super Admin Control Center & Real-Time Telemetry
-- [ ] **Phase 5**: Native React Native / Expo Mobile Application
-- [ ] **Phase 6**: Helm Charts & Managed Kubernetes (EKS / GKE) Deployment Pipelines
-- [ ] **Phase 7**: AI Collaborative Filtering Product Recommendation Engine
+All API requests pass through the centralized API Gateway at `http://localhost:8000/api`:
+
+| Domain | Method | Endpoint | Description |
+| :--- | :--- | :--- | :--- |
+| **Auth** | `POST` | `/api/auth/register` | Create customer or seller vendor account |
+| **Auth** | `POST` | `/api/auth/login` | Authenticate user and issue JWT tokens |
+| **User** | `GET` | `/api/users/profile` | Retrieve active user profile data |
+| **Products**| `GET` | `/api/products` | Query products with category, brand, and search filters |
+| **Products**| `GET` | `/api/products/:id` | Retrieve single product details & variant data |
+| **Cart** | `GET` | `/api/cart` | Get current user cart state |
+| **Orders** | `POST` | `/api/orders` | Create pending order & acquire inventory locks |
+| **Payments**| `POST` | `/api/payments/create-intent` | Initialize Stripe PaymentIntent |
 
 ---
 
-## 🤝 Contributing
+## Challenges & Solutions
 
-Contributions are welcome! Please follow these steps:
+### 1. High Concurrency Race Conditions During Checkout
+- **Problem**: Simultaneous checkouts on low-stock products allowed inventory counts to fall below zero.
+- **Solution**: Implemented **Redis Redlock distributed locking** in `InventoryService`. When checkout starts, a lock with a 5-second TTL is acquired before modifying MongoDB stock counts, releasing automatically if payment fails.
+
+### 2. Zero-Layout-Shift Mobile Responsiveness (320px–1440px)
+- **Problem**: Standard e-commerce layouts break or clip text on narrow 320px mobile screens (e.g., iPhone SE) and stretch awkward single columns on portrait 768px tablets.
+- **Solution**: Built a mobile-first design system utilizing fluid padding (`px-3 min-[400px]:px-4 sm:px-6`), responsive horizontal scroll wrappers (`min-w-[650px] overflow-x-auto`) for data tables, and adaptive breakpoint steps (`grid-cols-1 min-[360px]:grid-cols-2 sm:grid-cols-2 lg:grid-cols-4`).
+
+### 3. Asynchronous Saga Pattern for Microservices
+- **Problem**: Keeping Order, Inventory, and Payment services synchronized without synchronous API chaining overhead.
+- **Solution**: Used **RabbitMQ Topic Exchanges** (`ecommerce_events`). Orders emit `ORDER_CREATED`, triggering inventory locks. Upon Stripe webhook confirmation, a `PAYMENT_COMPLETED` event finalizes stock deduction and notifies the user via WebSockets.
+
+---
+
+## Security & Performance
+
+- **Stateless JWT Authorization**: Secure access and refresh token workflow with role checks (`CUSTOMER`, `VENDOR`, `ADMIN`).
+- **Strict TypeScript Compliance**: Type safety across all models, stores, and API layers to prevent runtime errors.
+- **Dynamic Imports & Code Splitting**: Utilized `next/dynamic` for heavy chart libraries (`Recharts`), keeping initial bundle size minimal.
+- **Mobile Touch Optimization**: Minimum 44px touch targets and tap highlight removal for iOS/Android viewports.
+
+---
+
+## Future Improvements
+
+- [ ] **Native Mobile Application**: Build a cross-platform React Native / Expo application.
+- [ ] **Kubernetes Deployment**: Create Helm charts for automated EKS / GKE orchestration.
+- [ ] **AI Recommendation Engine**: Deploy a Python FastAPI collaborative filtering service for personalized product recommendations.
+
+---
+
+## Contributing
+
+Contributions are welcome! Follow these steps:
 1. Fork the repository (`https://github.com/Nati1-2/Ecommerce/fork`)
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
 3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
@@ -271,18 +319,18 @@ Contributions are welcome! Please follow these steps:
 
 ---
 
-## 📜 License
+## License
 
-Distributed under the MIT License. See [`LICENSE`](LICENSE) for more information.
+This project is licensed under the MIT License - see the [`LICENSE`](LICENSE) file for details.
 
 ---
 
-## 👤 Author & Contact
+## Author
 
 **Nati**  
 *Senior Full-Stack Engineer*
 
 - **GitHub**: [github.com/Nati1-2](https://github.com/Nati1-2)
-- **Project Repository**: [github.com/Nati1-2/Ecommerce](https://github.com/Nati1-2/Ecommerce)
-- **LinkedIn**: [linkedin.com/in/your-linkedin-profile](#)
+- **Repository**: [github.com/Nati1-2/Ecommerce](https://github.com/Nati1-2/Ecommerce)
+- **LinkedIn**: [linkedin.com/in/your-linkedin-profile](#) *(Placeholder)*
 - **Email**: [contact@nati.shop](mailto:contact@nati.shop)
