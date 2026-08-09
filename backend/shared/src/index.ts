@@ -5,6 +5,6 @@ export * from './errors/UnauthorizedError.js';
 
 export * from './events/EventTypes.js';
 
-export * from './middleware/errorHandler.ts';
-export * from './middleware/currentUser.ts';
-export * from './middleware/requireAuth.ts';
+export * from './middleware/errorHandler.js';
+export * from './middleware/currentUser.js';
+export * from './middleware/requireAuth.js';
