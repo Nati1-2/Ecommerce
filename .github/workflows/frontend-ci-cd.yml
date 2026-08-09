@@ -44,24 +44,5 @@ jobs:
         env:
           NEXT_TELEMETRY_DISABLED: 1
 
-  deploy-vercel:
-    name: Deploy Frontend to Vercel
-    needs: test-and-build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./frontend
-
-    steps:
-      - name: Checkout Source Code
-        uses: actions/checkout@v4
-
-      - name: Deploy to Vercel Action
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod'
-          working-directory: ./frontend
+  # Deployment is handled automatically by Vercel's native Git integration.
+  # No manual deploy job needed.

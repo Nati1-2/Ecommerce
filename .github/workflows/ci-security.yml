@@ -44,23 +44,5 @@ jobs:
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
           NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
 
-  deploy:
-    name: Production Deployment
-    needs: quality-gate
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: --prod
-
-      - name: Post-Deploy Health Check
-        run: |
-          sleep 30
-          curl -f ${{ secrets.PRODUCTION_URL }}/api/health || echo 'Health check warning'
+  # Deployment is handled automatically by Vercel's native Git integration.
+  # No manual deploy job needed.
