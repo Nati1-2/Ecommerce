@@ -174,7 +174,7 @@ export default function CheckoutPage() {
       </div>
 
       {/* ── MAIN CONTENT ─────────────────────────────────────────── */}
-      <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-8 pb-36 sm:pb-8">
+      <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-8 pb-36 lg:pb-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
           {/* Left: Step content */}
           <div className="lg:col-span-2">
@@ -243,9 +243,9 @@ export default function CheckoutPage() {
         </div>
       </div>
 
-      {/* ── MOBILE STICKY BOTTOM BAR ─────────────────────────────── */}
+      {/* ── MOBILE STICKY BOTTOM BAR (< lg) ───────────────────────── */}
       {step < 4 && (
-        <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 p-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.12)]">
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 p-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.12)]">
           <button
             onClick={goNext}
             disabled={isDisabled[step]}

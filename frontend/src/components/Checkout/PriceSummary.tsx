@@ -106,8 +106,8 @@ export default function PriceSummary({
         </div>
       </motion.div>
 
-      {/* CTA Button (Desktop only - mobile uses fixed sticky bottom bar) */}
-      <div className="p-5 pt-0 hidden sm:block">
+      {/* CTA Button (Desktop lg+ only - mobile/tablet <lg uses fixed sticky bottom bar) */}
+      <div className="p-5 pt-0 hidden lg:block">
         <button
           onClick={onContinue}
           disabled={disabled}
