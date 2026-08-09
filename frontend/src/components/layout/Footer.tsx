@@ -78,14 +78,20 @@ export function Footer() {
             {/* Contact info */}
             <div className="mt-6 space-y-2.5">
               {[
-                { icon: Mail, text: "support@nati.shop" },
-                { icon: Phone, text: "+1 (800) 123-4567" },
-                { icon: MapPin, text: "San Francisco, CA, USA" },
-              ].map(({ icon: Icon, text }) => (
-                <div key={text} className="flex items-center gap-3 text-sm">
+                { icon: Mail, text: "support@nati.shop", href: "mailto:support@nati.shop" },
+                { icon: Phone, text: "+1 (800) 123-4567", href: "tel:+18001234567" },
+                { icon: MapPin, text: "San Francisco, CA, USA", href: "https://maps.google.com/?q=San+Francisco,+CA" },
+              ].map(({ icon: Icon, text, href }) => (
+                <a
+                  key={text}
+                  href={href}
+                  target={href.startsWith("http") ? "_blank" : undefined}
+                  rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
+                  className="flex items-center gap-3 text-sm hover:text-[#007BFF] transition-colors"
+                >
                   <Icon className="w-4 h-4 text-[#007BFF] shrink-0" />
                   <span>{text}</span>
-                </div>
+                </a>
               ))}
             </div>
 
