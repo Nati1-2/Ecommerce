@@ -1,10 +1,4 @@
 {
   "version": 2,
-  "framework": "nextjs",
-  "crons": [
-    {
-      "path": "/api/cron/background-tasks",
-      "schedule": "0 0,12 * * *"
-    }
-  ]
+  "framework": "nextjs"
 }
