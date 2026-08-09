@@ -106,12 +106,12 @@ export default function PriceSummary({
         </div>
       </motion.div>
 
-      {/* CTA Button */}
-      <div className="p-5 pt-0">
+      {/* CTA Button (Desktop only - mobile uses fixed sticky bottom bar) */}
+      <div className="p-5 pt-0 hidden sm:block">
         <button
           onClick={onContinue}
           disabled={disabled}
-          className="w-full py-3.5 bg-[#007BFF] hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm rounded-2xl shadow-lg shadow-blue-500/20 hover:-translate-y-0.5 transition-all"
+          className="w-full py-3.5 bg-[#007BFF] hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm rounded-2xl shadow-lg shadow-blue-500/20 hover:-translate-y-0.5 transition-all cursor-pointer"
         >
           {buttonLabel}
         </button>
