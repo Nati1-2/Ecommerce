@@ -23,10 +23,11 @@ export const paymentApi = {
   }): Promise<CheckoutSessionResponse> => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
     const response = await axios.post<CheckoutSessionResponse>(
-      `${API_BASE_URL}/v1/payments/checkout-session`,
+      '/api/payments/checkout-session',
       payload,
       {
         headers: {
+          'Content-Type': 'application/json',
           Authorization: token ? `Bearer ${token}` : ''
         }
       }

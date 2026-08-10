@@ -75,13 +75,18 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const decoded = getUserFromToken(req);
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required to create orders. Please log in first." },
+        { status: 401 }
+      );
+    }
 
+    const body = await req.json();
     const authHeader = req.headers.get("authorization");
     const token = authHeader || req.cookies.get("token")?.value;
-
-    const decoded = getUserFromToken(req);
-    const userId = decoded?.id || "usr-demo-customer";
+    const userId = decoded.id;
 
     // 1. Try to submit to backend Order Service via API Gateway
     try {

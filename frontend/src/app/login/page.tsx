@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/store/auth";
 import { useProfileStore } from "@/store/profileStore";
 import { LogIn, UserPlus, Lock, Mail, User, Eye, EyeOff, Sparkles, CheckCircle2, AlertCircle, UserCheck } from "lucide-react";
@@ -12,7 +12,7 @@ const DEMO_ACCOUNTS = {
   "john.smith@gmail.com": { password: "password123", name: "John Smith", role: "CUSTOMER" as const },
 };
 
-export default function LoginPage() {
+function LoginContent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
@@ -34,7 +34,14 @@ export default function LoginPage() {
     if (isRegistering) setName("John Smith");
   };
 
+  const searchParams = useSearchParams();
+  const redirectParam = searchParams.get("redirect");
+
   const redirectByRole = (userRole: "CUSTOMER" | "ADMIN" | "VENDOR") => {
+    if (redirectParam && redirectParam.startsWith("/")) {
+      router.push(redirectParam);
+      return;
+    }
     if (userRole === "ADMIN") {
       router.push("/admin/dashboard");
     } else if (userRole === "VENDOR") {
@@ -69,6 +76,7 @@ export default function LoginPage() {
       if (res.ok && data.token) {
         if (typeof window !== "undefined") {
           localStorage.setItem("auth_token", data.token);
+          document.cookie = `token=${data.token}; path=/; max-age=604800; SameSite=Lax`;
         }
         setAuth(data.user, data.token);
 
@@ -121,6 +129,7 @@ export default function LoginPage() {
         const demoToken = "demo-jwt-token-" + demoUser.role.toLowerCase() + "-" + demoUser.id;
         if (typeof window !== "undefined") {
           localStorage.setItem("auth_token", demoToken);
+          document.cookie = `token=${demoToken}; path=/; max-age=604800; SameSite=Lax`;
         }
         setAuth(demoUser, demoToken);
 
@@ -374,5 +383,17 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-white text-gray-500 font-semibold text-sm">
+        Loading Sign In...
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   );
 }

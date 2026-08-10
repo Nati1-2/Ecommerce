@@ -20,6 +20,13 @@ function getStripeClient(): Stripe | null {
 export async function POST(req: NextRequest) {
   try {
     const decoded = getUserFromToken(req);
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required to initiate payment. Please log in first." },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     const { orderId, amount, currency = "USD", items, successUrl, cancelUrl } = body;
 

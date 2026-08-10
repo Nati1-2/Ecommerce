@@ -31,6 +31,8 @@ const stepVariants = {
   exit: { opacity: 0, x: -40, transition: { duration: 0.2 } },
 };
 
+import { useAuthStore } from "@/store/auth";
+
 export default function CheckoutPage() {
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
@@ -38,10 +40,15 @@ export default function CheckoutPage() {
   const { step, setStep, selectedAddressId, shippingMethodId } =
     useCheckoutStore();
   const totalItems = useCartStore((s) => s.totalItems);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    const hasToken = typeof window !== "undefined" && (Boolean(localStorage.getItem("auth_token")) || document.cookie.includes("token="));
+    if (!useAuthStore.getState().isAuthenticated && !hasToken) {
+      router.push("/login?redirect=/checkout");
+    }
+  }, [router]);
 
   const [createdOrderId, setCreatedOrderId] = useState<string | null>(null);
   const [createdOrderAmount, setCreatedOrderAmount] = useState<number>(0);
@@ -92,7 +99,15 @@ export default function CheckoutPage() {
         }
       } catch (err: any) {
         console.error("Failed to create order:", err);
-        setCreateOrderError(err.response?.data?.message || err.message || "Failed to create order");
+        const errMsg = err.response?.data?.error || err.response?.data?.message || err.message || "Failed to create order";
+        if (errMsg.includes("Authentication required") || errMsg.includes("401")) {
+          setCreateOrderError("Sign in required. Redirecting to login page...");
+          setTimeout(() => {
+            router.push("/login?redirect=/checkout");
+          }, 1000);
+        } else {
+          setCreateOrderError(errMsg);
+        }
       } finally {
         setIsCreatingOrder(false);
       }

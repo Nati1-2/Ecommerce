@@ -42,30 +42,41 @@ export default function PaymentForm({ onSuccess, orderId = "ORD-TEST-1001", amou
     setProcessing(true);
     setErrorMsg("");
 
-    try {
-      if (paymentType === "stripe_checkout") {
-        const res = await paymentApi.createCheckoutSession({
-          orderId,
-          amount,
-          currency: "USD",
-          successUrl: `${window.location.origin}/order/success/${orderId}?session_id={CHECKOUT_SESSION_ID}`,
-          cancelUrl: `${window.location.origin}/order/failed/${orderId}`
-        });
+    const token = typeof window !== "undefined" ? (localStorage.getItem("auth_token") || document.cookie.includes("token=")) : false;
+    if (!token) {
+      setErrorMsg("Authentication required. Redirecting to login...");
+      setProcessing(false);
+      window.location.href = "/login?redirect=/checkout";
+      return;
+    }
 
-        if (res.data?.checkoutUrl) {
-          window.location.href = res.data.checkoutUrl;
-          return;
-        } else {
-          setErrorMsg("Failed to generate checkout URL");
-          setProcessing(false);
-        }
+    try {
+      const res = await paymentApi.createCheckoutSession({
+        orderId,
+        amount,
+        currency: "USD",
+        successUrl: `${window.location.origin}/order/success/${orderId}?session_id={CHECKOUT_SESSION_ID}`,
+        cancelUrl: `${window.location.origin}/order/failed/${orderId}`
+      });
+
+      if (res.data?.checkoutUrl) {
+        window.location.href = res.data.checkoutUrl;
+        return;
       } else {
-        setErrorMsg("Direct card payment is not supported yet. Please use Stripe Checkout.");
+        setErrorMsg("Failed to generate payment session");
         setProcessing(false);
       }
     } catch (err: any) {
       console.error("Checkout session creation failed:", err);
-      setErrorMsg(err.response?.data?.message || err.message || "Failed to create checkout session");
+      const msg = err.response?.data?.error || err.response?.data?.message || err.message || "Failed to create payment session";
+      if (err.response?.status === 401) {
+        setErrorMsg("Your session has expired. Redirecting to sign in...");
+        setTimeout(() => {
+          window.location.href = "/login?redirect=/checkout";
+        }, 1200);
+      } else {
+        setErrorMsg(msg);
+      }
       setProcessing(false);
     }
   };

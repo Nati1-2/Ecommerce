@@ -22,10 +22,13 @@ export function getUserFromToken(req: NextRequest): TokenPayload | null {
 
     if (!token || token === "undefined" || token === "null") {
       const url = req.nextUrl?.pathname || "";
-      if (url.includes("/admin")) {
+      if (url.includes("/api/admin")) {
         return { id: "usr-demo-admin", email: "nati@admin.com", role: "ADMIN" };
       }
-      return { id: "usr-demo-vendor", email: "vendor@natistore.com", role: "VENDOR" };
+      if (url.includes("/api/vendor")) {
+        return { id: "usr-demo-vendor", email: "vendor@natistore.com", role: "VENDOR" };
+      }
+      return null;
     }
 
     if (token.startsWith("demo-jwt-token-")) {
@@ -38,16 +41,19 @@ export function getUserFromToken(req: NextRequest): TokenPayload | null {
 
     const decoded = jwt.verify(token, JWT_SECRET) as any;
     return {
-      id: decoded.id || "usr-demo-vendor",
-      email: decoded.email || "vendor@natistore.com",
-      role: decoded.role || "VENDOR",
+      id: decoded.id || decoded.userId || "usr-customer",
+      email: decoded.email || "customer@natistore.com",
+      role: decoded.role || "CUSTOMER",
     };
   } catch (err) {
     const url = req.nextUrl?.pathname || "";
-    if (url.includes("/admin")) {
+    if (url.includes("/api/admin")) {
       return { id: "usr-demo-admin", email: "nati@admin.com", role: "ADMIN" };
     }
-    return { id: "usr-demo-vendor", email: "vendor@natistore.com", role: "VENDOR" };
+    if (url.includes("/api/vendor")) {
+      return { id: "usr-demo-vendor", email: "vendor@natistore.com", role: "VENDOR" };
+    }
+    return null;
   }
 }
 

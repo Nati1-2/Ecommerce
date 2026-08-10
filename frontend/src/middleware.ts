@@ -16,9 +16,10 @@ export function middleware(req: NextRequest) {
 
   if (isProtected) {
     const token = req.cookies.get("token")?.value || req.headers.get("authorization")?.replace("Bearer ", "");
-    if (!token) {
-      // In production, redirect unauthenticated users to home/login if accessing protected pages
-      // return NextResponse.redirect(new URL("/?auth=required", req.url));
+    if (!token || token === "null" || token === "undefined") {
+      const loginUrl = new URL("/login", req.url);
+      loginUrl.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(loginUrl);
     }
   }
 
