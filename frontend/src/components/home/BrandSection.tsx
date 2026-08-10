@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ChevronRight, Award, ShieldCheck } from "lucide-react";
@@ -9,30 +10,149 @@ interface BrandItem {
   category: string;
   count: number;
   badge?: string;
-  logoText: string;
+  logoUrl: string;
+  fallbackText: string;
   gradient: string;
 }
 
 const FEATURED_BRANDS: BrandItem[] = [
-  { name: "Apple", category: "Electronics", count: 18, badge: "Premium", logoText: "", gradient: "from-[#111827] to-[#374151]" },
-  { name: "Sony", category: "Audio & Gaming", count: 24, badge: "Popular", logoText: "SONY", gradient: "from-blue-600 to-indigo-800" },
-  { name: "Nike", category: "Fashion & Sports", count: 42, badge: "Best Seller", logoText: "NIKE", gradient: "from-orange-500 to-rose-600" },
-  { name: "Samsung", category: "Electronics & TV", count: 31, badge: "Official", logoText: "SAMSUNG", gradient: "from-blue-700 to-cyan-600" },
-  { name: "Levi's", category: "Denim & Apparel", count: 19, badge: "Classic", logoText: "LEVI'S", gradient: "from-red-600 to-amber-700" },
-  { name: "Dyson", category: "Home & Beauty", count: 14, badge: "Innovation", logoText: "dyson", gradient: "from-fuchsia-600 to-purple-800" },
-  { name: "Ray-Ban", category: "Eyewear", count: 16, badge: "Trending", logoText: "Ray-Ban", gradient: "from-amber-600 to-red-700" },
-  { name: "Adidas", category: "Footwear & Sport", count: 38, badge: "Official", logoText: "adidas", gradient: "from-emerald-600 to-teal-800" },
-  { name: "The North Face", category: "Outerwear", count: 12, badge: "Outdoor", logoText: "TNF", gradient: "from-slate-700 to-slate-900" },
-  { name: "Nespresso", category: "Coffee & Kitchen", count: 15, badge: "Lifestyle", logoText: "NESPRESSO", gradient: "from-stone-600 to-stone-800" },
-  { name: "Razer", category: "Gaming Gear", count: 22, badge: "Pro Gaming", logoText: "RAZER", gradient: "from-green-500 to-emerald-800" },
-  { name: "Gucci", category: "Luxury Fashion", count: 9, badge: "Luxury", logoText: "GUCCI", gradient: "from-yellow-600 to-amber-900" },
+  {
+    name: "Apple",
+    category: "Electronics",
+    count: 18,
+    badge: "Premium",
+    logoUrl: "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/apple.svg",
+    fallbackText: "",
+    gradient: "from-[#111827] to-[#1F2937]",
+  },
+  {
+    name: "Sony",
+    category: "Audio & Gaming",
+    count: 24,
+    badge: "Popular",
+    logoUrl: "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/sony.svg",
+    fallbackText: "SONY",
+    gradient: "from-blue-700 to-indigo-900",
+  },
+  {
+    name: "Nike",
+    category: "Fashion & Sports",
+    count: 42,
+    badge: "Best Seller",
+    logoUrl: "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/nike.svg",
+    fallbackText: "NIKE",
+    gradient: "from-orange-600 to-rose-700",
+  },
+  {
+    name: "Samsung",
+    category: "Electronics & TV",
+    count: 31,
+    badge: "Official",
+    logoUrl: "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/samsung.svg",
+    fallbackText: "SAMSUNG",
+    gradient: "from-blue-600 to-cyan-800",
+  },
+  {
+    name: "Levi's",
+    category: "Denim & Apparel",
+    count: 19,
+    badge: "Classic",
+    logoUrl: "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/levis.svg",
+    fallbackText: "LEVI'S",
+    gradient: "from-red-700 to-amber-800",
+  },
+  {
+    name: "Dyson",
+    category: "Home & Beauty",
+    count: 14,
+    badge: "Innovation",
+    logoUrl: "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/dyson.svg",
+    fallbackText: "dyson",
+    gradient: "from-fuchsia-700 to-purple-900",
+  },
+  {
+    name: "Ray-Ban",
+    category: "Eyewear",
+    count: 16,
+    badge: "Trending",
+    logoUrl: "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/rayban.svg",
+    fallbackText: "Ray-Ban",
+    gradient: "from-amber-700 to-red-800",
+  },
+  {
+    name: "Adidas",
+    category: "Footwear & Sport",
+    count: 38,
+    badge: "Official",
+    logoUrl: "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/adidas.svg",
+    fallbackText: "adidas",
+    gradient: "from-emerald-700 to-teal-900",
+  },
+  {
+    name: "The North Face",
+    category: "Outerwear",
+    count: 12,
+    badge: "Outdoor",
+    logoUrl: "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/thenorthface.svg",
+    fallbackText: "TNF",
+    gradient: "from-slate-800 to-gray-950",
+  },
+  {
+    name: "Nespresso",
+    category: "Coffee & Kitchen",
+    count: 15,
+    badge: "Lifestyle",
+    logoUrl: "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/nespresso.svg",
+    fallbackText: "NESPRESSO",
+    gradient: "from-stone-700 to-neutral-900",
+  },
+  {
+    name: "Razer",
+    category: "Gaming Gear",
+    count: 22,
+    badge: "Pro Gaming",
+    logoUrl: "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/razer.svg",
+    fallbackText: "RAZER",
+    gradient: "from-emerald-600 to-green-900",
+  },
+  {
+    name: "Gucci",
+    category: "Luxury Fashion",
+    count: 9,
+    badge: "Luxury",
+    logoUrl: "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/gucci.svg",
+    fallbackText: "GUCCI",
+    gradient: "from-amber-800 to-yellow-950",
+  },
 ];
+
+function BrandLogo({ brand }: { brand: BrandItem }) {
+  const [error, setError] = useState(false);
+
+  return (
+    <div
+      className={`w-full h-14 rounded-xl bg-gradient-to-br ${brand.gradient} flex items-center justify-center p-3 shadow-inner group-hover:scale-[1.03] transition-transform duration-300 relative overflow-hidden`}
+    >
+      {!error ? (
+        <img
+          src={brand.logoUrl}
+          alt={`${brand.name} official logo`}
+          onError={() => setError(true)}
+          className="h-6 sm:h-7 max-w-[75%] object-contain filter brightness-0 invert transition-all duration-300 group-hover:brightness-200"
+        />
+      ) : (
+        <span className="text-white font-black text-sm tracking-wider">
+          {brand.fallbackText}
+        </span>
+      )}
+    </div>
+  );
+}
 
 export function BrandSection() {
   return (
     <section className="py-12 sm:py-16 bg-white border-b border-gray-100 select-none">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -43,7 +163,7 @@ export function BrandSection() {
           <div>
             <div className="flex items-center gap-1.5 text-[#007BFF] text-xs font-bold uppercase tracking-widest mb-1">
               <Award className="w-3.5 h-3.5" />
-              <span>Official Partners</span>
+              <span>Official Brands</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-[#111827]">
               Explore Top Brands
@@ -75,7 +195,7 @@ export function BrandSection() {
             >
               <Link
                 href={`/products?brand=${encodeURIComponent(brand.name)}`}
-                className="group flex flex-col justify-between p-4 rounded-2xl bg-white border border-gray-100 hover:border-[#007BFF]/40 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 h-full relative overflow-hidden"
+                className="group flex flex-col justify-between p-3.5 sm:p-4 rounded-2xl bg-white border border-gray-100 hover:border-[#007BFF]/40 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 h-full relative overflow-hidden"
               >
                 {/* Brand Badge */}
                 {brand.badge && (
@@ -84,10 +204,8 @@ export function BrandSection() {
                   </span>
                 )}
 
-                {/* Brand Logo Banner */}
-                <div className={`w-full h-12 rounded-xl bg-gradient-to-br ${brand.gradient} flex items-center justify-center text-white font-black text-sm tracking-wider shadow-inner group-hover:scale-105 transition-transform duration-300`}>
-                  {brand.logoText}
-                </div>
+                {/* Real Brand Logo Container */}
+                <BrandLogo brand={brand} />
 
                 {/* Brand Info */}
                 <div className="mt-3 pt-2 border-t border-gray-50 flex items-center justify-between">
@@ -124,7 +242,6 @@ export function BrandSection() {
             Shop Verified Brands →
           </Link>
         </div>
-
       </div>
     </section>
   );
