@@ -40,6 +40,7 @@ function ProductListingContent() {
 
   // URL State Syncing
   const urlCategory = searchParams.get("category");
+  const urlBrand = searchParams.get("brand");
   const urlSearch = searchParams.get("search");
   const urlSort = searchParams.get("sort");
   const urlPage = parseInt(searchParams.get("page") || "1");
@@ -52,7 +53,7 @@ function ProductListingContent() {
   // Filters State
   const [filters, setFilters] = useState<FilterState>({
     categories: urlCategory ? [urlCategory] : [],
-    brands: [],
+    brands: urlBrand ? [urlBrand] : [],
     priceRange: [0, 3000],
     rating: null,
     inStock: null,
@@ -106,6 +107,7 @@ function ProductListingContent() {
   const updateURL = (f: FilterState, s: string, p: number, q: string) => {
     const params = new URLSearchParams();
     if (f.categories.length === 1) params.set("category", f.categories[0]);
+    if (f.brands.length === 1) params.set("brand", f.brands[0]);
     if (q) params.set("search", q);
     if (s !== "popular") params.set("sort", s);
     if (p > 1) params.set("page", p.toString());
@@ -118,10 +120,11 @@ function ProductListingContent() {
     setFilters((prev) => ({
       ...prev,
       categories: urlCategory ? [urlCategory] : [],
+      brands: urlBrand ? [urlBrand] : [],
     }));
     setSort(urlSort || "popular");
     setPage(urlPage);
-  }, [urlCategory, urlSort, urlPage]);
+  }, [urlCategory, urlBrand, urlSort, urlPage]);
 
   // React Query fetch
   const queryParams: GetProductsParams = {
@@ -145,6 +148,7 @@ function ProductListingContent() {
 
   // Breadcrumbs text
   const activeCategoryName = filters.categories.length === 1 ? filters.categories[0] : null;
+  const activeBrandName = filters.brands.length === 1 ? filters.brands[0] : null;
 
   return (
     <div className="bg-white min-h-screen">
@@ -167,13 +171,19 @@ function ProductListingContent() {
                 <span className="text-gray-600 font-bold">{activeCategoryName}</span>
               </>
             )}
+            {activeBrandName && (
+              <>
+                <ChevronRight className="w-3 h-3" />
+                <span className="text-gray-600 font-bold">{activeBrandName}</span>
+              </>
+            )}
           </nav>
 
           {/* Heading */}
           <div className="mt-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl sm:text-4xl font-black text-[#111827]">
-                {activeCategoryName || "All Products"}
+                {activeCategoryName || activeBrandName || "All Products"}
               </h1>
               <p className="text-gray-500 text-sm mt-1 max-w-xl">
                 Explore our handpicked catalog of top-tier products. Clean, verified, and ready to ship.

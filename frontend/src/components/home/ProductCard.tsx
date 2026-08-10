@@ -55,10 +55,10 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.4, delay: index * 0.06 }}
-      className="group relative bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-[#007BFF]/30 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300"
+      className="group relative bg-white rounded-2xl overflow-hidden border border-gray-100 hover:border-[#007BFF]/30 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 flex flex-col h-full"
     >
       {/* Image */}
-      <div className="relative overflow-hidden bg-gray-50 aspect-square">
+      <div className="relative overflow-hidden bg-gray-50 aspect-square shrink-0">
         <Link href={`/products/${product.id}`} className="block w-full h-full">
           <img
             src={imageError ? "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&q=80" : product.image}
@@ -90,7 +90,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
           <button
             onClick={() => toggleItem(product.id)}
             className={cn(
-              "w-9 h-9 rounded-xl flex items-center justify-center shadow-md transition-all duration-200",
+              "w-9 h-9 rounded-xl flex items-center justify-center shadow-md transition-all duration-200 cursor-pointer",
               wishlisted
                 ? "bg-rose-500 text-white"
                 : "bg-white/90 backdrop-blur-md text-gray-700 hover:bg-rose-500 hover:text-white"
@@ -111,13 +111,16 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
       </div>
 
       {/* Content */}
-      <div className="p-4 flex flex-col justify-between h-40">
+      <div className="p-3 sm:p-4 flex flex-col justify-between flex-1 min-h-[145px] sm:min-h-[155px]">
         <div>
-          <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
-            <span className="font-semibold text-[#007BFF] uppercase tracking-wider text-[10px]">
+          <div className="flex items-center justify-between text-xs text-gray-400 mb-1 gap-1">
+            <Link
+              href={`/products?brand=${encodeURIComponent(product.brand)}`}
+              className="font-extrabold text-[#007BFF] uppercase tracking-wider text-[10px] hover:underline truncate max-w-[110px] sm:max-w-[130px]"
+            >
               {product.brand}
-            </span>
-            <div className="flex items-center gap-1">
+            </Link>
+            <div className="flex items-center gap-1 shrink-0">
               <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
               <span className="font-bold text-gray-700 text-xs">{product.rating}</span>
             </div>
@@ -130,11 +133,11 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
           </Link>
         </div>
 
-        <div className="flex items-center justify-between pt-2 border-t border-gray-50 mt-auto">
-          <div>
-            <span className="text-base font-black text-gray-900">${formatPrice(product.price)}</span>
+        <div className="flex flex-wrap items-center justify-between gap-1.5 pt-2 border-t border-gray-100 mt-auto">
+          <div className="flex items-baseline gap-1 flex-wrap">
+            <span className="text-sm sm:text-base font-black text-gray-900">${formatPrice(product.price)}</span>
             {product.originalPrice && product.originalPrice > product.price && (
-              <span className="text-xs text-gray-400 line-through ml-1.5 font-medium">
+              <span className="text-[10px] sm:text-xs text-gray-400 line-through font-medium">
                 ${formatPrice(product.originalPrice)}
               </span>
             )}
@@ -143,7 +146,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
           <button
             onClick={handleAddToCart}
             className={cn(
-              "py-2 px-3 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all duration-200 shadow-sm",
+              "shrink-0 py-1.5 px-2.5 sm:py-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-bold flex items-center gap-1 transition-all duration-200 shadow-sm cursor-pointer",
               addedToCart
                 ? "bg-green-500 text-white"
                 : "bg-[#007BFF] text-white hover:bg-blue-600 shadow-blue-500/20"

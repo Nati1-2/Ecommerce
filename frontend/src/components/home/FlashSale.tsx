@@ -31,18 +31,18 @@ function Countdown({ endTime }: CountdownProps) {
   const pad = (n: number) => String(n).padStart(2, "0");
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1 sm:gap-2">
       {[
         { label: "HRS", val: timeLeft.hours },
         { label: "MIN", val: timeLeft.minutes },
         { label: "SEC", val: timeLeft.seconds },
       ].map(({ label, val }, i) => (
-        <div key={label} className="flex items-center gap-2">
-          <div className="bg-[#111827] text-white font-black text-2xl sm:text-3xl w-16 sm:w-20 h-16 sm:h-20 rounded-2xl flex flex-col items-center justify-center shadow-sm">
+        <div key={label} className="flex items-center gap-1 sm:gap-2">
+          <div className="bg-[#111827] text-white font-black text-base min-[400px]:text-xl sm:text-2xl w-11 min-[400px]:w-14 sm:w-16 h-11 min-[400px]:h-14 sm:h-16 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center shadow-sm">
             <span>{pad(val)}</span>
-            <span className="text-[8px] sm:text-[10px] font-bold text-gray-400 tracking-widest mt-0.5">{label}</span>
+            <span className="text-[7px] min-[400px]:text-[8px] sm:text-[10px] font-bold text-gray-400 tracking-widest leading-none mt-0.5">{label}</span>
           </div>
-          {i < 2 && <span className="text-2xl font-black text-red-400">:</span>}
+          {i < 2 && <span className="text-base sm:text-2xl font-black text-red-400">:</span>}
         </div>
       ))}
     </div>

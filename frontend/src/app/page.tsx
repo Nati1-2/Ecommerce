@@ -1,5 +1,6 @@
 import Hero from "@/components/home/Hero";
 import { CategorySection } from "@/components/home/CategorySection";
+import { BrandSection } from "@/components/home/BrandSection";
 import { ProductGridSection } from "@/components/home/ProductCard";
 import { FlashSale } from "@/components/home/FlashSale";
 import { ProductCarousel } from "@/components/home/ProductCarousel";
@@ -29,6 +30,9 @@ export default function HomePage() {
 
       {/* 2. Categories */}
       <CategorySection categories={mockCategories} />
+
+      {/* 3. Top Brands */}
+      <BrandSection />
 
       {/* 3. Featured Products */}
       <ProductGridSection
