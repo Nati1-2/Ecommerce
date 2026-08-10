@@ -13,6 +13,8 @@ import { useWishlistStore } from "@/store/wishlist";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import SearchBar from "@/components/Search/SearchBar";
+import NavbarNotifications from "@/components/layout/NavbarNotifications";
+import { useNotificationStore } from "@/store/notificationStore";
 
 const categories = [
   { name: "All Products", icon: LayoutGrid, href: "/products" },
@@ -30,6 +32,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [catOpen, setCatOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
   const cartDrawerOpen = useCartStore((s) => s.cartDrawerOpen);
   const setCartDrawerOpen = useCartStore((s) => s.setCartDrawerOpen);
   const [searchQuery, setSearchQuery] = useState("");
@@ -39,6 +42,7 @@ export default function Navbar() {
   const cartItems = useCartStore((s) => s.items);
   const totalItems = useCartStore((s) => s.totalItems)();
   const wishlistCount = useWishlistStore((s) => s.items.length);
+  const unreadNotifCount = useNotificationStore((s) => s.unreadCount);
   const router = useRouter();
 
   const handleSearchSubmit = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -166,11 +170,12 @@ export default function Navbar() {
               <Search className="w-5 h-5" />
             </button>
 
-            {/* Notifications */}
-            <button className="hidden md:flex p-2 text-gray-700 hover:text-[#007BFF] transition-colors rounded-full hover:bg-blue-50 relative">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
-            </button>
+            {/* Real Interactive Notifications Popover */}
+            <NavbarNotifications
+              open={notifOpen}
+              onToggle={() => setNotifOpen(!notifOpen)}
+              onClose={() => setNotifOpen(false)}
+            />
 
             {/* Wishlist */}
             <Link href="/wishlist" className="relative p-2 text-gray-700 hover:text-[#007BFF] transition-colors rounded-full hover:bg-blue-50">
@@ -286,6 +291,11 @@ export default function Navbar() {
                 ))}
 
                 <div className="mt-6 pt-6 border-t border-gray-100 space-y-2">
+                  <Link href="/notifications" className="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 hover:bg-blue-50" onClick={() => setMobileOpen(false)}>
+                    <Bell className="w-5 h-5" />
+                    <span className="font-medium">Notifications</span>
+                    {mounted && unreadNotifCount > 0 && <span className="ml-auto bg-red-100 text-red-600 text-xs font-bold px-2 py-0.5 rounded-full">{unreadNotifCount}</span>}
+                  </Link>
                   <Link href="/account" className="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 hover:bg-blue-50" onClick={() => setMobileOpen(false)}>
                     <User className="w-5 h-5" />
                     <span className="font-medium">My Account</span>

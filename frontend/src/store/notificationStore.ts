@@ -1,161 +1,122 @@
-import { create } from "zustand";
-import { Notification, NotificationSettings, NotificationType } from "@/types";
-import {
-  fetchNotifications,
-  fetchNotificationSettings,
-  updateNotificationSettingsApi,
-  markNotificationReadApi,
-  deleteNotificationApi,
-  clearNotificationsApi,
-} from "@/lib/api";
+"use client";
 
-interface NotificationFilters {
-  read: boolean | null; // true for read, false for unread, null for all
-  type: NotificationType | "ALL";
-  searchQuery: string;
+import { create } from "zustand";
+
+export interface AppNotification {
+  id: string;
+  title: string;
+  message: string;
+  type: string;
+  link?: string;
+  read: boolean;
+  createdAt: string;
 }
 
 interface NotificationState {
-  notifications: Notification[];
+  notifications: AppNotification[];
   unreadCount: number;
-  filters: NotificationFilters;
-  settings: NotificationSettings | null;
-  socketStatus: "connected" | "disconnected" | "connecting";
   loading: boolean;
-  error: string | null;
-
-  // Actions
-  initialize: () => Promise<void>;
-  receiveNotification: (notification: Notification) => void;
+  fetchNotifications: () => Promise<void>;
   markAsRead: (id: string) => Promise<void>;
   markAllAsRead: () => Promise<void>;
-  deleteNotification: (id: string) => Promise<void>;
-  clearAll: () => Promise<void>;
-  setFilter: (filter: Partial<NotificationFilters>) => void;
-  updateSettings: (settings: NotificationSettings) => Promise<void>;
-  setSocketStatus: (status: "connected" | "disconnected" | "connecting") => void;
 }
 
 export const useNotificationStore = create<NotificationState>((set, get) => ({
-  notifications: [],
-  unreadCount: 0,
-  filters: {
-    read: null,
-    type: "ALL",
-    searchQuery: "",
-  },
-  settings: null,
-  socketStatus: "disconnected",
+  notifications: [
+    {
+      id: "notif-welcome",
+      title: "Welcome to Nati Store! 🎉",
+      message: "Your account is verified and ready for fast checkout & 10% off with code NATI10.",
+      type: "SYSTEM",
+      link: "/products",
+      read: false,
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: "notif-[#007BFF]",
+      title: "Summer Flash Sale Live! ⚡",
+      message: "Get up to 50% off top electronics, fashion & gaming gear.",
+      type: "PROMO",
+      link: "/flash-sale",
+      read: false,
+      createdAt: new Date(Date.now() - 3600000).toISOString(),
+    },
+    {
+      id: "notif-[#007BFF]-2",
+      title: "Free Express Shipping 🚚",
+      message: "Enjoy free express 2-day delivery on all orders over $50.",
+      type: "SHIPPING",
+      link: "/shipping",
+      read: true,
+      createdAt: new Date(Date.now() - 86400000).toISOString(),
+    },
+  ],
+  unreadCount: 2,
   loading: false,
-  error: null,
 
-  initialize: async () => {
-    set({ loading: true, error: null });
+  fetchNotifications: async () => {
+    set({ loading: true });
     try {
-      const [notifs, settings] = await Promise.all([
-        fetchNotifications(),
-        fetchNotificationSettings(),
-      ]);
-      const unreadCount = notifs.filter((n) => !n.read).length;
-      set({ notifications: notifs, settings, unreadCount, loading: false });
-    } catch (error: any) {
-      set({ error: error.message || "Failed to initialize notifications", loading: false });
+      const token = typeof window !== "undefined" ? (localStorage.getItem("auth_token") || "") : "";
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) headers["Authorization"] = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
+
+      const res = await fetch("/api/notifications", { headers });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.notifications)) {
+          const notifs: AppNotification[] = data.notifications;
+          const unread = notifs.filter((n) => !n.read).length;
+          set({ notifications: notifs, unreadCount: unread });
+        }
+      }
+    } catch (err) {
+      console.warn("Fetch notifications notice:", err);
+    } finally {
+      set({ loading: false });
     }
   },
 
-  receiveNotification: (notification) => {
-    set((state) => {
-      const newNotifications = [notification, ...state.notifications];
-      const unreadCount = newNotifications.filter((n) => !n.read).length;
-      return { notifications: newNotifications, unreadCount };
-    });
-  },
-
-  markAsRead: async (id) => {
-    const { notifications } = get();
-    const notif = notifications.find((n) => n.id === id);
-    if (!notif || notif.read) return;
-
-    // Optimistic update
-    set((state) => {
-      const newNotifications = state.notifications.map((n) =>
-        n.id === id ? { ...n, read: true } : n
-      );
-      return {
-        notifications: newNotifications,
-        unreadCount: state.unreadCount - 1,
-      };
-    });
+  markAsRead: async (id: string) => {
+    // Optimistic UI update
+    const current = get().notifications;
+    const updated = current.map((n) => (n.id === id ? { ...n, read: true } : n));
+    const unread = updated.filter((n) => !n.read).length;
+    set({ notifications: updated, unreadCount: unread });
 
     try {
-      await markNotificationReadApi(id);
-    } catch (error) {
-      // Revert if failed
-      set((state) => ({
-        notifications: state.notifications.map((n) =>
-          n.id === id ? { ...n, read: false } : n
-        ),
-        unreadCount: state.unreadCount + 1,
-      }));
+      const token = typeof window !== "undefined" ? (localStorage.getItem("auth_token") || "") : "";
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) headers["Authorization"] = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
+
+      await fetch("/api/notifications", {
+        method: "PUT",
+        headers,
+        body: JSON.stringify({ notifId: id }),
+      });
+    } catch (err) {
+      console.warn("Mark read notice:", err);
     }
   },
 
   markAllAsRead: async () => {
-    // Optimistic update
-    set((state) => {
-      const newNotifications = state.notifications.map((n) => ({ ...n, read: true }));
-      return { notifications: newNotifications, unreadCount: 0 };
-    });
-
-    // We can assume a mock API call for mark all read if we wanted
-    // For now we just mock the delay
-    await new Promise((r) => setTimeout(r, 400));
-  },
-
-  deleteNotification: async (id) => {
-    const { notifications } = get();
-    const notif = notifications.find((n) => n.id === id);
-    if (!notif) return;
-
-    // Optimistic
-    set((state) => ({
-      notifications: state.notifications.filter((n) => n.id !== id),
-      unreadCount: !notif.read ? state.unreadCount - 1 : state.unreadCount,
-    }));
+    // Optimistic UI update
+    const current = get().notifications;
+    const updated = current.map((n) => ({ ...n, read: true }));
+    set({ notifications: updated, unreadCount: 0 });
 
     try {
-      await deleteNotificationApi(id);
-    } catch (error) {
-      // Revert
-      set({ notifications, unreadCount: notifications.filter((n) => !n.read).length });
+      const token = typeof window !== "undefined" ? (localStorage.getItem("auth_token") || "") : "";
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) headers["Authorization"] = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
+
+      await fetch("/api/notifications", {
+        method: "PUT",
+        headers,
+        body: JSON.stringify({ action: "mark_all_read" }),
+      });
+    } catch (err) {
+      console.warn("Mark all read notice:", err);
     }
   },
-
-  clearAll: async () => {
-    const { notifications, unreadCount } = get();
-    set({ notifications: [], unreadCount: 0 });
-    try {
-      await clearNotificationsApi();
-    } catch (error) {
-      set({ notifications, unreadCount });
-    }
-  },
-
-  setFilter: (filterUpdate) => {
-    set((state) => ({
-      filters: { ...state.filters, ...filterUpdate },
-    }));
-  },
-
-  updateSettings: async (newSettings) => {
-    set({ settings: newSettings });
-    try {
-      await updateNotificationSettingsApi(newSettings);
-    } catch (error) {
-      console.error("Failed to update settings", error);
-      // Revert logic could be placed here if we kept previous settings
-    }
-  },
-
-  setSocketStatus: (status) => set({ socketStatus: status }),
 }));
