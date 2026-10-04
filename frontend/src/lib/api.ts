@@ -32,6 +32,18 @@ const getAuthHeaders = (): Record<string, string> => {
   if (stored && stored !== "undefined" && stored !== "null") {
     return { Authorization: `Bearer ${stored}` };
   }
+  try {
+    const authStorage = localStorage.getItem("auth-storage");
+    if (authStorage) {
+      const parsed = JSON.parse(authStorage);
+      const token = parsed?.state?.accessToken;
+      if (token && token !== "undefined" && token !== "null") {
+        return { Authorization: `Bearer ${token}` };
+      }
+    }
+  } catch (e) {
+    // ignore
+  }
   const match = document.cookie.match(/(?:^|;\s*)token=([^;]*)/);
   const cookieToken = match ? decodeURIComponent(match[1]) : "";
   if (cookieToken && cookieToken !== "undefined" && cookieToken !== "null") {

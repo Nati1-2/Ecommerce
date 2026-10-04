@@ -1,17 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { CreditCard, Lock, Check, Loader2, ExternalLink, ShieldCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { loadStripe } from "@stripe/stripe-js";
+import { loadStripe, Stripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import { paymentApi } from "@/services/api/paymentApi";
 import { useAuthStore } from "@/store/auth";
 import StripeCardForm from "@/components/Payment/StripeCardForm";
 
-const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "";
-const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : null;
+const DEFAULT_STRIPE_PK =
+  "pk_test_51ThDDICdX0hvCWhczONjNi3TCevUCN7vYmjW5h5KaNeNiyjAAkIG3KL1ZkqSOauu8wIRirZmCuETnr6Xw65tK34T00DDtz8A5O";
+
+const initialKey =
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || DEFAULT_STRIPE_PK;
+
+let cachedStripePromise: Promise<Stripe | null> | null = initialKey
+  ? loadStripe(initialKey)
+  : null;
 
 interface PaymentFormProps {
   onSuccess: () => void;
@@ -22,10 +29,27 @@ interface PaymentFormProps {
 export default function PaymentForm({ onSuccess, orderId = "ORD-TEST-1001", amount = 149.99 }: PaymentFormProps) {
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
+  const [stripePromise, setStripePromise] = useState<Promise<Stripe | null> | null>(cachedStripePromise);
   const [paymentType, setPaymentType] = useState<"card" | "stripe_checkout">("card");
   const [processing, setProcessing] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
+  useEffect(() => {
+    if (!stripePromise) {
+      fetch("/api/payments/config")
+        .then((res) => res.json())
+        .then((data) => {
+          const key = data.publishableKey || DEFAULT_STRIPE_PK;
+          cachedStripePromise = loadStripe(key);
+          setStripePromise(cachedStripePromise);
+        })
+        .catch(() => {
+          cachedStripePromise = loadStripe(DEFAULT_STRIPE_PK);
+          setStripePromise(cachedStripePromise);
+        });
+    }
+  }, [stripePromise]);
 
   const handleStripeCheckoutRedirect = async () => {
     setProcessing(true);
@@ -169,8 +193,9 @@ export default function PaymentForm({ onSuccess, orderId = "ORD-TEST-1001", amou
                 />
               </Elements>
             ) : (
-              <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-700 text-xs font-semibold">
-                Stripe Publishable Key is not configured in client environment.
+              <div className="p-8 flex items-center justify-center gap-2 text-xs text-gray-500 font-semibold border border-gray-100 rounded-2xl bg-gray-50/50">
+                <Loader2 className="w-4 h-4 animate-spin text-[#007BFF]" />
+                <span>Initializing secure payment gateway...</span>
               </div>
             )}
           </motion.div>

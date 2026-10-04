@@ -17,6 +17,18 @@ function getAuthToken(): string {
   if (typeof window === 'undefined') return '';
   const stored = localStorage.getItem('auth_token');
   if (stored && stored !== 'undefined' && stored !== 'null') return stored;
+
+  try {
+    const authStorage = localStorage.getItem('auth-storage');
+    if (authStorage) {
+      const parsed = JSON.parse(authStorage);
+      const token = parsed?.state?.accessToken;
+      if (token && token !== 'undefined' && token !== 'null') return token;
+    }
+  } catch (e) {
+    // ignore json error
+  }
+
   // Try to extract from cookies
   const match = document.cookie.match(/(?:^|;\s*)token=([^;]*)/);
   const cookieToken = match ? decodeURIComponent(match[1]) : '';

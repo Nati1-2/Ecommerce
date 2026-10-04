@@ -2,6 +2,18 @@ function getToken(): string {
   if (typeof window === "undefined") return "";
   const stored = localStorage.getItem("auth_token");
   if (stored && stored !== "undefined" && stored !== "null") return stored;
+
+  try {
+    const authStorage = localStorage.getItem("auth-storage");
+    if (authStorage) {
+      const parsed = JSON.parse(authStorage);
+      const token = parsed?.state?.accessToken;
+      if (token && token !== "undefined" && token !== "null") return token;
+    }
+  } catch (e) {
+    // ignore json error
+  }
+
   const match = document.cookie.match(/(?:^|;\s*)token=([^;]*)/);
   const cookieToken = match ? decodeURIComponent(match[1]) : "";
   if (cookieToken && cookieToken !== "undefined" && cookieToken !== "null") return cookieToken;
