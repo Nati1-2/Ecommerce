@@ -153,6 +153,7 @@ export interface Notification {
   read: boolean;
   createdAt: string;
   actionUrl?: string;
+  link?: string;
   orderId?: string;
 }
 

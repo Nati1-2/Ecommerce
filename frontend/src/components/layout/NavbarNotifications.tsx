@@ -143,7 +143,7 @@ export default function NavbarNotifications({
                 notifications.map((n) => (
                   <Link
                     key={n.id}
-                    href={n.link || "/notifications"}
+                    href={n.actionUrl || n.link || "/notifications"}
                     onClick={() => handleItemClick(n)}
                     className={cn(
                       "flex items-start gap-3 p-3.5 transition-colors text-left hover:bg-blue-50/50 group relative",

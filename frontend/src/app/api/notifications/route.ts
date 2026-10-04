@@ -40,6 +40,7 @@ export async function GET(req: NextRequest) {
       message: n.message,
       type: n.type,
       link: n.link || "#",
+      actionUrl: n.link || "#",
       read: n.read,
       createdAt: n.createdAt ? n.createdAt.toISOString() : new Date().toISOString(),
     }));

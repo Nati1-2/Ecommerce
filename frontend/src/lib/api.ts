@@ -41,7 +41,7 @@ export async function fetchProducts(params: GetProductsParams): Promise<Products
         products: data.products,
         total: data.total ?? data.products.length,
         page: data.page ?? params.page ?? 1,
-        totalPages: data.totalPages ?? Math.ceil((data.total || data.products.length) / (params.limit || 8)) || 1,
+        totalPages: data.totalPages ?? Math.max(1, Math.ceil((data.total ?? data.products.length) / (params.limit || 8))),
       };
     }
     if (data.success && data.data) {
@@ -50,7 +50,7 @@ export async function fetchProducts(params: GetProductsParams): Promise<Products
           products: data.data.products,
           total: data.data.total ?? data.data.products.length,
           page: data.data.page ?? params.page ?? 1,
-          totalPages: data.data.totalPages ?? Math.ceil((data.data.total || data.data.products.length) / (params.limit || 8)) || 1,
+          totalPages: data.data.totalPages ?? Math.max(1, Math.ceil((data.data.total ?? data.data.products.length) / (params.limit || 8))),
         };
       }
       if (Array.isArray(data.data)) {

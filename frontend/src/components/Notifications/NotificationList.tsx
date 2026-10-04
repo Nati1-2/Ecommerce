@@ -5,7 +5,7 @@ import { useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import NotificationCard from "./NotificationCard";
 import { BellRing } from "lucide-react";
-import { Notification } from "@/types";
+import type { Notification } from "@/types";
 
 interface Props {
   onNotificationClick: (notification: Notification) => void;
