@@ -120,7 +120,7 @@ export class PaymentService {
   /**
    * Initializes a payment intent (Idempotent)
    */
-  public static async createPaymentIntent(payload: CreatePaymentIntentPayload): Promise<IPayment> {
+  public static async createPaymentIntent(payload: CreatePaymentIntentPayload): Promise<IPayment & { clientSecret?: string }> {
     const { orderId, customerId, amount, currency = 'USD', provider = 'STRIPE', idempotencyKey } = payload;
 
     if (idempotencyKey) {
@@ -137,12 +137,31 @@ export class PaymentService {
       return existingOrderPayment;
     }
 
+    let clientSecret: string | undefined = undefined;
+    let stripePaymentIntentId: string | undefined = undefined;
+
+    if (provider === 'STRIPE') {
+      try {
+        const stripeIntent = await StripeService.createPaymentIntent({
+          orderId,
+          userId: customerId,
+          amount,
+          currency,
+        });
+        clientSecret = stripeIntent.client_secret || undefined;
+        stripePaymentIntentId = stripeIntent.id;
+      } catch (stripeErr: any) {
+        logger.warn(`Notice: Stripe API payment intent creation skipped/mocked: ${stripeErr.message}`);
+      }
+    }
+
     const paymentId = this.generatePaymentId();
     const payment = await Payment.create({
       paymentId,
       orderId,
       customerId,
       userId: customerId,
+      stripePaymentIntentId,
       amount,
       currency,
       provider,
@@ -151,6 +170,59 @@ export class PaymentService {
     });
 
     logger.info(`Payment intent created: ${payment.paymentId} for Order: ${orderId} (Amount: $${amount})`);
+    
+    // Attach clientSecret transiently for response
+    const result = payment as IPayment & { clientSecret?: string };
+    if (clientSecret) {
+      result.clientSecret = clientSecret;
+    }
+    return result;
+  }
+
+  /**
+   * Verifies payment status with Stripe directly and syncs local payment record
+   */
+  public static async verifyAndSyncPayment(orderId: string, paymentIntentId?: string, sessionId?: string): Promise<IPayment | null> {
+    let payment = await Payment.findOne({ orderId });
+    const stripePiId = paymentIntentId || payment?.stripePaymentIntentId;
+    const stripeSession = sessionId || payment?.stripeSessionId;
+
+    if (stripePiId) {
+      try {
+        const intent = await StripeService.retrievePaymentIntent(stripePiId);
+        if (intent.status === 'succeeded') {
+          return this.processWebhook({
+            event: 'payment_intent.succeeded',
+            transactionId: intent.id,
+            orderId,
+            status: 'COMPLETED',
+            stripePaymentIntentId: intent.id
+          });
+        }
+      } catch (err: any) {
+        logger.warn(`Could not verify PaymentIntent ${stripePiId}: ${err.message}`);
+      }
+    }
+
+    if (stripeSession) {
+      try {
+        const session = await StripeService.retrieveCheckoutSession(stripeSession);
+        if (session.payment_status === 'paid') {
+          const piId = typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id;
+          return this.processWebhook({
+            event: 'checkout.session.completed',
+            transactionId: piId || session.id,
+            orderId,
+            status: 'COMPLETED',
+            stripeSessionId: session.id,
+            stripePaymentIntentId: piId
+          });
+        }
+      } catch (err: any) {
+        logger.warn(`Could not verify CheckoutSession ${stripeSession}: ${err.message}`);
+      }
+    }
+
     return payment;
   }
 

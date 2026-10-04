@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import mongoose from "mongoose";
 import { connectDB } from "@/lib/mongodb";
 import { Order, PaymentStatus, OrderStatus } from "@/models/Order";
 import { PaymentEvent } from "@/models/PaymentEvent";
@@ -53,9 +54,10 @@ export async function POST(req: NextRequest) {
         const paymentIntentId = object.id;
 
         if (orderId) {
-          const order = await Order.findOne({
-            $or: [{ _id: orderId }, { orderId: orderId }],
-          });
+          const query = mongoose.isValidObjectId(orderId)
+            ? { $or: [{ _id: orderId }, { orderId: orderId }] }
+            : { orderId: orderId };
+          const order = await Order.findOne(query);
 
           if (order) {
             order.paymentStatus = PaymentStatus.PAID;
@@ -75,9 +77,10 @@ export async function POST(req: NextRequest) {
         const orderId = object.metadata?.orderId || object.client_reference_id;
 
         if (orderId) {
-          const order = await Order.findOne({
-            $or: [{ _id: orderId }, { orderId: orderId }],
-          });
+          const query = mongoose.isValidObjectId(orderId)
+            ? { $or: [{ _id: orderId }, { orderId: orderId }] }
+            : { orderId: orderId };
+          const order = await Order.findOne(query);
 
           if (order) {
             order.paymentStatus = PaymentStatus.FAILED;

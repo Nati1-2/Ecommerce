@@ -25,7 +25,57 @@ export interface CreateCheckoutSessionParams {
   cancelUrl?: string;
 }
 
+export interface CreatePaymentIntentParams {
+  orderId: string;
+  userId: string;
+  customerEmail?: string;
+  amount: number;
+  currency?: string;
+  metadata?: Record<string, string>;
+}
+
 export class StripeService {
+  /**
+   * Create a Stripe PaymentIntent for direct card payment
+   */
+  public static async createPaymentIntent(params: CreatePaymentIntentParams): Promise<Stripe.PaymentIntent> {
+    const stripe = getStripeClient();
+    const { orderId, userId, customerEmail, amount, currency = 'usd', metadata = {} } = params;
+
+    const unitAmount = Math.max(50, Math.round(amount * 100));
+    const intent = await stripe.paymentIntents.create({
+      amount: unitAmount,
+      currency: currency.toLowerCase(),
+      receipt_email: customerEmail,
+      metadata: {
+        orderId,
+        userId,
+        ...metadata,
+      },
+      automatic_payment_methods: {
+        enabled: true,
+      },
+    });
+
+    logger.info(`Created Stripe PaymentIntent ${intent.id} for Order ${orderId}`);
+    return intent;
+  }
+
+  /**
+   * Retrieve a PaymentIntent by ID to verify payment status
+   */
+  public static async retrievePaymentIntent(paymentIntentId: string): Promise<Stripe.PaymentIntent> {
+    const stripe = getStripeClient();
+    return stripe.paymentIntents.retrieve(paymentIntentId);
+  }
+
+  /**
+   * Retrieve a Checkout Session by ID to verify payment status
+   */
+  public static async retrieveCheckoutSession(sessionId: string): Promise<Stripe.Checkout.Session> {
+    const stripe = getStripeClient();
+    return stripe.checkout.sessions.retrieve(sessionId);
+  }
   /**
    * Create a Stripe Checkout Session for order payment
    */

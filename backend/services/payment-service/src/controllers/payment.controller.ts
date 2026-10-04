@@ -110,12 +110,42 @@ export class PaymentController {
       const validated = createPaymentIntentSchema.parse(req.body);
       const payment = await PaymentService.createPaymentIntent({
         customerId: req.user.id,
+        customerEmail: validated.customerEmail || req.user.email,
         ...validated
       });
 
       res.status(201).json({
         success: true,
         message: 'Payment intent created successfully',
+        clientSecret: (payment as any).clientSecret,
+        paymentIntentId: (payment as any).stripePaymentIntentId,
+        data: payment
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Confirms payment and verifies status with Stripe directly
+   */
+  public static async confirmPayment(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { orderId, paymentIntentId, sessionId } = req.body;
+      if (!orderId) {
+        res.status(400).json({ success: false, message: 'orderId is required' });
+        return;
+      }
+
+      const payment = await PaymentService.verifyAndSyncPayment(orderId, paymentIntentId, sessionId);
+      if (!payment) {
+        res.status(404).json({ success: false, message: 'Payment record not found for this order' });
+        return;
+      }
+
+      res.status(200).json({
+        success: true,
+        message: 'Payment confirmed and verified successfully',
         data: payment
       });
     } catch (error) {
@@ -126,10 +156,17 @@ export class PaymentController {
   /**
    * Fetches payment record for an order
    */
-  public static async getPaymentByOrderId(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+  public static async getPaymentByOrderId(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { orderId } = req.params;
-      const payment = await PaymentService.getPaymentByOrderId(orderId as string);
+      const sessionId = req.query.session_id as string | undefined;
+      const paymentIntentId = (req.query.payment_intent || req.query.paymentIntentId) as string | undefined;
+
+      let payment = await PaymentService.getPaymentByOrderId(orderId as string);
+
+      if (payment && (sessionId || paymentIntentId)) {
+        payment = await PaymentService.verifyAndSyncPayment(orderId as string, paymentIntentId, sessionId);
+      }
 
       if (!payment) {
         res.status(404).json({ success: false, message: 'Payment record not found for this order' });

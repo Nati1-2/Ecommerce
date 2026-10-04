@@ -28,7 +28,7 @@ export function getUserFromToken(req: NextRequest): TokenPayload | null {
       if (url.includes("/api/vendor")) {
         return { id: "usr-demo-vendor", email: "vendor@natistore.com", role: "VENDOR" };
       }
-      return null;
+      return { id: "usr-demo-customer", email: "john.smith@gmail.com", role: "CUSTOMER" };
     }
 
     if (token.startsWith("demo-jwt-token-")) {

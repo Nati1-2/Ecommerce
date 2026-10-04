@@ -2,11 +2,14 @@
 
 import { use, useEffect, useState, Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
 import { ArrowLeft, RefreshCw, ShoppingBag, ShieldCheck } from "lucide-react";
 import Link from "next/link";
+import axios from "axios";
 
 import { fetchOrderById } from "@/lib/api";
 import { Order } from "@/types";
+import { useCartStore } from "@/store/cart";
 
 import SuccessAnimation from "@/components/OrderSuccess/SuccessAnimation";
 import OrderInfoCard from "@/components/OrderSuccess/OrderInfoCard";
@@ -26,6 +29,9 @@ interface SuccessPageProps {
 function OrderSuccessContent({ params }: SuccessPageProps) {
   const resolvedParams = use(params);
   const orderId = resolvedParams.orderId;
+  const searchParams = useSearchParams();
+  const sessionId = searchParams.get("session_id");
+  const paymentIntentId = searchParams.get("payment_intent") || searchParams.get("paymentIntentId");
 
   // React Query fetch
   const {
@@ -37,6 +43,23 @@ function OrderSuccessContent({ params }: SuccessPageProps) {
     queryKey: ["order", orderId],
     queryFn: () => fetchOrderById(orderId),
   });
+
+  // Verify Stripe payment and clear cart on arrival
+  useEffect(() => {
+    useCartStore.getState().clearCart();
+
+    if (sessionId || paymentIntentId) {
+      axios.post("/api/payments/confirm", {
+        orderId,
+        sessionId,
+        paymentIntentId,
+      }).then(() => {
+        refetch();
+      }).catch((err) => {
+        console.warn("Payment confirmation notice on success page:", err?.message);
+      });
+    }
+  }, [orderId, sessionId, paymentIntentId, refetch]);
 
   if (isLoading) {
     return <OrderSkeleton />;

@@ -88,7 +88,19 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
         {/* Actions Overlay */}
         <div className="absolute inset-x-3 bottom-3 flex items-center justify-between opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200 z-10">
           <button
-            onClick={() => toggleItem(product.id)}
+            onClick={() =>
+              toggleItem(product.id, {
+                productId: product.id,
+                name: product.name,
+                brand: product.brand,
+                image: product.image,
+                price: product.price,
+                oldPrice: product.originalPrice || product.price,
+                rating: product.rating,
+                reviewsCount: product.reviewCount,
+                category: product.category || "Electronics",
+              })
+            }
             className={cn(
               "w-9 h-9 rounded-xl flex items-center justify-center shadow-md transition-all duration-200 cursor-pointer",
               wishlisted

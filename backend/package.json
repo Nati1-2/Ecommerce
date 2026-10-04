@@ -9,6 +9,7 @@
     "services/*"
   ],
   "scripts": {
+    "dev": "node ../scripts/dev-backend.js",
     "build:shared": "npm run build --workspace=shared",
     "build:gateway": "npm run build --workspace=api-gateway",
     "build:services": "npm run build --workspaces --if-present",

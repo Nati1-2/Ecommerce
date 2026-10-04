@@ -32,7 +32,7 @@ interface WishlistState {
   collections: string[];
   addItem: (item: Partial<WishlistItem> & { productId: string }) => void;
   removeItem: (productId: string) => void;
-  toggleItem: (productId: string) => void;
+  toggleItem: (productId: string, itemData?: Partial<WishlistItem>) => void;
   isWishlisted: (productId: string) => boolean;
   setFilters: (filters: Partial<WishlistFilters>) => void;
   setSort: (sort: string) => void;
@@ -42,39 +42,8 @@ interface WishlistState {
   clearWishlist: () => void;
 }
 
-// Initial mock favorites
-const initialItems: WishlistItem[] = [
-  {
-    id: "wish-1",
-    productId: "0",
-    name: "Apple iPhone 17 Pro",
-    brand: "Apple",
-    image: "/iphone17.png",
-    price: 999.0,
-    oldPrice: 1200.0,
-    rating: 4.8,
-    reviewsCount: 154,
-    stock: 12,
-    addedAt: "July 12, 2026",
-    category: "Electronics",
-    priceAlertEnabled: true,
-  },
-  {
-    id: "wish-2",
-    productId: "1",
-    name: "Sony WH-1000XM6 Headphones",
-    brand: "Sony",
-    image: "/headphones.png",
-    price: 399.0,
-    oldPrice: 399.0,
-    rating: 4.6,
-    reviewsCount: 88,
-    stock: 0, // out of stock
-    addedAt: "June 25, 2026",
-    category: "Electronics",
-    priceAlertEnabled: false,
-  },
-];
+// Initial mock favorites for new users (empty by default)
+const initialItems: WishlistItem[] = [];
 
 export const useWishlistStore = create<WishlistState>()(
   persist(
@@ -118,13 +87,13 @@ export const useWishlistStore = create<WishlistState>()(
       removeItem: (productId) =>
         set({ items: get().items.filter((i) => i.productId !== productId) }),
 
-      toggleItem: (productId) => {
+      toggleItem: (productId, itemData) => {
         const { items, addItem, removeItem } = get();
         const exists = items.some((i) => i.productId === productId);
         if (exists) {
           removeItem(productId);
         } else {
-          addItem({ productId });
+          addItem({ productId, ...itemData });
         }
       },
 

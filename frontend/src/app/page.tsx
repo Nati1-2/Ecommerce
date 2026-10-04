@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Hero from "@/components/home/Hero";
 import { CategorySection } from "@/components/home/CategorySection";
 import { BrandSection } from "@/components/home/BrandSection";
@@ -7,6 +10,8 @@ import { ProductCarousel } from "@/components/home/ProductCarousel";
 import { PromoBanner } from "@/components/home/PromoBanner";
 import { ReviewsSection } from "@/components/home/ReviewsSection";
 import { Newsletter } from "@/components/home/Newsletter";
+import { fetchProducts } from "@/lib/api";
+import { Product } from "@/types";
 import {
   mockCategories,
   mockProducts,
@@ -17,12 +22,34 @@ import {
   mockReviews,
 } from "@/data/mock";
 
-export const metadata = {
-  title: "Nati — Premium E-Commerce | Shop Everything You Love",
-  description: "Discover 50,000+ premium products from top brands with fast delivery and secure payments.",
-};
+import { useAuthStore } from "@/store/auth";
 
 export default function HomePage() {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>(mockProducts);
+  const [flashSaleProducts, setFlashSaleProducts] = useState<Product[]>(mockFlashSaleProducts);
+  const [newArrivals, setNewArrivals] = useState<Product[]>(mockNewArrivals);
+  const [bestSellers, setBestSellers] = useState<Product[]>(mockBestSellers);
+  const [recommendations, setRecommendations] = useState<Product[]>(mockRecommendations);
+
+  useEffect(() => {
+    async function loadBackendProducts() {
+      try {
+        const data = await fetchProducts({ limit: 20 });
+        if (data && data.products && data.products.length > 0) {
+          setFeaturedProducts(data.products);
+          setFlashSaleProducts(data.products.slice(0, 4));
+          setNewArrivals(data.products.slice(0, 8));
+          setBestSellers(data.products.slice(0, 8));
+          setRecommendations(data.products.slice(0, 8));
+        }
+      } catch (err) {
+        console.warn("Home page backend fetch error:", err);
+      }
+    }
+    loadBackendProducts();
+  }, []);
+
   return (
     <main className="min-h-screen">
       {/* 1. Hero */}
@@ -39,20 +66,20 @@ export default function HomePage() {
         title="Featured Products"
         subtitle="Hand-picked for you based on quality and value"
         label="Editor's Choice"
-        products={mockProducts}
+        products={featuredProducts}
         viewAllHref="/products"
       />
 
       {/* 4. Flash Sale */}
-      <FlashSale products={mockFlashSaleProducts} />
+      <FlashSale products={flashSaleProducts} />
 
       {/* 5. New Arrivals Carousel */}
       <ProductCarousel
         title="New Arrivals"
         subtitle="The latest products just landed"
         label="Just In"
-        products={mockNewArrivals}
-        viewAllHref="/products/new"
+        products={newArrivals}
+        viewAllHref="/products"
         dark={true}
       />
 
@@ -64,17 +91,17 @@ export default function HomePage() {
         title="Best Sellers"
         subtitle="Our most popular products loved by thousands"
         label="Trending"
-        products={mockBestSellers}
-        viewAllHref="/products/bestsellers"
+        products={bestSellers}
+        viewAllHref="/products"
       />
 
       {/* 8. Recommendations Carousel */}
       <ProductCarousel
-        title="Because You Viewed..."
-        subtitle="Personalized picks for you"
+        title={isAuthenticated ? "Because You Viewed..." : "Recommended For You"}
+        subtitle={isAuthenticated ? "Personalized picks based on your recent activity" : "Top trending picks curated for new shoppers"}
         label="AI Recommendations"
-        products={mockRecommendations}
-        viewAllHref="/recommendations"
+        products={recommendations}
+        viewAllHref="/products"
         dark={true}
       />
 

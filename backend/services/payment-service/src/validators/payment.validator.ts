@@ -4,8 +4,15 @@ export const createPaymentIntentSchema = z.object({
   orderId: z.string().min(1, 'Order ID is required'),
   amount: z.number().positive('Amount must be positive'),
   currency: z.string().optional().default('USD'),
-  provider: z.enum(['STRIPE', 'PAYPAL', 'MOCK']).optional().default('MOCK'),
+  provider: z.enum(['STRIPE', 'PAYPAL', 'MOCK']).optional().default('STRIPE'),
+  customerEmail: z.string().email().optional(),
+  billingAddress: z.any().optional(),
   idempotencyKey: z.string().optional()
+});
+
+export const verifyPaymentSchema = z.object({
+  paymentIntentId: z.string().optional(),
+  sessionId: z.string().optional()
 });
 
 export const webhookPayloadSchema = z.object({

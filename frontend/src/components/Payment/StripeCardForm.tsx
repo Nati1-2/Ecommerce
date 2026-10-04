@@ -65,64 +65,65 @@ export default function StripeCardForm({
     setPaymentStatus("processing");
 
     try {
-      // 1. In production, we'd hit the API gateway payment service to create a payment intent
-      // POST /payment/intent { orderId, amount }
-      // For portfolio sandbox safety, we'll try API call or fall back to simulation
-      let clientSecret = "";
-      try {
-        const response = await axios.post("/api/payment/create-intent", {
-          orderId,
-          amount,
-          billingAddress,
-        });
-        clientSecret = response.data.clientSecret;
-      } catch (err) {
-        console.warn("API gateway not running. Falling back to sandbox stripe simulation.");
+      // 1. Create a real Stripe PaymentIntent via production API route
+      const token = typeof window !== 'undefined' ? (localStorage.getItem('auth_token') || 'demo-jwt-token-customer') : 'demo-jwt-token-customer';
+      const response = await axios.post("/api/payments/create-intent", {
+        orderId,
+        amount,
+        billingAddress,
+      }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const clientSecret = response.data?.clientSecret;
+      if (!clientSecret) {
+        throw new Error(response.data?.error || "Failed to retrieve secure Stripe client secret");
       }
 
-      if (clientSecret) {
-        // Real Stripe payment confirmation
-        const cardElement = elements.getElement(CardNumberElement);
-        if (!cardElement) throw new Error("Card inputs not found");
+      // 2. Real Stripe payment confirmation via Stripe Elements
+      const cardElement = elements.getElement(CardNumberElement);
+      if (!cardElement) throw new Error("Card inputs not found");
 
-        const result = await stripe.confirmCardPayment(clientSecret, {
-          payment_method: {
-            card: cardElement as any,
-            billing_details: {
-              name: billingAddress.name,
-              address: {
-                line1: billingAddress.address,
-                city: billingAddress.city,
-                postal_code: billingAddress.postalCode,
-                country: billingAddress.country === "United States" ? "US" : "CA",
-              },
+      const result = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card: cardElement as any,
+          billing_details: {
+            name: billingAddress.name || "Customer",
+            address: {
+              line1: billingAddress.address || "123 Main St",
+              city: billingAddress.city || "San Francisco",
+              postal_code: billingAddress.postalCode || "94105",
+              country: billingAddress.country === "United States" ? "US" : "CA",
             },
           },
-        });
+        },
+      });
 
-        if (result.error) {
-          throw new Error(result.error.message || "Stripe transaction failed");
-        } else if (result.paymentIntent?.status === "succeeded") {
-          setPaymentStatus("success");
-          onSuccess(result.paymentIntent.id);
-        }
-      } else {
-        // Simulated Stripe sandbox purchase flow (takes 2 seconds)
-        await new Promise((r) => setTimeout(r, 2000));
-        
-        // Mock card decline check based on input card number (standard sandbox tests)
-        // e.g. if name contains "decline", fail it
-        if (billingAddress.name.toLowerCase().includes("decline")) {
-          throw new Error("Card declined. Insufficient funds or card restriction.");
+      if (result.error) {
+        throw new Error(result.error.message || "Stripe transaction failed");
+      }
+
+      if (result.paymentIntent?.status === "succeeded") {
+        // 3. Confirm with backend to immediately update Order in DB to PAID
+        try {
+          await axios.post("/api/payments/confirm", {
+            orderId,
+            paymentIntentId: result.paymentIntent.id,
+          }, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+        } catch (confirmErr: any) {
+          console.warn("Notice: payment confirmation sync warning:", confirmErr?.message);
         }
 
-        const mockTransactionId = `ch_${Math.random().toString(36).substr(2, 20)}`;
         setPaymentStatus("success");
-        onSuccess(mockTransactionId);
+        onSuccess(result.paymentIntent.id);
+      } else {
+        throw new Error(`Unexpected payment status from Stripe: ${result.paymentIntent?.status}`);
       }
     } catch (error: any) {
       setPaymentStatus("failed");
-      const msg = error.message || "Payment declined or connectivity issue.";
+      const msg = error.response?.data?.error || error.message || "Payment declined or connectivity issue.";
       setCardError(msg);
       onFailure(msg);
     } finally {

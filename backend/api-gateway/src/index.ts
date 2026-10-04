@@ -15,7 +15,14 @@ const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-jwt-key-2026';
 // ── Security & Middleware ──────────────────────────────────────────────────
 app.use(helmet());
 app.use(cors({ origin: true, credentials: true }));
-app.use(express.json());
+
+// Bypass express.json() parsing for Stripe webhook routes to preserve raw signature buffer
+app.use((req, res, next) => {
+  if (req.originalUrl.includes('/webhook')) {
+    return next();
+  }
+  express.json()(req, res, next);
+});
 
 // ── Rate Limiting ──────────────────────────────────────────────────────────
 const limiter = rateLimit({
@@ -62,7 +69,13 @@ const ANALYTICS_SERVICE_URL = process.env.ANALYTICS_SERVICE_URL || 'http://local
 const VENDOR_SERVICE_URL = process.env.VENDOR_SERVICE_URL || 'http://localhost:8004';
 
 const proxyOptions = {
-  proxyReqPathResolver: (req: express.Request) => req.originalUrl
+  proxyReqPathResolver: (req: express.Request) => req.originalUrl,
+  proxyReqBodyDecorator: (bodyContent: any, srcReq: express.Request) => {
+    if (srcReq.body && Object.keys(srcReq.body).length > 0 && !srcReq.originalUrl.includes('/webhook')) {
+      return JSON.stringify(srcReq.body);
+    }
+    return bodyContent;
+  }
 };
 
 app.use('/api/v1/auth', proxy(AUTH_SERVICE_URL, proxyOptions));
