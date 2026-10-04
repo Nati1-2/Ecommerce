@@ -6,7 +6,7 @@ import { Order, PaymentStatus } from "@/models/Order";
 import { getUserFromToken } from "@/lib/authHelper";
 
 function getStripeClient(): Stripe | null {
-  const secretKey = process.env.STRIPE_SECRET_KEY || process.env.NEXT_PUBLIC_STRIPE_SECRET_KEY || "";
+  const secretKey = process.env.STRIPE_SECRET_KEY || "";
   if (!secretKey) return null;
   try {
     return new Stripe(secretKey, {
@@ -19,7 +19,15 @@ function getStripeClient(): Stripe | null {
 
 export async function POST(req: NextRequest) {
   try {
+    // 1. Enforce Authentication: Only logged-in users can create payment intents
     const decoded = getUserFromToken(req);
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required to initiate payment. Please log in first." },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     const { orderId, amount, currency = "usd", billingAddress, receiptEmail } = body;
 
@@ -30,11 +38,32 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // 2. Validate Order Ownership in Database
+    try {
+      await connectDB();
+      const query = mongoose.isValidObjectId(orderId)
+        ? { $or: [{ orderId }, { _id: orderId }] }
+        : { orderId };
+      const order = await Order.findOne(query);
+
+      if (order) {
+        const isPrivileged = decoded.role === "ADMIN" || decoded.role === "VENDOR";
+        if (!isPrivileged && order.userId && order.userId !== decoded.id) {
+          return NextResponse.json(
+            { success: false, error: "Forbidden: You are not authorized to create a payment for another user's order." },
+            { status: 403 }
+          );
+        }
+      }
+    } catch (dbErr: any) {
+      console.warn("Notice: could not query order for authorization check:", dbErr.message);
+    }
+
     const stripe = getStripeClient();
     if (!stripe) {
       return NextResponse.json(
-        { success: false, error: "Stripe configuration error: STRIPE_SECRET_KEY is not configured" },
-        { status: 500 }
+        { success: false, error: "Stripe configuration error: STRIPE_SECRET_KEY is not configured on the server" },
+        { status: 503 }
       );
     }
 
@@ -45,12 +74,12 @@ export async function POST(req: NextRequest) {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: unitAmount,
       currency: currency.toLowerCase(),
-      receipt_email: receiptEmail || decoded?.email || undefined,
+      receipt_email: receiptEmail || decoded.email || undefined,
       description: `Payment for Order #${orderId}`,
       metadata: {
         orderId: String(orderId),
-        userId: decoded?.id || "guest",
-        customerEmail: decoded?.email || "customer@natistore.com",
+        userId: decoded.id,
+        customerEmail: decoded.email,
         customerName: billingAddress?.name || "Customer",
       },
       automatic_payment_methods: {
@@ -60,7 +89,6 @@ export async function POST(req: NextRequest) {
 
     // Save paymentIntentId to order in DB if order exists
     try {
-      await connectDB();
       const query = mongoose.isValidObjectId(orderId)
         ? { $or: [{ orderId }, { _id: orderId }] }
         : { orderId };

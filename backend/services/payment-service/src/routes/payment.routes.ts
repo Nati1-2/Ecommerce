@@ -10,7 +10,7 @@ router.post('/webhook', PaymentController.handleStripeWebhook);
 
 // Public / Protected payment verification by order ID
 router.get('/verify/:orderId', PaymentController.getPaymentByOrderId);
-router.post('/confirm', PaymentController.confirmPayment);
+router.post('/confirm', authenticateToken, PaymentController.confirmPayment);
 
 // Protected routes (JWT Auth required)
 router.post('/checkout-session', authenticateToken, PaymentController.createCheckoutSession);

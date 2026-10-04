@@ -1,11 +1,12 @@
 import jwt from "jsonwebtoken";
 import { logger } from "@/lib/logger";
 
-const JWT_SECRET = process.env.JWT_SECRET || "default_jwt_secret_key_change_in_production";
-const REFRESH_SECRET = process.env.REFRESH_TOKEN_SECRET || `${JWT_SECRET}_refresh`;
+const JWT_SECRET = process.env.JWT_SECRET || process.env.JWT_ACCESS_SECRET || "your_jwt_access_secret_key_change_in_production";
+const REFRESH_SECRET = process.env.REFRESH_TOKEN_SECRET || process.env.JWT_REFRESH_SECRET || `${JWT_SECRET}_refresh`;
 
 export interface TokenPayload {
   id: string;
+  userId?: string;
   email: string;
   role: "CUSTOMER" | "VENDOR" | "ADMIN";
   sessionId?: string;
@@ -15,7 +16,7 @@ const revokedTokens = new Set<string>();
 
 export const authTokens = {
   generateAccessToken: (payload: TokenPayload): string => {
-    return jwt.sign(payload, JWT_SECRET, { expiresIn: "15m" });
+    return jwt.sign({ ...payload, userId: payload.id }, JWT_SECRET, { expiresIn: "15m" });
   },
 
   generateRefreshToken: (payload: TokenPayload): string => {

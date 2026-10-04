@@ -3,8 +3,10 @@ import { JWTUtils, TokenPayload } from '../utils/jwt.js';
 
 export class TokenService {
   static generateTokens(user: IUser): { accessToken: string; refreshToken: string } {
+    const userId = user._id.toString();
     const payload: TokenPayload = {
-      userId: user._id.toString(),
+      userId,
+      id: userId,
       email: user.email,
       role: user.role
     };

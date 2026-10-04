@@ -1,16 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
 import { connectDB } from "@/lib/mongodb";
-
 import { getUserFromToken } from "@/lib/authHelper";
-
 import { Notification } from "@/models/Notification";
 
 export async function GET(req: NextRequest) {
   try {
     const decoded = getUserFromToken(req);
-    const userId = decoded?.id || "usr-demo-customer";
-    const role = (decoded?.role || "CUSTOMER").toUpperCase();
+    if (!decoded) {
+      return NextResponse.json({
+        success: true,
+        notifications: [],
+      });
+    }
+
+    const userId = decoded.id;
+    const role = (decoded.role || "CUSTOMER").toUpperCase();
 
     await connectDB();
 
@@ -22,7 +26,6 @@ export async function GET(req: NextRequest) {
       .limit(50);
 
     if (dbNotifs.length === 0) {
-      // Seed default welcome notification if user has none
       const welcome = await Notification.create({
         recipientId: userId,
         type: "SYSTEM",
@@ -57,8 +60,12 @@ export async function GET(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const decoded = getUserFromToken(req);
-    const userId = decoded?.id || "usr-demo-customer";
-    const role = (decoded?.role || "CUSTOMER").toUpperCase();
+    if (!decoded) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userId = decoded.id;
+    const role = (decoded.role || "CUSTOMER").toUpperCase();
 
     await connectDB();
 

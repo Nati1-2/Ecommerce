@@ -27,8 +27,17 @@ export interface ProductsResponse {
 }
 
 const getAuthHeaders = (): Record<string, string> => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  if (typeof window === "undefined") return {};
+  const stored = localStorage.getItem("auth_token");
+  if (stored && stored !== "undefined" && stored !== "null") {
+    return { Authorization: `Bearer ${stored}` };
+  }
+  const match = document.cookie.match(/(?:^|;\s*)token=([^;]*)/);
+  const cookieToken = match ? decodeURIComponent(match[1]) : "";
+  if (cookieToken && cookieToken !== "undefined" && cookieToken !== "null") {
+    return { Authorization: `Bearer ${cookieToken}` };
+  }
+  return {};
 };
 
 /**

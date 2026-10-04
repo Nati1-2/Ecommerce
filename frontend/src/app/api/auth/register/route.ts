@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { safeFindUserByEmail, safeCreateUser } from "@/lib/mongodb";
 
-const JWT_SECRET = process.env.JWT_ACCESS_SECRET || "fallback-secret-for-dev";
+const JWT_SECRET = process.env.JWT_SECRET || process.env.JWT_ACCESS_SECRET || "your_jwt_access_secret_key_change_in_production";
 
 export async function POST(req: NextRequest) {
   try {
@@ -25,8 +25,9 @@ export async function POST(req: NextRequest) {
     const normalizedEmail = email.toLowerCase().trim();
 
     // 1. Try to register with backend Auth Service via API Gateway
+    const gatewayUrl = process.env.API_GATEWAY_URL || process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, "") || "http://localhost:8000";
     try {
-      const response = await fetch("http://localhost:8000/api/v1/auth/register", {
+      const response = await fetch(`${gatewayUrl}/api/v1/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: normalizedEmail, password, name: name.trim(), role }),
@@ -34,20 +35,23 @@ export async function POST(req: NextRequest) {
 
       if (response.ok) {
         const data = await response.json();
-        if (data.success && data.token) {
+        const token = data.accessToken || data.token;
+        if (data.success && token) {
+          const userObj = {
+            id: data.user?.id || data.user?._id || data.user?.userId || data.userId,
+            email: data.user?.email || normalizedEmail,
+            name: data.user?.name || name.trim(),
+            role: data.user?.role || role || "CUSTOMER",
+          };
+
           const res = NextResponse.json({
             success: true,
-            token: data.token,
-            user: {
-              id: data.user.id || data.user._id,
-              email: data.user.email,
-              name: data.user.name || "",
-              role: data.user.role,
-            },
+            token,
+            user: userObj,
           });
 
-          res.cookies.set("token", data.token, {
-            httpOnly: true,
+          res.cookies.set("token", token, {
+            httpOnly: false,
             secure: process.env.NODE_ENV === "production",
             sameSite: "lax",
             maxAge: 60 * 60 * 24 * 7,
@@ -56,12 +60,18 @@ export async function POST(req: NextRequest) {
 
           return res;
         }
+      } else if (response.status === 400 || response.status === 409) {
+        const errData = await response.json().catch(() => null);
+        return NextResponse.json(
+          { error: errData?.message || errData?.error || "Registration failed" },
+          { status: response.status }
+        );
       }
     } catch (err) {
-      console.warn("Backend Auth Service registration failed, falling back to local DB:", err);
+      console.warn("Backend Auth Service unreachable, falling back to local DB:", err);
     }
 
-    // 2. Fallback to local MongoDB
+    // 2. Fallback to local MongoDB / in-memory
     const existingUser = await safeFindUserByEmail(normalizedEmail);
     if (existingUser) {
       return NextResponse.json({ error: "An account with this email already exists" }, { status: 400 });
@@ -69,7 +79,6 @@ export async function POST(req: NextRequest) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Always register as CUSTOMER — role cannot be set from client
     const newUser = await safeCreateUser({
       email: normalizedEmail,
       password: hashedPassword,
@@ -80,7 +89,7 @@ export async function POST(req: NextRequest) {
 
     const userId = newUser.id || newUser._id;
     const token = jwt.sign(
-      { id: userId, email: newUser.email, role: newUser.role },
+      { id: userId, userId, email: newUser.email, role: newUser.role },
       JWT_SECRET,
       { expiresIn: "7d" }
     );
@@ -97,7 +106,7 @@ export async function POST(req: NextRequest) {
     });
 
     response.cookies.set("token", token, {
-      httpOnly: true,
+      httpOnly: false,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 60 * 60 * 24 * 7,

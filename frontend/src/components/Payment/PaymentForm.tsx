@@ -1,21 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import { usePaymentStore } from "@/store/paymentStore";
-import { useCheckoutStore } from "@/store/checkoutStore";
+import { useAuthStore } from "@/store/auth";
+import { paymentApi } from "@/services/api/paymentApi";
 import PaymentMethods from "./PaymentMethods";
 import StripeCardForm from "./StripeCardForm";
 import BillingAddress from "./BillingAddress";
-import { Smartphone, Wallet, Lock, Loader2, Check } from "lucide-react";
+import { Smartphone, Wallet, Lock, Loader2, ExternalLink } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Initialize Stripe public key
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ||
-    "pk_test_51ThDDICdX0hvCWhczONjNi3TCevUCN7vYmjW5h5KaNeNiyjAAkIG3KL1ZkqSOauu8wIRirZmCuETnr6Xw65tK34T00DDtz8A5O"
-);
+const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "";
+const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : null;
 
 interface PaymentFormProps {
   orderId: string;
@@ -30,18 +29,43 @@ export default function PaymentForm({
   onSuccess,
   onFailure,
 }: PaymentFormProps) {
+  const router = useRouter();
   const { paymentMethod, paymentStatus, setPaymentStatus } = usePaymentStore();
-  const [processingOther, setProcessingOther] = useState(false);
+  const { isAuthenticated } = useAuthStore();
+  const [processingRedirect, setProcessingRedirect] = useState(false);
+  const [redirectError, setRedirectError] = useState("");
 
-  const handleOtherPayment = async (method: string) => {
-    setProcessingOther(true);
-    setPaymentStatus("processing");
-    // Simulate PayPal / Apple Pay API calls
-    await new Promise((r) => setTimeout(r, 2200));
-    setProcessingOther(false);
-    setPaymentStatus("success");
-    const mockTxId = `tx_${method}_${Math.random().toString(36).substr(2, 14)}`;
-    onSuccess(mockTxId);
+  const handleWalletCheckoutRedirect = async () => {
+    setProcessingRedirect(true);
+    setRedirectError("");
+
+    const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+    if (!isAuthenticated && !token) {
+      router.push(`/login?redirect=/checkout`);
+      return;
+    }
+
+    try {
+      const res = await paymentApi.createCheckoutSession({
+        orderId,
+        amount,
+        currency: "USD",
+        successUrl: `${window.location.origin}/order/success/${orderId}?session_id={CHECKOUT_SESSION_ID}`,
+        cancelUrl: `${window.location.origin}/order/failed/${orderId}`,
+      });
+
+      if (res.data?.checkoutUrl) {
+        window.location.href = res.data.checkoutUrl;
+      } else {
+        throw new Error(res.message || "Failed to initialize secure checkout session");
+      }
+    } catch (err: any) {
+      const msg = err.response?.data?.error || err.message || "Failed to redirect to checkout portal.";
+      setRedirectError(msg);
+      onFailure(msg);
+    } finally {
+      setProcessingRedirect(false);
+    }
   };
 
   return (
@@ -56,6 +80,12 @@ export default function PaymentForm({
 
       {/* 3. Conditional Payment Integrations */}
       <div className="p-6 border border-gray-100 rounded-3xl bg-white shadow-sm space-y-4">
+        {redirectError && (
+          <div className="p-3 bg-red-50 border border-red-100 rounded-xl text-red-600 text-xs font-semibold">
+            {redirectError}
+          </div>
+        )}
+
         <AnimatePresence mode="wait">
           {paymentMethod === "card" && (
             <motion.div
@@ -74,14 +104,20 @@ export default function PaymentForm({
                   Stripe SSL
                 </span>
               </div>
-              <Elements stripe={stripePromise}>
-                <StripeCardForm
-                  orderId={orderId}
-                  amount={amount}
-                  onSuccess={onSuccess}
-                  onFailure={onFailure}
-                />
-              </Elements>
+              {stripePromise ? (
+                <Elements stripe={stripePromise}>
+                  <StripeCardForm
+                    orderId={orderId}
+                    amount={amount}
+                    onSuccess={onSuccess}
+                    onFailure={onFailure}
+                  />
+                </Elements>
+              ) : (
+                <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-700 text-xs font-semibold">
+                  Stripe Publishable Key is not configured.
+                </div>
+              )}
             </motion.div>
           )}
 
@@ -97,23 +133,27 @@ export default function PaymentForm({
                 <Wallet className="w-6 h-6" />
               </div>
               <div className="space-y-1">
-                <h4 className="text-sm font-black text-gray-900">Authorize via PayPal</h4>
+                <h4 className="text-sm font-black text-gray-900">Checkout via Stripe Portal (PayPal / Wallets)</h4>
                 <p className="text-xs text-gray-400 font-semibold max-w-xs mx-auto">
-                  Click below to securely sign in to your PayPal account and authorize this transaction.
+                  Click below to proceed to the secure Stripe portal supporting PayPal, Link, and card options.
                 </p>
               </div>
               <button
-                onClick={() => handleOtherPayment("paypal")}
-                disabled={processingOther || paymentStatus === "processing"}
-                className="w-full max-w-xs py-3.5 px-6 bg-[#FFC439] hover:bg-[#F2B224] text-[#002C8A] font-black text-xs rounded-xl shadow transition-all mx-auto flex items-center justify-center gap-2"
+                type="button"
+                onClick={handleWalletCheckoutRedirect}
+                disabled={processingRedirect || paymentStatus === "processing"}
+                className="w-full max-w-xs py-3.5 px-6 bg-[#FFC439] hover:bg-[#F2B224] text-[#002C8A] font-black text-xs rounded-xl shadow transition-all mx-auto flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
-                {processingOther ? (
+                {processingRedirect ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin text-[#002C8A]" />
-                    Connecting to PayPal...
+                    <span>Connecting to Portal...</span>
                   </>
                 ) : (
-                  "Pay with PayPal"
+                  <>
+                    <ExternalLink className="w-4 h-4" />
+                    <span>Proceed to Stripe Checkout (${amount.toFixed(2)})</span>
+                  </>
                 )}
               </button>
             </motion.div>
@@ -135,21 +175,25 @@ export default function PaymentForm({
                   {paymentMethod === "applepay" ? "Apple Pay" : "Google Pay"} Express
                 </h4>
                 <p className="text-xs text-gray-400 font-semibold max-w-xs mx-auto">
-                  Pay instantly using card details stored securely in your device.
+                  Complete your purchase through Stripe Hosted Checkout with 1-click device wallet support.
                 </p>
               </div>
               <button
-                onClick={() => handleOtherPayment(paymentMethod)}
-                disabled={processingOther || paymentStatus === "processing"}
-                className="w-full max-w-xs py-3.5 px-6 bg-black hover:bg-gray-900 text-white font-black text-xs rounded-xl shadow transition-all mx-auto flex items-center justify-center gap-2"
+                type="button"
+                onClick={handleWalletCheckoutRedirect}
+                disabled={processingRedirect || paymentStatus === "processing"}
+                className="w-full max-w-xs py-3.5 px-6 bg-black hover:bg-gray-900 text-white font-black text-xs rounded-xl shadow transition-all mx-auto flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
-                {processingOther ? (
+                {processingRedirect ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Initializing wallet...
+                    <span>Initializing Checkout...</span>
                   </>
                 ) : (
-                  `Pay with ${paymentMethod === "applepay" ? " Pay" : "Google Pay"}`
+                  <>
+                    <ExternalLink className="w-4 h-4" />
+                    <span>{paymentMethod === "applepay" ? " Pay via Stripe" : "Google Pay via Stripe"} (${amount.toFixed(2)})</span>
+                  </>
                 )}
               </button>
             </motion.div>

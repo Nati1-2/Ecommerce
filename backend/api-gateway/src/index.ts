@@ -10,7 +10,7 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 8000;
-const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-jwt-key-2026';
+const JWT_SECRET = process.env.JWT_SECRET || process.env.JWT_ACCESS_SECRET || 'your_jwt_access_secret_key_change_in_production';
 
 // ── Security & Middleware ──────────────────────────────────────────────────
 app.use(helmet());
@@ -38,10 +38,17 @@ const extractUserContext = (req: express.Request, _res: express.Response, next: 
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.split(' ')[1];
     try {
-      const decoded = jwt.verify(token, JWT_SECRET) as { id: string; email: string; role: string };
-      req.headers['x-user-id'] = decoded.id;
-      req.headers['x-user-email'] = decoded.email;
-      req.headers['x-user-role'] = decoded.role;
+      const decoded = jwt.verify(token, JWT_SECRET) as { id?: string; userId?: string; email: string; role: string };
+      const userId = decoded.id || decoded.userId;
+      if (userId) {
+        req.headers['x-user-id'] = userId;
+      }
+      if (decoded.email) {
+        req.headers['x-user-email'] = decoded.email;
+      }
+      if (decoded.role) {
+        req.headers['x-user-role'] = decoded.role;
+      }
     } catch (err) {
       // Invalid token, context will not be injected
     }

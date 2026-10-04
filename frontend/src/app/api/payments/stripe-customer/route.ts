@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
 import Stripe from "stripe";
 import { safeFindUserById, safeUpdateUser } from "@/lib/mongodb";
-
 import { getUserFromToken } from "@/lib/authHelper";
 
 function getStripeClient(): Stripe | null {
-  const secretKey = process.env.STRIPE_SECRET_KEY || process.env.NEXT_PUBLIC_STRIPE_SECRET_KEY || "";
+  const secretKey = process.env.STRIPE_SECRET_KEY || "";
   if (!secretKey) return null;
   try {
     return new Stripe(secretKey, {
@@ -44,10 +42,7 @@ export async function GET(req: NextRequest) {
         await safeUpdateUser(user.id, { stripeCustomerId });
       } catch (e: any) {
         console.warn("Stripe Customer creation notice:", e.message);
-        stripeCustomerId = `cus_demo_${user.id}`;
       }
-    } else if (!stripeCustomerId) {
-      stripeCustomerId = `cus_demo_${user.id}`;
     }
 
     // Fetch payment methods from Stripe if real ID
@@ -113,10 +108,8 @@ export async function POST(req: NextRequest) {
         stripeCustomerId = customer.id;
         await safeUpdateUser(user.id, { stripeCustomerId });
       } catch (e: any) {
-        stripeCustomerId = `cus_demo_${user.id}`;
+        console.warn("Stripe customer creation notice:", e.message);
       }
-    } else if (!stripeCustomerId) {
-      stripeCustomerId = `cus_demo_${user.id}`;
     }
 
     if (action === "create_checkout_session" && stripe) {
@@ -124,8 +117,8 @@ export async function POST(req: NextRequest) {
         const session = await stripe.checkout.sessions.create({
           payment_method_types: ["card"],
           mode: "setup",
-          customer: stripeCustomerId.startsWith("cus_demo_") ? undefined : stripeCustomerId,
-          customer_email: stripeCustomerId.startsWith("cus_demo_") ? user.email : undefined,
+          customer: stripeCustomerId && !stripeCustomerId.startsWith("cus_demo_") ? stripeCustomerId : undefined,
+          customer_email: (!stripeCustomerId || stripeCustomerId.startsWith("cus_demo_")) ? user.email : undefined,
           success_url: `${req.nextUrl.origin}/dashboard?tab=payments&status=success`,
           cancel_url: `${req.nextUrl.origin}/dashboard?tab=payments&status=cancel`,
         });

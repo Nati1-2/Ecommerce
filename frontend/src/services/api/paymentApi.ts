@@ -8,18 +8,20 @@ export interface CheckoutSessionResponse {
   data: {
     checkoutUrl: string | null;
     sessionId: string;
-    payment: any;
+    payment?: any;
   };
 }
 
 /** Retrieve auth token from localStorage or document cookie */
 function getAuthToken(): string {
-  if (typeof window === 'undefined') return 'demo-jwt-token-customer';
+  if (typeof window === 'undefined') return '';
   const stored = localStorage.getItem('auth_token');
-  if (stored) return stored;
+  if (stored && stored !== 'undefined' && stored !== 'null') return stored;
   // Try to extract from cookies
   const match = document.cookie.match(/(?:^|;\s*)token=([^;]*)/);
-  return match ? decodeURIComponent(match[1]) : 'demo-jwt-token-customer';
+  const cookieToken = match ? decodeURIComponent(match[1]) : '';
+  if (cookieToken && cookieToken !== 'undefined' && cookieToken !== 'null') return cookieToken;
+  return '';
 }
 
 export const paymentApi = {
@@ -42,7 +44,7 @@ export const paymentApi = {
       {
         headers: {
           'Content-Type': 'application/json',
-          Authorization: token ? `Bearer ${token}` : '',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
       }
     );
@@ -65,7 +67,7 @@ export const paymentApi = {
       {
         headers: {
           'Content-Type': 'application/json',
-          Authorization: token ? `Bearer ${token}` : '',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
       }
     );
@@ -87,7 +89,7 @@ export const paymentApi = {
       {
         headers: {
           'Content-Type': 'application/json',
-          Authorization: token ? `Bearer ${token}` : '',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
       }
     );
@@ -98,10 +100,10 @@ export const paymentApi = {
    * Verify payment status for a given orderId.
    */
   verifyPayment: async (orderId: string): Promise<{ success: boolean; data: any }> => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+    const token = getAuthToken();
     const response = await axios.get(`${API_BASE_URL}/v1/payments/verify/${orderId}`, {
       headers: {
-        Authorization: token ? `Bearer ${token}` : '',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
     });
     return response.data;
@@ -111,13 +113,13 @@ export const paymentApi = {
    * Refund a previously completed payment.
    */
   refundPayment: async (paymentId: string, reason: string): Promise<{ success: boolean; message: string }> => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+    const token = getAuthToken();
     const response = await axios.post(
       `${API_BASE_URL}/v1/payments/${paymentId}/refund`,
       { reason },
       {
         headers: {
-          Authorization: token ? `Bearer ${token}` : '',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
       }
     );

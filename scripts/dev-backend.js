@@ -1,5 +1,8 @@
 const { spawn } = require('child_process');
 const path = require('path');
+const dotenv = require('dotenv');
+
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const services = [
   { name: 'gateway', dir: 'backend/api-gateway' },
@@ -24,7 +27,8 @@ services.forEach((service) => {
   const child = spawn('npm', ['run', 'dev'], {
     cwd: absoluteDir,
     shell: true,
-    stdio: 'inherit'
+    stdio: 'inherit',
+    env: { ...process.env }
   });
 
   child.on('error', (err) => {

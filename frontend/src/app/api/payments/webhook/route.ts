@@ -23,11 +23,22 @@ export async function POST(req: NextRequest) {
         event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
       } catch (err: any) {
         console.error("Stripe Webhook Signature Verification Failed:", err.message);
-        return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 });
+        return NextResponse.json({ error: `Webhook Signature Verification Error: ${err.message}` }, { status: 400 });
       }
+    } else if (process.env.NODE_ENV === "production") {
+      console.error("Missing webhook secret or stripe signature in production");
+      return NextResponse.json({ error: "Missing webhook secret or signature" }, { status: 400 });
     } else {
-      // Direct JSON parsing fallback for sandbox testing
-      event = JSON.parse(rawBody);
+      // Local dev testing fallback without signature if secrets are not set
+      try {
+        event = JSON.parse(rawBody);
+      } catch (e: any) {
+        return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
+      }
+    }
+
+    if (!event || !event.type) {
+      return NextResponse.json({ error: "Invalid event object" }, { status: 400 });
     }
 
     await connectDB();
@@ -84,6 +95,25 @@ export async function POST(req: NextRequest) {
 
           if (order) {
             order.paymentStatus = PaymentStatus.FAILED;
+            await order.save();
+          }
+        }
+        break;
+      }
+
+      case "payment_intent.canceled": {
+        const object = event.data.object as any;
+        const orderId = object.metadata?.orderId || object.client_reference_id;
+
+        if (orderId) {
+          const query = mongoose.isValidObjectId(orderId)
+            ? { $or: [{ _id: orderId }, { orderId: orderId }] }
+            : { orderId: orderId };
+          const order = await Order.findOne(query);
+
+          if (order) {
+            order.paymentStatus = PaymentStatus.FAILED;
+            order.orderStatus = OrderStatus.CANCELLED;
             await order.save();
           }
         }

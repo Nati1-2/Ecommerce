@@ -1,6 +1,11 @@
 function getToken(): string {
   if (typeof window === "undefined") return "";
-  return localStorage.getItem("auth_token") || "";
+  const stored = localStorage.getItem("auth_token");
+  if (stored && stored !== "undefined" && stored !== "null") return stored;
+  const match = document.cookie.match(/(?:^|;\s*)token=([^;]*)/);
+  const cookieToken = match ? decodeURIComponent(match[1]) : "";
+  if (cookieToken && cookieToken !== "undefined" && cookieToken !== "null") return cookieToken;
+  return "";
 }
 
 async function apiFetch<T>(url: string, options: RequestInit = {}): Promise<T> {
@@ -16,7 +21,7 @@ async function apiFetch<T>(url: string, options: RequestInit = {}): Promise<T> {
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
-    throw new Error(err.error || `Request failed: ${res.status}`);
+    throw new Error(err.error || err.message || `Request failed: ${res.status}`);
   }
 
   return res.json();

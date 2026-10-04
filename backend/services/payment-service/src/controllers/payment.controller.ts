@@ -63,11 +63,36 @@ export class PaymentController {
           res.status(400).send(`Webhook Signature Error: ${err.message}`);
           return;
         }
+      } else if (Buffer.isBuffer(req.body)) {
+        try {
+          event = JSON.parse(req.body.toString('utf-8'));
+        } catch {
+          event = req.body;
+        }
+      } else if (typeof req.body === 'string') {
+        try {
+          event = JSON.parse(req.body);
+        } catch {
+          event = req.body;
+        }
       } else {
         event = req.body;
       }
 
-      const payment = await PaymentService.handleStripeWebhookEvent(event);
+      let payment: any = null;
+      if (event?.type) {
+        payment = await PaymentService.handleStripeWebhookEvent(event);
+      } else if (event?.orderId) {
+        payment = await PaymentService.processWebhook({
+          event: event.event || 'payment.completed',
+          transactionId: event.transactionId || `txn_${Date.now()}`,
+          orderId: event.orderId,
+          status: event.status || 'COMPLETED',
+          failureReason: event.failureReason,
+          stripeSessionId: event.stripeSessionId,
+          stripePaymentIntentId: event.stripePaymentIntentId,
+        });
+      }
 
       res.status(200).json({
         received: true,
@@ -129,12 +154,27 @@ export class PaymentController {
   /**
    * Confirms payment and verifies status with Stripe directly
    */
-  public static async confirmPayment(req: Request, res: Response, next: NextFunction): Promise<void> {
+  public static async confirmPayment(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
     try {
+      if (!req.user) {
+        res.status(401).json({ success: false, message: 'Authentication required' });
+        return;
+      }
+
       const { orderId, paymentIntentId, sessionId } = req.body;
       if (!orderId) {
         res.status(400).json({ success: false, message: 'orderId is required' });
         return;
+      }
+
+      const existingPayment = await PaymentService.getPaymentByOrderId(orderId);
+      if (existingPayment) {
+        const isAdmin = req.user.role?.toLowerCase() === 'admin';
+        const isOwner = existingPayment.customerId === req.user.id || existingPayment.userId === req.user.id;
+        if (!isAdmin && !isOwner) {
+          res.status(403).json({ success: false, message: 'Forbidden: You cannot confirm payment for another user\'s order' });
+          return;
+        }
       }
 
       const payment = await PaymentService.verifyAndSyncPayment(orderId, paymentIntentId, sessionId);
@@ -156,7 +196,7 @@ export class PaymentController {
   /**
    * Fetches payment record for an order
    */
-  public static async getPaymentByOrderId(req: Request, res: Response, next: NextFunction): Promise<void> {
+  public static async getPaymentByOrderId(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
     try {
       const { orderId } = req.params;
       const sessionId = req.query.session_id as string | undefined;
@@ -171,6 +211,15 @@ export class PaymentController {
       if (!payment) {
         res.status(404).json({ success: false, message: 'Payment record not found for this order' });
         return;
+      }
+
+      if (req.user) {
+        const isAdmin = req.user.role?.toLowerCase() === 'admin';
+        const isOwner = payment.customerId === req.user.id || payment.userId === req.user.id;
+        if (!isAdmin && !isOwner) {
+          res.status(403).json({ success: false, message: 'Forbidden: Access denied to this payment' });
+          return;
+        }
       }
 
       res.status(200).json({ success: true, data: payment });

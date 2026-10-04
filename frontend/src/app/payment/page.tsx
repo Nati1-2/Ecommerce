@@ -10,6 +10,7 @@ import { usePaymentStore } from "@/store/paymentStore";
 import { useCheckoutStore } from "@/store/checkoutStore";
 import { useCartStore } from "@/store/cart";
 import { SHIPPING_OPTIONS } from "@/components/Checkout/ShippingMethod";
+import { useAuthStore } from "@/store/auth";
 
 import CheckoutSteps from "@/components/Payment/CheckoutSteps";
 import OrderSummary from "@/components/Payment/OrderSummary";
@@ -56,6 +57,11 @@ function PaymentContent() {
 
   useEffect(() => {
     setMounted(true);
+    const token = typeof window !== "undefined" ? (localStorage.getItem("auth_token") || document.cookie.match(/(?:^|;\s*)token=([^;]*)/)?.[1]) : null;
+    if (!useAuthStore.getState().isAuthenticated || !token || token === "null" || token === "undefined") {
+      router.push(`/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+      return;
+    }
     resetPaymentState();
 
     // Socket.IO integration setup dynamically loaded

@@ -1,21 +1,44 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import { Order } from "@/models/Order";
-import jwt from "jsonwebtoken";
-
 import { getUserFromToken } from "@/lib/authHelper";
 
 export async function GET(req: NextRequest) {
   try {
+    const decoded = getUserFromToken(req);
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required to view orders. Please log in." },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(req.url);
-    const userId = searchParams.get("userId");
+    const requestedUserId = searchParams.get("userId");
+
+    // Enforce authorization: Non-admins can ONLY view their own orders
+    const isAdmin = decoded.role === "ADMIN";
+    let targetUserId = decoded.id;
+    if (isAdmin && requestedUserId) {
+      targetUserId = requestedUserId;
+    } else if (!isAdmin && requestedUserId && requestedUserId !== decoded.id) {
+      return NextResponse.json(
+        { success: false, error: "Forbidden: You cannot access another customer's orders." },
+        { status: 403 }
+      );
+    }
 
     // 1. Try to fetch from backend Order Service via API Gateway
     const authHeader = req.headers.get("authorization");
     const token = authHeader || req.cookies.get("token")?.value;
+    const gatewayUrl = process.env.API_GATEWAY_URL || process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, "") || "http://localhost:8000";
 
     try {
-      const response = await fetch("http://localhost:8000/api/v1/orders/my-orders", {
+      const endpoint = isAdmin && !requestedUserId
+        ? `${gatewayUrl}/api/v1/orders/admin/all`
+        : `${gatewayUrl}/api/v1/orders/my-orders`;
+
+      const response = await fetch(endpoint, {
         headers: token ? { Authorization: token.startsWith("Bearer ") ? token : `Bearer ${token}` } : {},
       });
       if (response.ok) {
@@ -58,10 +81,9 @@ export async function GET(req: NextRequest) {
     try {
       await connectDB();
 
-      const query: any = {};
-      if (userId) {
-        query.$or = [{ userId: userId }, { userId: "usr-demo-customer" }];
-      }
+      const query: any = isAdmin && !requestedUserId
+        ? {}
+        : { userId: targetUserId };
 
       const orders = await Order.find(query).sort({ createdAt: -1 });
       return NextResponse.json({ success: true, data: orders });
@@ -84,19 +106,35 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
+    const items = (body.items || []).map((item: any) => ({
+      productId: item.productId || "prod-unknown",
+      name: item.name || item.productName || "Product",
+      price: Number(item.price) || 0,
+      quantity: Number(item.quantity) || 1,
+      image: item.image || item.imageUrl || "/iphone17.png",
+    }));
+
+    if (items.length === 0) {
+      return NextResponse.json(
+        { success: false, error: "Cannot create an order with an empty cart." },
+        { status: 400 }
+      );
+    }
+
     const authHeader = req.headers.get("authorization");
     const token = authHeader || req.cookies.get("token")?.value;
-    const userId = decoded.id;
+    const userId = decoded.id; // Strictly associate with the authenticated user
 
     // 1. Try to submit to backend Order Service via API Gateway
+    const gatewayUrl = process.env.API_GATEWAY_URL || process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, "") || "http://localhost:8000";
     try {
       const backendPayload = {
-        items: (body.items || []).map((item: any) => ({
+        items: items.map((item: any) => ({
           productId: item.productId,
           quantity: item.quantity
         })),
         shippingAddress: {
-          fullName: body.shippingAddress?.fullName || `${body.shippingAddress?.firstName || ""} ${body.shippingAddress?.lastName || ""}`.trim() || "John Smith",
+          fullName: body.shippingAddress?.fullName || `${body.shippingAddress?.firstName || ""} ${body.shippingAddress?.lastName || ""}`.trim() || "Customer",
           phone: body.shippingAddress?.phone || "+1 (555) 019-2834",
           street: body.shippingAddress?.street || "",
           city: body.shippingAddress?.city || "",
@@ -113,7 +151,7 @@ export async function POST(req: NextRequest) {
         }
       };
 
-      const response = await fetch("http://localhost:8000/api/v1/orders", {
+      const response = await fetch(`${gatewayUrl}/api/v1/orders`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -164,15 +202,6 @@ export async function POST(req: NextRequest) {
       await connectDB();
 
       const orderId = `ORD-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-
-      // Calculate totals and ensure all required fields on orderItemSchema are present
-      const items = (body.items || []).map((item: any) => ({
-        productId: item.productId || "prod-unknown",
-        name: item.name || item.productName || "Product",
-        price: Number(item.price) || 0,
-        quantity: Number(item.quantity) || 1,
-        image: item.image || item.imageUrl || "/iphone17.png",
-      }));
 
       const calculatedTotal = items.reduce((acc: number, i: any) => acc + (i.price * i.quantity), 0);
       const totalAmount = Number(body.totalAmount ?? body.subtotal ?? calculatedTotal);

@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation";
 import SearchBar from "@/components/Search/SearchBar";
 import NavbarNotifications from "@/components/layout/NavbarNotifications";
 import { useNotificationStore } from "@/store/notificationStore";
+import { useAuthStore } from "@/store/auth";
 
 const categories = [
   { name: "All Products", icon: LayoutGrid, href: "/products" },
@@ -43,6 +44,7 @@ export default function Navbar() {
   const totalItems = useCartStore((s) => s.totalItems)();
   const wishlistCount = useWishlistStore((s) => s.items.length);
   const unreadNotifCount = useNotificationStore((s) => s.unreadCount);
+  const { user, isAuthenticated } = useAuthStore();
   const router = useRouter();
 
   const handleSearchSubmit = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -208,16 +210,26 @@ export default function Navbar() {
               )}
             </button>
 
-            {/* Account */}
-            <Link
-              href="/account"
-              className="hidden md:flex items-center gap-2 ml-1 pl-3 border-l border-gray-200 text-sm font-medium text-gray-700 hover:text-[#007BFF] transition-colors"
-            >
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#007BFF] to-[#5AA8FF] flex items-center justify-center">
-                <User className="w-4 h-4 text-white" />
-              </div>
-              <span className="hidden lg:block">Account</span>
-            </Link>
+            {/* Account / Auth */}
+            {mounted && isAuthenticated ? (
+              <Link
+                href={user?.role === "ADMIN" ? "/admin/dashboard" : user?.role === "VENDOR" ? "/vendor/dashboard" : "/account"}
+                className="hidden md:flex items-center gap-2 ml-1 pl-3 border-l border-gray-200 text-sm font-medium text-gray-700 hover:text-[#007BFF] transition-colors"
+              >
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#007BFF] to-[#5AA8FF] flex items-center justify-center text-white text-xs font-bold">
+                  {user?.name ? user.name.charAt(0).toUpperCase() : <User className="w-4 h-4 text-white" />}
+                </div>
+                <span className="hidden lg:block truncate max-w-[100px]">{user?.name?.split(" ")[0] || "Account"}</span>
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                className="hidden md:flex items-center gap-2 ml-1 pl-3 border-l border-gray-200 text-sm font-bold text-[#007BFF] hover:text-blue-700 transition-colors"
+              >
+                <LogIn className="w-4 h-4" />
+                <span className="hidden lg:block">Sign In</span>
+              </Link>
+            )}
           </div>
         </div>
 
@@ -395,7 +407,13 @@ export default function Navbar() {
                   </div>
                   <Link
                     href="/checkout"
-                    onClick={() => setCartDrawerOpen(false)}
+                    onClick={(e) => {
+                      setCartDrawerOpen(false);
+                      if (!isAuthenticated) {
+                        e.preventDefault();
+                        router.push("/login?redirect=/checkout");
+                      }
+                    }}
                     className="block w-full py-3.5 bg-[#007BFF] text-white text-center font-bold rounded-xl hover:bg-blue-600 transition-colors"
                   >
                     Checkout

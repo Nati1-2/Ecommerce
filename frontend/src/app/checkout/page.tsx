@@ -44,8 +44,8 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     setMounted(true);
-    const hasToken = typeof window !== "undefined" && (Boolean(localStorage.getItem("auth_token")) || document.cookie.includes("token="));
-    if (!useAuthStore.getState().isAuthenticated && !hasToken) {
+    const token = typeof window !== "undefined" ? (localStorage.getItem("auth_token") || document.cookie.match(/(?:^|;\s*)token=([^;]*)/)?.[1]) : null;
+    if (!useAuthStore.getState().isAuthenticated || !token || token === "null" || token === "undefined") {
       router.push("/login?redirect=/checkout");
     }
   }, [router]);

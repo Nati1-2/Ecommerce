@@ -4,12 +4,29 @@ import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/store/auth";
 import { useProfileStore } from "@/store/profileStore";
-import { LogIn, UserPlus, Lock, Mail, User, Eye, EyeOff, Sparkles, CheckCircle2, AlertCircle, UserCheck } from "lucide-react";
+import { LogIn, UserPlus, Lock, Mail, User, Eye, EyeOff, Sparkles, CheckCircle2, AlertCircle, UserCheck, Shield, Store } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 
 const DEMO_ACCOUNTS = {
-  "john.smith@gmail.com": { password: "password123", name: "John Smith", role: "CUSTOMER" as const },
+  customer: {
+    email: "john.smith@gmail.com",
+    password: "password123",
+    name: "John Smith",
+    role: "CUSTOMER" as const,
+  },
+  vendor: {
+    email: "vendor@natistore.com",
+    password: "vendor123",
+    name: "Apex Tech Wearables Store",
+    role: "VENDOR" as const,
+  },
+  admin: {
+    email: "nati@admin.com",
+    password: "nati1234",
+    name: "Nati Demo Admin",
+    role: "ADMIN" as const,
+  },
 };
 
 function LoginContent() {
@@ -17,7 +34,6 @@ function LoginContent() {
   const [password, setPassword] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
   const [name, setName] = useState("");
-  const [role] = useState<"CUSTOMER" | "ADMIN" | "VENDOR">("CUSTOMER");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -26,25 +42,27 @@ function LoginContent() {
   const setAuth = useAuthStore((s) => s.setAuth);
   const router = useRouter();
 
-  const handleDemoFill = () => {
+  const handleDemoFill = (type: "customer" | "vendor" | "admin") => {
     setError("");
     setSuccess("");
-    setEmail("john.smith@gmail.com");
-    setPassword("password123");
-    if (isRegistering) setName("John Smith");
+    const account = DEMO_ACCOUNTS[type];
+    setEmail(account.email);
+    setPassword(account.password);
+    if (isRegistering) setName(account.name);
   };
 
   const searchParams = useSearchParams();
   const redirectParam = searchParams.get("redirect");
 
-  const redirectByRole = (userRole: "CUSTOMER" | "ADMIN" | "VENDOR") => {
+  const redirectByRole = (userRole: string) => {
     if (redirectParam && redirectParam.startsWith("/")) {
       router.push(redirectParam);
       return;
     }
-    if (userRole === "ADMIN") {
+    const roleUpper = userRole?.toUpperCase();
+    if (roleUpper === "ADMIN") {
       router.push("/admin/dashboard");
-    } else if (userRole === "VENDOR") {
+    } else if (roleUpper === "VENDOR") {
       router.push("/vendor/dashboard");
     } else {
       router.push("/account");
@@ -71,28 +89,27 @@ function LoginContent() {
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
 
-      if (res.ok && data.token) {
-        if (typeof window !== "undefined") {
-          localStorage.setItem("auth_token", data.token);
-          document.cookie = `token=${data.token}; path=/; max-age=604800; SameSite=Lax`;
-        }
-        setAuth(data.user, data.token);
+      if (res.ok && data && (data.token || data.accessToken)) {
+        const token = data.token || data.accessToken;
+        const user = data.user;
+
+        setAuth(user, token);
 
         try {
-          const nameParts = (data.user.name || name || "").trim().split(" ");
-          const firstName = nameParts[0] || data.user.email.split("@")[0];
+          const nameParts = (user.name || name || "").trim().split(" ");
+          const firstName = nameParts[0] || user.email.split("@")[0];
           const lastName = nameParts.slice(1).join(" ") || "";
 
           useProfileStore.getState().setUser({
-            id: data.user.id || "usr-" + Math.floor(1000 + Math.random() * 9000),
+            id: user.id || "usr-" + Math.floor(1000 + Math.random() * 9000),
             firstName,
             lastName,
-            email: data.user.email,
-            phone: data.user.phone || "",
-            role: data.user.membership || data.user.role || "Standard Member ⭐",
-            avatar: data.user.avatar || "",
+            email: user.email,
+            phone: user.phone || "",
+            role: user.membership || user.role || "Standard Member ⭐",
+            avatar: user.avatar || "",
             verified: true,
           });
         } catch (storeErr) {
@@ -100,74 +117,16 @@ function LoginContent() {
         }
 
         setSuccess(`Signed in successfully! Redirecting...`);
-        setTimeout(() => redirectByRole(data.user.role), 600);
+        setTimeout(() => redirectByRole(user.role), 600);
         return;
       }
 
-      if (data.error) {
-        throw new Error(data.error);
+      if (data?.error || data?.message) {
+        throw new Error(data.error || data.message);
       }
+
+      throw new Error("Unable to sign in. Please verify your credentials.");
     } catch (err: any) {
-      // Fallback only if the backend server failed to respond (network error)
-      const isNetworkError = err.message && (err.message.includes("fetch") || err.message.includes("NetworkError"));
-      
-      const demoAccount = DEMO_ACCOUNTS[normalizedEmail as keyof typeof DEMO_ACCOUNTS];
-      if (demoAccount && !isRegistering && isNetworkError) {
-        if (demoAccount.password !== password) {
-          setError("Invalid email or password. Please try again.");
-          setLoading(false);
-          return;
-        }
-
-        const demoUser = {
-          id: "usr-" + Math.floor(1000 + Math.random() * 9000),
-          email: normalizedEmail,
-          name: demoAccount.name,
-          role: demoAccount.role,
-        };
-
-        const demoToken = "demo-jwt-token-" + demoUser.role.toLowerCase() + "-" + demoUser.id;
-        if (typeof window !== "undefined") {
-          localStorage.setItem("auth_token", demoToken);
-          document.cookie = `token=${demoToken}; path=/; max-age=604800; SameSite=Lax`;
-        }
-        setAuth(demoUser, demoToken);
-
-        try {
-          const nameParts = (demoUser.name || "").trim().split(" ");
-          const firstName = nameParts[0] || demoUser.email.split("@")[0];
-          const lastName = nameParts.slice(1).join(" ") || "";
-
-          useProfileStore.getState().setUser({
-            id: demoUser.id,
-            firstName,
-            lastName,
-            email: demoUser.email,
-            phone: "",
-            role: `Customer Member ⭐`,
-            avatar: "",
-            verified: true,
-          });
-        } catch (storeErr) {
-          console.warn("Demo profile sync notice:", storeErr);
-        }
-
-        setSuccess(`Signed in successfully! Redirecting...`);
-        setTimeout(() => redirectByRole(demoAccount.role), 600);
-        return;
-      }
-
-      if (err.message && (err.message.includes("useProfileStore") || err.message.includes("is not defined"))) {
-        setError("Invalid email or password. Please try again or click Register.");
-        setLoading(false);
-        return;
-      }
-
-      if (err.message && err.message.toLowerCase().includes("invalid")) {
-        setError(err.message);
-        setLoading(false);
-        return;
-      }
       setError(err.message || "Invalid email or password. Please try again.");
     } finally {
       setLoading(false);
@@ -176,7 +135,7 @@ function LoginContent() {
 
   return (
     <div className="min-h-screen bg-white text-gray-900 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden select-none font-sans">
-      {/* Customer Hero style decorative blurs */}
+      {/* Decorative blurs */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute -top-32 -right-32 w-[520px] h-[520px] bg-orange-500/6 rounded-full blur-3xl" />
         <div className="absolute top-1/2 -left-40 w-[400px] h-[400px] bg-[#5AA8FF]/5 rounded-full blur-3xl" />
@@ -184,7 +143,6 @@ function LoginContent() {
       </div>
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 space-y-4 text-center">
-        {/* Underline accent logo */}
         <div className="inline-flex flex-col items-center">
           <Link href="/" className="inline-flex items-center gap-1.5 text-3xl font-black text-[#111827] tracking-tight hover:opacity-90 transition-opacity">
             Nati<span className="text-[#007BFF]">.</span>
@@ -206,7 +164,7 @@ function LoginContent() {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10">
         <div className="bg-white/95 backdrop-blur-xl py-6 sm:py-9 px-4 sm:px-10 shadow-xl shadow-gray-200/40 rounded-[2rem] border border-gray-100">
           
-          {/* Segmented Tab Switcher using Customer dark brand color */}
+          {/* Segmented Tab Switcher */}
           <div className="flex bg-gray-100 p-1.5 rounded-2xl mb-7 border border-gray-200/50">
             <button
               type="button"
@@ -349,12 +307,12 @@ function LoginContent() {
                 ) : isRegistering ? (
                   <>
                     <UserPlus className="w-4.5 h-4.5" />
-                    <span>Create Customer Account</span>
+                    <span>Create Account</span>
                   </>
                 ) : (
                   <>
                     <LogIn className="w-4.5 h-4.5" />
-                    <span>Sign In to Account</span>
+                    <span>Sign In</span>
                   </>
                 )}
               </button>
@@ -368,14 +326,30 @@ function LoginContent() {
               <span>Fill Quick Demo Account</span>
             </div>
             
-            <div className="flex items-center justify-center">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <button
                 type="button"
-                onClick={handleDemoFill}
-                className="px-4 py-2.5 bg-[#007BFF]/8 hover:bg-[#007BFF]/15 text-[#007BFF] border border-[#007BFF]/20 rounded-xl text-xs font-bold transition-all duration-200 flex items-center gap-2"
+                onClick={() => handleDemoFill("customer")}
+                className="px-3 py-2 bg-blue-50 hover:bg-blue-100/70 text-[#007BFF] border border-blue-200/60 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
               >
-                <UserCheck className="w-4 h-4 fill-[#007BFF]" />
-                <span>Fill Customer Demo</span>
+                <UserCheck className="w-3.5 h-3.5" />
+                <span>Customer</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDemoFill("vendor")}
+                className="px-3 py-2 bg-purple-50 hover:bg-purple-100/70 text-purple-700 border border-purple-200/60 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <Store className="w-3.5 h-3.5" />
+                <span>Vendor</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDemoFill("admin")}
+                className="px-3 py-2 bg-emerald-50 hover:bg-emerald-100/70 text-emerald-700 border border-emerald-200/60 rounded-xl text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <Shield className="w-3.5 h-3.5" />
+                <span>Admin</span>
               </button>
             </div>
           </div>

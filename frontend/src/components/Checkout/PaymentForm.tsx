@@ -1,17 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { CreditCard, Lock, Check, Loader2, ExternalLink, ShieldCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import { paymentApi } from "@/services/api/paymentApi";
+import { useAuthStore } from "@/store/auth";
 import StripeCardForm from "@/components/Payment/StripeCardForm";
 
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ||
-    "pk_test_51ThDDICdX0hvCWhczONjNi3TCevUCN7vYmjW5h5KaNeNiyjAAkIG3KL1ZkqSOauu8wIRirZmCuETnr6Xw65tK34T00DDtz8A5O"
-);
+const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "";
+const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : null;
 
 interface PaymentFormProps {
   onSuccess: () => void;
@@ -20,6 +20,8 @@ interface PaymentFormProps {
 }
 
 export default function PaymentForm({ onSuccess, orderId = "ORD-TEST-1001", amount = 149.99 }: PaymentFormProps) {
+  const router = useRouter();
+  const { isAuthenticated } = useAuthStore();
   const [paymentType, setPaymentType] = useState<"card" | "stripe_checkout">("card");
   const [processing, setProcessing] = useState(false);
   const [completed, setCompleted] = useState(false);
@@ -29,8 +31,11 @@ export default function PaymentForm({ onSuccess, orderId = "ORD-TEST-1001", amou
     setProcessing(true);
     setErrorMsg("");
 
-    if (typeof window !== "undefined" && !localStorage.getItem("auth_token")) {
-      localStorage.setItem("auth_token", "demo-jwt-token-customer");
+    // Verify authentication
+    const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+    if (!isAuthenticated && !token) {
+      router.push(`/login?redirect=/checkout`);
+      return;
     }
 
     try {
@@ -151,17 +156,23 @@ export default function PaymentForm({ onSuccess, orderId = "ORD-TEST-1001", amou
               </span>
             </div>
 
-            <Elements stripe={stripePromise}>
-              <StripeCardForm
-                orderId={orderId}
-                amount={amount}
-                onSuccess={(_txId) => {
-                  setCompleted(true);
-                  setTimeout(() => onSuccess(), 1000);
-                }}
-                onFailure={(err) => setErrorMsg(err)}
-              />
-            </Elements>
+            {stripePromise ? (
+              <Elements stripe={stripePromise}>
+                <StripeCardForm
+                  orderId={orderId}
+                  amount={amount}
+                  onSuccess={(_txId) => {
+                    setCompleted(true);
+                    setTimeout(() => onSuccess(), 1000);
+                  }}
+                  onFailure={(err) => setErrorMsg(err)}
+                />
+              </Elements>
+            ) : (
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-700 text-xs font-semibold">
+                Stripe Publishable Key is not configured in client environment.
+              </div>
+            )}
           </motion.div>
         ) : (
           <motion.div

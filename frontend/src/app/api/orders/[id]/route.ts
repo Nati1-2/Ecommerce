@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { connectDB } from "@/lib/mongodb";
 import { Order, PaymentStatus, OrderStatus } from "@/models/Order";
+import { getUserFromToken } from "@/lib/authHelper";
 import Stripe from "stripe";
 
 function getStripeClient(): Stripe | null {
-  const secretKey = process.env.STRIPE_SECRET_KEY || process.env.NEXT_PUBLIC_STRIPE_SECRET_KEY || "";
+  const secretKey = process.env.STRIPE_SECRET_KEY || "";
   if (!secretKey) return null;
   try {
     return new Stripe(secretKey, {
@@ -21,6 +22,14 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const decoded = getUserFromToken(req);
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required to view order details. Please log in." },
+        { status: 401 }
+      );
+    }
+
     const resolvedParams = await params;
     const { id } = resolvedParams;
     const { searchParams } = new URL(req.url);
@@ -40,6 +49,15 @@ export async function GET(
 
     if (!order) {
       return NextResponse.json({ success: false, message: "Order not found" }, { status: 404 });
+    }
+
+    // Authorization check: Customer can only view their own order
+    const isPrivileged = decoded.role === "ADMIN" || decoded.role === "VENDOR";
+    if (!isPrivileged && order.userId && order.userId !== decoded.id) {
+      return NextResponse.json(
+        { success: false, error: "Forbidden: You are not authorized to view this order." },
+        { status: 403 }
+      );
     }
 
     // Verify session or payment intent with Stripe if payment is pending or needs confirmation

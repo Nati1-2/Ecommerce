@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { safeFindUserByEmail } from "@/lib/mongodb";
 
-const JWT_SECRET = process.env.JWT_ACCESS_SECRET || "fallback-secret-for-dev";
+const JWT_SECRET = process.env.JWT_SECRET || process.env.JWT_ACCESS_SECRET || "your_jwt_access_secret_key_change_in_production";
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,8 +17,9 @@ export async function POST(req: NextRequest) {
     const normalizedEmail = email.toLowerCase().trim();
 
     // 1. Try to authenticate with the backend Auth Service via API Gateway
+    const gatewayUrl = process.env.API_GATEWAY_URL || process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, "") || "http://localhost:8000";
     try {
-      const response = await fetch("http://localhost:8000/api/v1/auth/login", {
+      const response = await fetch(`${gatewayUrl}/api/v1/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: normalizedEmail, password }),
@@ -26,20 +27,24 @@ export async function POST(req: NextRequest) {
 
       if (response.ok) {
         const data = await response.json();
-        if (data.success && data.token) {
+        const token = data.accessToken || data.token;
+        if (data.success && token && data.user) {
+          const userId = data.user.id || data.user._id || data.user.userId;
+          const userObj = {
+            id: userId,
+            email: data.user.email,
+            name: data.user.name || "",
+            role: data.user.role,
+          };
+
           const res = NextResponse.json({
             success: true,
-            token: data.token,
-            user: {
-              id: data.user.id || data.user._id,
-              email: data.user.email,
-              name: data.user.name || "",
-              role: data.user.role,
-            },
+            token,
+            user: userObj,
           });
 
-          res.cookies.set("token", data.token, {
-            httpOnly: true,
+          res.cookies.set("token", token, {
+            httpOnly: false,
             secure: process.env.NODE_ENV === "production",
             sameSite: "lax",
             maxAge: 60 * 60 * 24 * 7,
@@ -48,18 +53,23 @@ export async function POST(req: NextRequest) {
 
           return res;
         }
+      } else if (response.status === 401 || response.status === 400) {
+        const errData = await response.json().catch(() => null);
+        return NextResponse.json(
+          { error: errData?.message || errData?.error || "Invalid email or password" },
+          { status: 401 }
+        );
       }
     } catch (err) {
-      console.warn("Backend Auth Service login failed, falling back to local DB:", err);
+      console.warn("Backend Auth Service unreachable, falling back to local DB/in-memory:", err);
     }
 
-    // 2. Fallback to local MongoDB / in-memory database
+    // 2. Fallback to local MongoDB / in-memory demo database
     const user = await safeFindUserByEmail(normalizedEmail);
     if (!user || !user.password) {
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
     }
 
-    // Always use bcrypt.compare — passwords are always stored hashed
     const isMatch = await bcrypt.compare(password, user.password).catch(() => false);
 
     if (!isMatch) {
@@ -68,24 +78,27 @@ export async function POST(req: NextRequest) {
 
     const userId = user.id || user._id;
     const token = jwt.sign(
-      { id: userId, email: user.email, role: user.role },
+      { id: userId, userId, email: user.email, role: user.role },
       JWT_SECRET,
       { expiresIn: "7d" }
     );
 
+    const userObj = {
+      id: userId,
+      email: user.email,
+      name: user.name || "",
+      role: user.role,
+      membership: user.membership || (user.role === "ADMIN" ? "SuperAdmin Tier 👑" : user.role === "VENDOR" ? "Vendor Merchant 🚀" : "Standard Member ⭐"),
+    };
+
     const response = NextResponse.json({
       success: true,
       token,
-      user: {
-        id: userId,
-        email: user.email,
-        name: user.name || "",
-        role: user.role,
-      },
+      user: userObj,
     });
 
     response.cookies.set("token", token, {
-      httpOnly: true,
+      httpOnly: false,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 60 * 60 * 24 * 7,

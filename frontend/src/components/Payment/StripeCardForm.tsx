@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   useStripe,
   useElements,
@@ -9,6 +10,7 @@ import {
   CardCvcElement,
 } from "@stripe/react-stripe-js";
 import { usePaymentStore } from "@/store/paymentStore";
+import { useAuthStore } from "@/store/auth";
 import { Lock, Loader2, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import axios from "axios";
@@ -46,19 +48,37 @@ export default function StripeCardForm({
   onSuccess,
   onFailure,
 }: StripeCardFormProps) {
+  const router = useRouter();
   const stripe = useStripe();
   const elements = useElements();
   const { paymentStatus, setPaymentStatus, billingAddress } = usePaymentStore();
+  const { accessToken, isAuthenticated } = useAuthStore();
 
   const [cardError, setCardError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
-  // Tracks if individual inputs have validations
   const [focusedField, setFocusedField] = useState<string | null>(null);
+
+  const getActiveToken = (): string => {
+    if (accessToken) return accessToken;
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("auth_token");
+      if (stored && stored !== "undefined" && stored !== "null") return stored;
+      const match = document.cookie.match(/(?:^|;\s*)token=([^;]*)/);
+      if (match && match[1]) return decodeURIComponent(match[1]);
+    }
+    return "";
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!stripe || !elements) return;
+
+    const token = getActiveToken();
+    if (!token && !isAuthenticated) {
+      setCardError("Authentication required. Please log in to complete checkout.");
+      router.push(`/login?redirect=/checkout`);
+      return;
+    }
 
     setLoading(true);
     setCardError(null);
@@ -66,7 +86,6 @@ export default function StripeCardForm({
 
     try {
       // 1. Create a real Stripe PaymentIntent via production API route
-      const token = typeof window !== 'undefined' ? (localStorage.getItem('auth_token') || 'demo-jwt-token-customer') : 'demo-jwt-token-customer';
       const response = await axios.post("/api/payments/create-intent", {
         orderId,
         amount,
