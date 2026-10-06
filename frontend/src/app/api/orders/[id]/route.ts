@@ -61,12 +61,13 @@ export async function GET(
     }
 
     // Verify session or payment intent with Stripe if payment is pending or needs confirmation
-    if (order.paymentStatus !== PaymentStatus.PAID && (sessionId || paymentIntentId)) {
+    const effectiveSessionId = sessionId || (order.paymentIntentId?.startsWith("cs_") ? order.paymentIntentId : null);
+    if (order.paymentStatus !== PaymentStatus.PAID && (effectiveSessionId || paymentIntentId)) {
       const stripe = getStripeClient();
       if (stripe) {
         try {
-          if (sessionId) {
-            const session = await stripe.checkout.sessions.retrieve(sessionId);
+          if (effectiveSessionId) {
+            const session = await stripe.checkout.sessions.retrieve(effectiveSessionId);
             if (session.payment_status === "paid") {
               order.paymentStatus = PaymentStatus.PAID;
               order.orderStatus = OrderStatus.PAID;

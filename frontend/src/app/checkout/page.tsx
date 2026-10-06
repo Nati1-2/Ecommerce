@@ -232,6 +232,7 @@ export default function CheckoutPage() {
                 <motion.div key="step-4" {...stepVariants}>
                   <PaymentForm 
                     onSuccess={handlePaymentSuccess} 
+                    onBack={goBack}
                     orderId={createdOrderId!} 
                     amount={createdOrderAmount} 
                   />
