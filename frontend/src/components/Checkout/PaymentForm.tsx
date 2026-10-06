@@ -10,11 +10,10 @@ import { paymentApi } from "@/services/api/paymentApi";
 import { useAuthStore } from "@/store/auth";
 import StripeCardForm from "@/components/Payment/StripeCardForm";
 
-const DEFAULT_STRIPE_PK =
-  "pk_test_51ThDDICdX0hvCWhczONjNi3TCevUCN7vYmjW5h5KaNeNiyjAAkIG3KL1ZkqSOauu8wIRirZmCuETnr6Xw65tK34T00DDtz8A5O";
+import { DEFAULT_STRIPE_PUBLISHABLE_KEY } from "@/lib/stripe";
 
 const initialKey =
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || DEFAULT_STRIPE_PK;
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || DEFAULT_STRIPE_PUBLISHABLE_KEY;
 
 let cachedStripePromise: Promise<Stripe | null> | null = initialKey
   ? loadStripe(initialKey)
@@ -40,12 +39,12 @@ export default function PaymentForm({ onSuccess, orderId = "ORD-TEST-1001", amou
       fetch("/api/payments/config")
         .then((res) => res.json())
         .then((data) => {
-          const key = data.publishableKey || DEFAULT_STRIPE_PK;
+          const key = data.publishableKey || DEFAULT_STRIPE_PUBLISHABLE_KEY;
           cachedStripePromise = loadStripe(key);
           setStripePromise(cachedStripePromise);
         })
         .catch(() => {
-          cachedStripePromise = loadStripe(DEFAULT_STRIPE_PK);
+          cachedStripePromise = loadStripe(DEFAULT_STRIPE_PUBLISHABLE_KEY);
           setStripePromise(cachedStripePromise);
         });
     }
@@ -126,7 +125,7 @@ export default function PaymentForm({ onSuccess, orderId = "ORD-TEST-1001", amou
         </div>
       </div>
 
-      {errorMsg && (
+      {errorMsg && paymentType !== "card" && (
         <div className="p-3.5 bg-red-50 text-red-600 rounded-xl text-xs font-semibold border border-red-100">
           {errorMsg}
         </div>

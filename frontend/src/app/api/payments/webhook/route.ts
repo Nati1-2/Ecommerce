@@ -5,11 +5,10 @@ import { Order, PaymentStatus, OrderStatus } from "@/models/Order";
 import { PaymentEvent } from "@/models/PaymentEvent";
 import { notifyOrderCreated } from "@/lib/notifications";
 import Stripe from "stripe";
+import { getStripeClient, getStripeWebhookSecret } from "@/lib/stripe";
 
-const stripeSecret = process.env.STRIPE_SECRET_KEY;
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
-const stripe = stripeSecret ? new Stripe(stripeSecret, { apiVersion: "2025-01-27.acacia" as any }) : null;
+const stripe = getStripeClient();
+const webhookSecret = getStripeWebhookSecret();
 
 export async function POST(req: NextRequest) {
   try {

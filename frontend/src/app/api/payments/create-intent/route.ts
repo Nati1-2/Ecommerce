@@ -5,17 +5,7 @@ import { connectDB } from "@/lib/mongodb";
 import { Order, PaymentStatus } from "@/models/Order";
 import { getUserFromToken } from "@/lib/authHelper";
 
-function getStripeClient(): Stripe | null {
-  const secretKey = process.env.STRIPE_SECRET_KEY || "";
-  if (!secretKey) return null;
-  try {
-    return new Stripe(secretKey, {
-      apiVersion: "2025-01-27.acacia" as any,
-    });
-  } catch (e) {
-    return null;
-  }
-}
+import { getStripeClient, getStripePublishableKey } from "@/lib/stripe";
 
 export async function POST(req: NextRequest) {
   try {
@@ -110,7 +100,7 @@ export async function POST(req: NextRequest) {
       paymentIntentId: paymentIntent.id,
       amount: paymentIntent.amount / 100,
       currency: paymentIntent.currency,
-      publishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+      publishableKey: getStripePublishableKey(),
     });
   } catch (error: any) {
     console.error("Stripe create-intent error:", error);

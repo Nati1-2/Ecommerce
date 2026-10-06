@@ -3,17 +3,7 @@ import Stripe from "stripe";
 import { safeFindUserById, safeUpdateUser } from "@/lib/mongodb";
 import { getUserFromToken } from "@/lib/authHelper";
 
-function getStripeClient(): Stripe | null {
-  const secretKey = process.env.STRIPE_SECRET_KEY || "";
-  if (!secretKey) return null;
-  try {
-    return new Stripe(secretKey, {
-      apiVersion: "2025-01-27.acacia" as any,
-    });
-  } catch (e) {
-    return null;
-  }
-}
+import { getStripeClient } from "@/lib/stripe";
 
 export async function GET(req: NextRequest) {
   try {

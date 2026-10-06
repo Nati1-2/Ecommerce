@@ -5,17 +5,7 @@ import { connectDB, safeFindUserById } from "@/lib/mongodb";
 import { Order } from "@/models/Order";
 import { getUserFromToken } from "@/lib/authHelper";
 
-function getStripeClient(): Stripe | null {
-  const secretKey = process.env.STRIPE_SECRET_KEY || "";
-  if (!secretKey) return null;
-  try {
-    return new Stripe(secretKey, {
-      apiVersion: "2025-01-27.acacia" as any,
-    });
-  } catch (e) {
-    return null;
-  }
-}
+import { getStripeClient } from "@/lib/stripe";
 
 export async function POST(req: NextRequest) {
   try {
