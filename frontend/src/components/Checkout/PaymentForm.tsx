@@ -26,6 +26,7 @@ interface PaymentFormProps {
   onBack?: () => void;
   orderId?: string;
   amount?: number;
+  payButtonText?: string;
 }
 
 export default function PaymentForm({
@@ -33,6 +34,7 @@ export default function PaymentForm({
   onBack,
   orderId = "ORD-TEST-1001",
   amount = 149.99,
+  payButtonText,
 }: PaymentFormProps) {
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
@@ -68,10 +70,8 @@ export default function PaymentForm({
 
   // Handle cross-tab sync via storage events and BroadcastChannel
   useEffect(() => {
-    // 1. Initial check
     checkOrderStatus();
 
-    // 2. Storage event listener (fires when new tab writes to localStorage)
     const handleStorage = (e: StorageEvent) => {
       if (e.key === `order_paid_${orderId}` || e.key === "nati_order_paid") {
         setIsPaid(true);
@@ -80,7 +80,6 @@ export default function PaymentForm({
     };
     window.addEventListener("storage", handleStorage);
 
-    // 3. BroadcastChannel listener
     let bc: BroadcastChannel | null = null;
     try {
       if (typeof BroadcastChannel !== "undefined") {
@@ -92,9 +91,7 @@ export default function PaymentForm({
           }
         };
       }
-    } catch {
-      // BroadcastChannel optional fallback
-    }
+    } catch {}
 
     return () => {
       window.removeEventListener("storage", handleStorage);
@@ -143,13 +140,11 @@ export default function PaymentForm({
         setStripeUrl(url);
         setTabOpened(true);
 
-        // Open in new tab
         const opened = window.open(url, "_blank");
         if (!opened || opened.closed || typeof opened.closed === "undefined") {
           setPopupBlocked(true);
         }
       } else {
-        // Fallback: If no URL returned, mark as paid
         setIsPaid(true);
         setTimeout(() => onSuccess(), 1500);
       }
@@ -187,7 +182,6 @@ export default function PaymentForm({
         }
       );
 
-      // Notify cross tabs
       try {
         localStorage.setItem(`order_paid_${orderId}`, Date.now().toString());
         if (typeof BroadcastChannel !== "undefined") {
@@ -215,12 +209,15 @@ export default function PaymentForm({
     try {
       const paid = await checkOrderStatus();
       if (!paid) {
-        setErrorMsg("Payment is not yet confirmed. If you just paid on Stripe, please allow a few seconds and try again.");
+        setErrorMsg("Payment is not yet confirmed. If you completed Stripe checkout, please allow a moment and try again.");
       }
     } finally {
       setVerifying(false);
     }
   };
+
+  const formattedAmount = amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const buttonLabel = payButtonText || `Pay Now ($${formattedAmount})`;
 
   // ── PAID / CONFIRMED STATE ────────────────────────────────────────────────
   if (isPaid) {
@@ -306,13 +303,12 @@ export default function PaymentForm({
             Total to Pay
           </span>
           <p className="text-lg font-black text-[#007BFF] tracking-tight">
-            ${amount.toFixed(2)}
+            ${formattedAmount}
           </p>
         </div>
       </div>
 
       <AnimatePresence mode="wait">
-        {/* ── STATE A: STRIPE TAB IN PROGRESS ────────────────────────── */}
         {tabOpened ? (
           <motion.div
             key="tab-opened-view"
@@ -321,7 +317,6 @@ export default function PaymentForm({
             exit={{ opacity: 0, y: -8 }}
             className="p-6 rounded-3xl border border-blue-200 bg-gradient-to-b from-blue-50/50 to-white text-center space-y-5"
           >
-            {/* Animated Pulse Radar */}
             <div className="relative w-16 h-16 mx-auto flex items-center justify-center">
               <span className="absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-20 animate-ping" />
               <div className="relative w-14 h-14 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30">
@@ -342,7 +337,6 @@ export default function PaymentForm({
               </p>
             </div>
 
-            {/* Popup Blocked Warning */}
             {popupBlocked && stripeUrl && (
               <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-xs font-semibold flex items-center justify-between gap-2">
                 <span>Popup window blocked by browser.</span>
@@ -358,7 +352,6 @@ export default function PaymentForm({
               </div>
             )}
 
-            {/* Actions while tab is active */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
               {stripeUrl && (
                 <button
@@ -391,7 +384,6 @@ export default function PaymentForm({
               </button>
             </div>
 
-            {/* Instant Test Mode fallback inside active tab */}
             <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-400">
               <span>Testing without a card?</span>
               <button
@@ -406,7 +398,6 @@ export default function PaymentForm({
             </div>
           </motion.div>
         ) : (
-          /* ── STATE B: INITIAL PAYMENT VIEW ───────────────────────── */
           <motion.div
             key="initial-view"
             initial={{ opacity: 0, y: 8 }}
@@ -414,7 +405,6 @@ export default function PaymentForm({
             exit={{ opacity: 0, y: -8 }}
             className="space-y-4"
           >
-            {/* Primary Stripe Button */}
             <div className="p-6 rounded-3xl border border-gray-200/90 bg-white hover:border-blue-300 transition-all shadow-sm space-y-4">
               <div className="flex items-center gap-3">
                 <div className="w-11 h-11 bg-blue-50 text-[#007BFF] rounded-2xl flex items-center justify-center shrink-0">
@@ -430,7 +420,6 @@ export default function PaymentForm({
                 </div>
               </div>
 
-              {/* Payment Brand Logos / Badges */}
               <div className="flex items-center flex-wrap gap-1.5 py-1">
                 {["Visa", "Mastercard", "Amex", "Apple Pay", "Google Pay", "Link"].map((brand) => (
                   <span
@@ -456,7 +445,7 @@ export default function PaymentForm({
                 ) : (
                   <>
                     <Lock className="w-4 h-4" />
-                    <span>Pay Securely with Stripe (${amount.toFixed(2)}) ↗</span>
+                    <span>{buttonLabel}</span>
                   </>
                 )}
               </button>
@@ -466,7 +455,6 @@ export default function PaymentForm({
               </p>
             </div>
 
-            {/* Instant Test Mode Card */}
             <div className="p-4 rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 flex items-center justify-between gap-4">
               <div className="space-y-0.5">
                 <div className="flex items-center gap-1.5 text-xs font-black text-gray-800">

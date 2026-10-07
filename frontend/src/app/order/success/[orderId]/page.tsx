@@ -44,47 +44,21 @@ function OrderSuccessContent({ params }: SuccessPageProps) {
     queryFn: () => fetchOrderById(orderId),
   });
 
-  // Verify Stripe payment, notify open checkout tabs, and clear cart on arrival
+  // Verify Stripe payment and clear cart on arrival
   useEffect(() => {
     useCartStore.getState().clearCart();
 
-    const notifyCrossTab = () => {
-      try {
-        localStorage.setItem(`order_paid_${orderId}`, Date.now().toString());
-        if (typeof BroadcastChannel !== "undefined") {
-          const bc = new BroadcastChannel("order_status_channel");
-          bc.postMessage({ orderId, status: "PAID" });
-          bc.close();
-        }
-      } catch (e) {
-        // ignore storage/channel exceptions
-      }
-    };
-
-    notifyCrossTab();
-
-    const confirmUrl = "/api/payments/confirm";
-    const token = typeof window !== "undefined" ? (localStorage.getItem("auth_token") || "") : "";
-
-    axios.post(
-      confirmUrl,
-      {
+    if (sessionId || paymentIntentId) {
+      axios.post("/api/payments/confirm", {
         orderId,
-        sessionId: sessionId || undefined,
-        paymentIntentId: paymentIntentId || undefined,
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-      }
-    ).then(() => {
-      notifyCrossTab();
-      refetch();
-    }).catch((err) => {
-      console.warn("Payment confirmation notice on success page:", err?.message);
-    });
+        sessionId,
+        paymentIntentId,
+      }).then(() => {
+        refetch();
+      }).catch((err) => {
+        console.warn("Payment confirmation notice on success page:", err?.message);
+      });
+    }
   }, [orderId, sessionId, paymentIntentId, refetch]);
 
   if (isLoading) {

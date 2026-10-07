@@ -27,6 +27,7 @@ interface PaymentFormProps {
   amount: number;
   onSuccess: (transactionId: string) => void;
   onFailure: (errorMessage: string) => void;
+  payButtonText?: string;
 }
 
 export default function PaymentForm({
@@ -34,6 +35,7 @@ export default function PaymentForm({
   amount,
   onSuccess,
   onFailure,
+  payButtonText,
 }: PaymentFormProps) {
   const router = useRouter();
   const { paymentStatus, setPaymentStatus } = usePaymentStore();
@@ -217,12 +219,15 @@ export default function PaymentForm({
     try {
       const paid = await checkOrderStatus();
       if (!paid) {
-        setErrorMsg("Payment is not yet confirmed. If you just completed Stripe payment, please allow a few seconds and try again.");
+        setErrorMsg("Payment is not yet confirmed. If you completed Stripe checkout, please allow a moment and try again.");
       }
     } finally {
       setVerifying(false);
     }
   };
+
+  const formattedAmount = amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const buttonLabel = payButtonText || `Pay Now ($${formattedAmount})`;
 
   // ── PAID / CONFIRMED STATE ────────────────────────────────────────────────
   if (isPaid) {
@@ -307,7 +312,7 @@ export default function PaymentForm({
             Total to Pay
           </span>
           <p className="text-lg font-black text-[#007BFF] tracking-tight">
-            ${amount.toFixed(2)}
+            ${formattedAmount}
           </p>
         </div>
       </div>
@@ -449,7 +454,7 @@ export default function PaymentForm({
                 ) : (
                   <>
                     <Lock className="w-4 h-4" />
-                    <span>Pay Securely with Stripe (${amount.toFixed(2)}) ↗</span>
+                    <span>{buttonLabel}</span>
                   </>
                 )}
               </button>
