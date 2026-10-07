@@ -161,7 +161,7 @@ export default function PaymentForm({
         err?.response?.data?.error ||
         err?.response?.data?.message ||
         err?.message ||
-        "Could not initiate Stripe checkout. Please try again or use Instant Test Payment.";
+        "Could not initiate Stripe checkout. Please try again.";
       setErrorMsg(msg);
       onFailure(msg);
     } finally {
@@ -443,7 +443,7 @@ export default function PaymentForm({
               <button
                 type="button"
                 onClick={handlePayWithStripe}
-                disabled={loadingCheckout || loadingTestPay}
+                disabled={loadingCheckout}
                 className="w-full py-4 bg-[#007BFF] hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm rounded-2xl shadow-lg shadow-blue-500/25 hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2.5 cursor-pointer"
               >
                 {loadingCheckout ? (
@@ -462,32 +462,6 @@ export default function PaymentForm({
               <p className="text-[11px] text-gray-400 font-medium text-center">
                 Opens Stripe in a new secure tab. Your order status will update to <span className="text-emerald-600 font-bold">PAID</span> automatically upon completion.
               </p>
-            </div>
-
-            <div className="p-4 rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 flex items-center justify-between gap-4">
-              <div className="space-y-0.5">
-                <div className="flex items-center gap-1.5 text-xs font-black text-gray-800">
-                  <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-                  <span>Instant Test Payment</span>
-                </div>
-                <p className="text-[11px] text-gray-400 font-medium">
-                  Complete test order and mark as PAID with 1-click
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={handleInstantTestPayment}
-                disabled={loadingCheckout || loadingTestPay}
-                className="px-4 py-2.5 bg-gray-900 hover:bg-black text-white font-bold text-xs rounded-xl shadow-sm transition-all flex items-center gap-1.5 cursor-pointer shrink-0 disabled:opacity-50"
-              >
-                {loadingTestPay ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                ) : (
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                )}
-                <span>Test Pay</span>
-              </button>
             </div>
           </motion.div>
         )}
