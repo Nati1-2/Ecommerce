@@ -9,7 +9,6 @@ import {
   Loader2,
   ExternalLink,
   ShieldCheck,
-  RefreshCw,
   Zap,
   Check,
   ArrowRight,
@@ -351,38 +350,6 @@ export default function PaymentForm({
                 </a>
               </div>
             )}
-
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-              {stripeUrl && (
-                <button
-                  type="button"
-                  onClick={() => window.open(stripeUrl, "_blank")}
-                  className="w-full sm:w-auto px-5 py-3 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm"
-                >
-                  <ExternalLink className="w-3.5 h-3.5 text-[#007BFF]" />
-                  <span>Reopen Stripe Tab</span>
-                </button>
-              )}
-
-              <button
-                type="button"
-                onClick={handleManualVerify}
-                disabled={verifying}
-                className="w-full sm:w-auto px-6 py-3 bg-[#007BFF] hover:bg-blue-600 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-blue-500/20 cursor-pointer disabled:opacity-50"
-              >
-                {verifying ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span>Checking Status...</span>
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className="w-3.5 h-3.5" />
-                    <span>I&apos;ve Completed Payment</span>
-                  </>
-                )}
-              </button>
-            </div>
 
             <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-400">
               <span>Testing without a card?</span>
