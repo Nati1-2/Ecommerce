@@ -69,7 +69,7 @@ function ProfileContent() {
         <span className="text-gray-500">Account Profile</span>
       </nav>
 
-      <div className="flex flex-col md:flex-row gap-8 items-start">
+      <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-stretch md:items-start w-full">
         {/* Left column navigation sidebar */}
         <ProfileSidebar
           activeTab={activeTab}

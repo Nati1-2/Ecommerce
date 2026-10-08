@@ -401,9 +401,9 @@ export default function LoginActivity() {
   };
 
   return (
-    <div className="p-6 border border-gray-100 rounded-3xl bg-white shadow-sm space-y-5">
+    <div className="p-4 sm:p-6 border border-gray-100 rounded-3xl bg-white shadow-sm space-y-5">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="space-y-0.5">
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-[#007BFF]" />
@@ -422,7 +422,7 @@ export default function LoginActivity() {
         <button
           onClick={() => loadSessions(true)}
           disabled={isRefreshing}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-gray-700 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl transition-all cursor-pointer disabled:opacity-50"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-gray-700 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl transition-all cursor-pointer disabled:opacity-50 shrink-0"
           title="Refresh real-time login activity"
         >
           <RefreshCw className={cn("w-3.5 h-3.5", isRefreshing && "animate-spin text-[#007BFF]")} />
@@ -464,8 +464,8 @@ export default function LoginActivity() {
 
             return (
               <div key={itemKey} className="py-4 first:pt-0 last:pb-0 space-y-3">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-3.5 min-w-0">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
+                  <div className="flex items-start gap-3 min-w-0">
                     {/* Device Icon */}
                     <div
                       className={cn(
@@ -542,7 +542,7 @@ export default function LoginActivity() {
                   </div>
 
                   {/* Actions Right */}
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto pl-14 sm:pl-0">
                     {/* Toggle Map Preview Button */}
                     <button
                       onClick={() => setExpandedMapId(isMapExpanded ? null : itemKey)}

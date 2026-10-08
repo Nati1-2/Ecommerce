@@ -94,18 +94,34 @@ export default function ProfileSidebar({
     </div>
   );
 
+  const currentItem = menuItems.find((item) => item.id === activeTab) || menuItems[0];
+  const CurrentIcon = currentItem.icon;
+
   return (
     <>
       {/* Mobile Toggle Drawer bar */}
-      <div className="flex md:hidden items-center justify-between p-4 bg-white border-b border-gray-100 sticky top-[104px] z-30">
-        <span className="text-xs font-black text-gray-900 capitalize">
-          Profile Settings: {activeTab}
-        </span>
+      <div className="w-full flex md:hidden items-center justify-between gap-3 p-3 bg-white border border-gray-200/90 rounded-2xl shadow-sm mb-4">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#007BFF] border border-blue-100 flex items-center justify-center shrink-0">
+            <CurrentIcon className="w-4.5 h-4.5" />
+          </div>
+          <div className="min-w-0">
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block leading-tight">
+              Profile Settings
+            </span>
+            <span className="text-xs font-black text-gray-900 truncate block mt-0.5">
+              {currentItem.label}
+            </span>
+          </div>
+        </div>
+
         <button
           onClick={() => setMobileOpen(true)}
-          className="p-2 bg-gray-50 border border-gray-100 rounded-xl"
+          className="flex items-center gap-1.5 px-3 py-2 bg-gray-50 hover:bg-gray-100 active:bg-gray-200 text-gray-700 hover:text-gray-900 border border-gray-200 rounded-xl text-xs font-bold shrink-0 transition-colors cursor-pointer"
+          title="Open account menu"
         >
-          <Menu className="w-4.5 h-4.5 text-gray-700" />
+          <Menu className="w-4 h-4 text-gray-700" />
+          <span>Menu</span>
         </button>
       </div>
 

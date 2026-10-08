@@ -100,7 +100,7 @@ function OrdersContent() {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-8">
-      <div className="flex flex-col md:flex-row gap-8 items-start">
+      <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-stretch md:items-start w-full">
         {/* Left navigation sidebar */}
         <ProfileSidebar
           activeTab="orders"
