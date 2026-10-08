@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Home, LayoutGrid, Heart, ShoppingBag, User, X, ChevronRight, Laptop, Shirt, Gamepad2, Sparkles, Dumbbell } from "lucide-react";
+import { Home, LayoutGrid, Heart, ShoppingBag, User, LayoutDashboard, X, ChevronRight, Laptop, Shirt, Gamepad2, Sparkles, Dumbbell } from "lucide-react";
 import { useCartStore } from "@/store/cart";
 import { useWishlistStore } from "@/store/wishlist";
 import { motion, AnimatePresence } from "framer-motion";
@@ -94,16 +94,16 @@ export default function BottomNav() {
           <span className="text-[10px] font-bold">Cart</span>
         </button>
 
-        {/* 5. Account */}
+        {/* 5. Dashboard */}
         <Link
-          href="/account"
+          href="/dashboard"
           className={cn(
             "flex flex-col items-center gap-1 py-1 px-1.5 min-[380px]:px-3 rounded-xl transition-colors",
-            pathname === "/account" || pathname === "/profile" ? "text-[#007BFF]" : "text-gray-400 hover:text-gray-700"
+            pathname === "/dashboard" || pathname === "/account" || pathname === "/profile" ? "text-[#007BFF]" : "text-gray-400 hover:text-gray-700"
           )}
         >
-          <User className="w-5 h-5" />
-          <span className="text-[10px] font-bold">Account</span>
+          <LayoutDashboard className="w-5 h-5" />
+          <span className="text-[10px] font-bold">Dashboard</span>
         </Link>
       </div>
 

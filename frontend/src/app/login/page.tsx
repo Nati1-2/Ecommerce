@@ -54,7 +54,7 @@ function LoginContent() {
   }, []);
 
   const redirectByRole = (userRole: string) => {
-    let target = "/account";
+    let target = "/dashboard";
     if (redirectParam && redirectParam.startsWith("/") && redirectParam !== "/login") {
       target = redirectParam;
     } else {

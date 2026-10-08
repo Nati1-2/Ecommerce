@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useState, useEffect, useRef, Suspense } from "react";
 import {
   ShoppingBag, Search, Heart, User, Menu, X, ChevronDown,
-  Laptop, Shirt, Home, Gamepad2, Sparkles, Dumbbell, LogIn, Bell, LayoutGrid,
+  Laptop, Shirt, Home, Gamepad2, Sparkles, Dumbbell, LogIn, LogOut, Bell, LayoutGrid, LayoutDashboard,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCartStore } from "@/store/cart";
@@ -213,7 +213,7 @@ export default function Navbar() {
             {/* Account / Auth */}
             {mounted && isAuthenticated ? (
               <Link
-                href={user?.role === "ADMIN" ? "/admin/dashboard" : user?.role === "VENDOR" ? "/vendor/dashboard" : "/account"}
+                href={user?.role === "ADMIN" ? "/admin/dashboard" : user?.role === "VENDOR" ? "/vendor/dashboard" : "/dashboard"}
                 className="hidden md:flex items-center gap-2 ml-1 pl-3 border-l border-gray-200 text-sm font-medium text-gray-700 hover:text-[#007BFF] transition-colors"
               >
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#007BFF] to-[#5AA8FF] flex items-center justify-center text-white text-xs font-bold">
@@ -308,9 +308,13 @@ export default function Navbar() {
                     <span className="font-medium">Notifications</span>
                     {mounted && unreadNotifCount > 0 && <span className="ml-auto bg-red-100 text-red-600 text-xs font-bold px-2 py-0.5 rounded-full">{unreadNotifCount}</span>}
                   </Link>
+                  <Link href="/dashboard" className="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 hover:bg-blue-50" onClick={() => setMobileOpen(false)}>
+                    <LayoutDashboard className="w-5 h-5 text-[#007BFF]" />
+                    <span className="font-medium">User Dashboard</span>
+                  </Link>
                   <Link href="/account" className="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 hover:bg-blue-50" onClick={() => setMobileOpen(false)}>
                     <User className="w-5 h-5" />
-                    <span className="font-medium">My Account</span>
+                    <span className="font-medium">Profile & Security</span>
                   </Link>
                   <Link href="/wishlist" className="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 hover:bg-blue-50" onClick={() => setMobileOpen(false)}>
                     <Heart className="w-5 h-5" />
@@ -320,15 +324,42 @@ export default function Navbar() {
                 </div>
               </nav>
 
-              <div className="p-4 border-t border-gray-100">
-                <Link
-                  href="/login"
-                  className="flex items-center justify-center gap-2 w-full py-3 bg-[#007BFF] text-white rounded-xl font-semibold hover:bg-blue-600 transition-colors"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  <LogIn className="w-4 h-4" />
-                  Sign In / Register
-                </Link>
+              <div className="p-4 border-t border-gray-100 space-y-2">
+                {mounted && isAuthenticated ? (
+                  <>
+                    <Link
+                      href={user?.role === "ADMIN" ? "/admin/dashboard" : user?.role === "VENDOR" ? "/vendor/dashboard" : "/dashboard"}
+                      className="flex items-center justify-center gap-2 w-full py-3 bg-[#007BFF] text-white rounded-xl font-bold text-sm hover:bg-blue-600 transition-colors shadow-sm"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      <LayoutDashboard className="w-4 h-4" />
+                      Go to Dashboard
+                    </Link>
+                    <button
+                      onClick={() => {
+                        useAuthStore.getState().logout();
+                        if (typeof window !== "undefined") {
+                          localStorage.removeItem("auth_token");
+                          window.location.href = "/login";
+                        }
+                        setMobileOpen(false);
+                      }}
+                      className="flex items-center justify-center gap-2 w-full py-2.5 text-xs text-red-600 hover:bg-red-50 rounded-xl font-bold transition-colors cursor-pointer"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    href="/login"
+                    className="flex items-center justify-center gap-2 w-full py-3 bg-[#007BFF] text-white rounded-xl font-semibold hover:bg-blue-600 transition-colors"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <LogIn className="w-4 h-4" />
+                    Sign In / Register
+                  </Link>
+                )}
               </div>
             </motion.div>
           </>

@@ -14,11 +14,14 @@ import {
   Menu,
   X,
   UserCheck,
+  LayoutDashboard,
 } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
 export type ProfileTab =
+  | "dashboard"
   | "overview"
   | "personal"
   | "security"
@@ -40,9 +43,10 @@ export default function ProfileSidebar({
   setActiveTab,
   onLogout,
 }: ProfileSidebarProps) {
+  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const menuItems = [
+  const profileMenuItems = [
     { id: "overview", label: "Profile Overview", icon: UserCheck },
     { id: "personal", label: "Personal Info", icon: User },
     { id: "security", label: "Security & 2FA", icon: ShieldCheck },
@@ -57,7 +61,26 @@ export default function ProfileSidebar({
   const SidebarContent = () => (
     <div className="flex flex-col h-full bg-white select-none">
       <div className="flex-1 space-y-1.5 py-4 px-3">
-        {menuItems.map((item) => {
+        {/* Prominent User Dashboard Button */}
+        <button
+          onClick={() => {
+            router.push("/dashboard");
+            setMobileOpen(false);
+          }}
+          className="w-full flex items-center justify-between px-4 py-3 mb-2.5 rounded-2xl text-xs font-bold bg-blue-50/90 hover:bg-blue-100 text-[#007BFF] border border-blue-200/80 transition-all duration-200 cursor-pointer shadow-xs"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-6 rounded-lg bg-[#007BFF] text-white flex items-center justify-center shrink-0 shadow-sm shadow-blue-500/20">
+              <LayoutDashboard className="w-3.5 h-3.5" />
+            </div>
+            <span>User Dashboard</span>
+          </div>
+          <span className="text-[10px] font-black uppercase px-2 py-0.5 bg-[#007BFF] text-white rounded-full">
+            Main
+          </span>
+        </button>
+
+        {profileMenuItems.map((item) => {
           const Icon = item.icon;
           const isSelected = activeTab === item.id;
 
@@ -69,7 +92,7 @@ export default function ProfileSidebar({
                 setMobileOpen(false);
               }}
               className={cn(
-                "w-full flex items-center gap-3.5 px-4 py-3 rounded-2xl text-xs font-bold transition-all duration-200",
+                "w-full flex items-center gap-3.5 px-4 py-3 rounded-2xl text-xs font-bold transition-all duration-200 cursor-pointer",
                 isSelected
                   ? "bg-[#007BFF] text-white shadow-lg shadow-blue-500/15"
                   : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
@@ -85,7 +108,7 @@ export default function ProfileSidebar({
       <div className="p-4 border-t border-gray-100">
         <button
           onClick={onLogout}
-          className="w-full flex items-center gap-3.5 px-4 py-3 rounded-2xl text-xs font-bold text-red-500 hover:text-red-700 hover:bg-red-50 transition-colors"
+          className="w-full flex items-center gap-3.5 px-4 py-3 rounded-2xl text-xs font-bold text-red-500 hover:text-red-700 hover:bg-red-50 transition-colors cursor-pointer"
         >
           <LogOut className="w-4.5 h-4.5 shrink-0" />
           <span>Logout</span>
@@ -94,7 +117,8 @@ export default function ProfileSidebar({
     </div>
   );
 
-  const currentItem = menuItems.find((item) => item.id === activeTab) || menuItems[0];
+  const currentItem =
+    profileMenuItems.find((item) => item.id === activeTab) || profileMenuItems[0];
   const CurrentIcon = currentItem.icon;
 
   return (
@@ -115,14 +139,25 @@ export default function ProfileSidebar({
           </div>
         </div>
 
-        <button
-          onClick={() => setMobileOpen(true)}
-          className="flex items-center gap-1.5 px-3 py-2 bg-gray-50 hover:bg-gray-100 active:bg-gray-200 text-gray-700 hover:text-gray-900 border border-gray-200 rounded-xl text-xs font-bold shrink-0 transition-colors cursor-pointer"
-          title="Open account menu"
-        >
-          <Menu className="w-4 h-4 text-gray-700" />
-          <span>Menu</span>
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="flex items-center gap-1.5 px-3 py-2 bg-blue-50 hover:bg-blue-100 active:bg-blue-200 text-[#007BFF] border border-blue-200/80 rounded-xl text-xs font-bold shrink-0 transition-colors cursor-pointer"
+            title="Go to User Dashboard"
+          >
+            <LayoutDashboard className="w-4 h-4" />
+            <span>Dashboard</span>
+          </button>
+
+          <button
+            onClick={() => setMobileOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-2 bg-gray-50 hover:bg-gray-100 active:bg-gray-200 text-gray-700 hover:text-gray-900 border border-gray-200 rounded-xl text-xs font-bold shrink-0 transition-colors cursor-pointer"
+            title="Open account menu"
+          >
+            <Menu className="w-4 h-4 text-gray-700" />
+            <span>Menu</span>
+          </button>
+        </div>
       </div>
 
       {/* Desktop static sidebar */}

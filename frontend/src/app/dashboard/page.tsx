@@ -183,16 +183,16 @@ function DashboardContent() {
         <div className="flex-1 w-full min-w-0">
           <AnimatePresence mode="wait">
             {/* ── PROFILE OVERVIEW TAB ─── */}
-            {activeTab === "profile" && (
+            {(activeTab === "profile" || activeTab === "overview") && (
               <motion.div
-                key="profile-tab"
+                key="overview-tab"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
                 className="space-y-8"
               >
-                <DashboardHeader onEditProfile={() => setActiveTab("settings")} />
+                <DashboardHeader onEditProfile={() => router.push("/account?tab=personal")} />
                 <StatsCard />
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
@@ -202,7 +202,7 @@ function DashboardContent() {
                   </div>
 
                   <div className="space-y-6">
-                    <SecurityCard onManage={() => setActiveTab("settings")} />
+                    <SecurityCard onManage={() => router.push("/account?tab=security")} />
                     <AddressPreview onManage={() => setActiveTab("addresses")} />
                     <NotificationPreview />
                     <RecentlyViewed />

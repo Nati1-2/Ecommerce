@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ChevronRight, Home, ShoppingBag, Heart, LogOut, User } from "lucide-react";
+import { ChevronRight, Home, ShoppingBag, Heart, LogOut, User, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 
@@ -140,24 +140,31 @@ function AccountContent() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 w-full md:w-auto">
+        <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 py-2.5 px-3.5 bg-blue-50 hover:bg-blue-100 text-[#007BFF] text-xs font-bold rounded-xl border border-blue-200 transition-colors cursor-pointer"
+          >
+            <LayoutDashboard className="w-4 h-4" />
+            Dashboard
+          </button>
           <button
             onClick={() => setActiveTab("orders")}
-            className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 py-2.5 px-4 bg-gray-50 hover:bg-gray-100 text-gray-700 text-xs font-bold rounded-xl border border-gray-200/80 transition-colors"
+            className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 py-2.5 px-3.5 bg-gray-50 hover:bg-gray-100 text-gray-700 text-xs font-bold rounded-xl border border-gray-200/80 transition-colors cursor-pointer"
           >
             <ShoppingBag className="w-4 h-4 text-[#007BFF]" />
-            Order History
+            Orders
           </button>
           <button
             onClick={() => setActiveTab("wishlist")}
-            className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 py-2.5 px-4 bg-gray-50 hover:bg-gray-100 text-gray-700 text-xs font-bold rounded-xl border border-gray-200/80 transition-colors"
+            className="flex-1 md:flex-none inline-flex items-center justify-center gap-2 py-2.5 px-3.5 bg-gray-50 hover:bg-gray-100 text-gray-700 text-xs font-bold rounded-xl border border-gray-200/80 transition-colors cursor-pointer"
           >
             <Heart className="w-4 h-4 text-rose-500" />
             Wishlist
           </button>
           <button
             onClick={handleLogout}
-            className="inline-flex items-center justify-center gap-2 py-2.5 px-4 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold rounded-xl border border-red-100 transition-colors"
+            className="inline-flex items-center justify-center gap-2 py-2.5 px-3.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold rounded-xl border border-red-100 transition-colors cursor-pointer"
           >
             <LogOut className="w-4 h-4" />
             Logout
