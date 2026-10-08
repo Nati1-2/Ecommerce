@@ -1,9 +1,42 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { safeFindUserByEmail, safeCreateUser } from "@/lib/mongodb";
+import { safeFindUserByEmail, safeCreateUser, safeSaveUserSession } from "@/lib/mongodb";
+import { parseUserAgent, getRealClientIp, resolveGeoLocation } from "@/lib/deviceTracker";
 
 const JWT_SECRET = process.env.JWT_SECRET || process.env.JWT_ACCESS_SECRET || "your_jwt_access_secret_key_change_in_production";
+
+async function recordSession(req: NextRequest, userId: string, email: string, body: any) {
+  try {
+    const ua = req.headers.get("user-agent") || body?.userAgent || "";
+    const ip = getRealClientIp(req, body?.clientIp);
+    const location = await resolveGeoLocation(ip, body?.clientLocation);
+    const parsed = parseUserAgent(ua, {
+      model: body?.clientModel,
+      platform: body?.platform,
+      brandHint: body?.clientBrand,
+      gpu: body?.clientGpu,
+    });
+    const sessionId = "sess_" + Math.random().toString(36).substring(2, 11) + "_" + Date.now();
+    await safeSaveUserSession({
+      sessionId,
+      userId,
+      email,
+      ipAddress: ip,
+      deviceType: body?.clientType || parsed.deviceType,
+      deviceBrand: body?.clientBrand || parsed.deviceBrand,
+      deviceModel: body?.clientModel || parsed.deviceModel,
+      os: parsed.os,
+      browser: parsed.browser,
+      location,
+      userAgent: ua,
+    });
+    return sessionId;
+  } catch (e) {
+    console.warn("Session recording notice on register:", e);
+    return "sess_" + Date.now();
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -44,9 +77,12 @@ export async function POST(req: NextRequest) {
             role: data.user?.role || role || "CUSTOMER",
           };
 
+          const sessionId = await recordSession(req, userObj.id, userObj.email, body);
+
           const res = NextResponse.json({
             success: true,
             token,
+            sessionId,
             user: userObj,
           });
 
@@ -55,6 +91,14 @@ export async function POST(req: NextRequest) {
             secure: process.env.NODE_ENV === "production",
             sameSite: "lax",
             maxAge: 60 * 60 * 24 * 7,
+            path: "/",
+          });
+
+          res.cookies.set("session_id", sessionId, {
+            httpOnly: false,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            maxAge: 60 * 60 * 24 * 30,
             path: "/",
           });
 
@@ -94,9 +138,12 @@ export async function POST(req: NextRequest) {
       { expiresIn: "7d" }
     );
 
+    const sessionId = await recordSession(req, userId, newUser.email, body);
+
     const response = NextResponse.json({
       success: true,
       token,
+      sessionId,
       user: {
         id: userId,
         email: newUser.email,
@@ -110,6 +157,14 @@ export async function POST(req: NextRequest) {
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 60 * 60 * 24 * 7,
+      path: "/",
+    });
+
+    response.cookies.set("session_id", sessionId, {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 30,
       path: "/",
     });
 

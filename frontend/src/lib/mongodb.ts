@@ -19,6 +19,7 @@ declare global {
   var inMemoryProfile: any | undefined;
   var inMemoryMetrics: any | undefined;
   var inMemoryAnalytics: any | undefined;
+  var inMemoryUserSessions: any[] | undefined;
   var inMemorySeeded: boolean | undefined;
 }
 
@@ -30,6 +31,10 @@ if (!cached) {
 
 if (!global.inMemoryUsers) {
   global.inMemoryUsers = new Map();
+}
+
+if (!global.inMemoryUserSessions) {
+  global.inMemoryUserSessions = [];
 }
 
 // Seed real hashed demo users and vendor data once per process start
@@ -510,4 +515,141 @@ export async function safeUpdateUser(id: string, updateData: Record<string, any>
   }
   return null;
 }
+
+export async function safeSaveUserSession(sessionData: {
+  sessionId: string;
+  userId: string;
+  email?: string;
+  ipAddress: string;
+  deviceType: "Desktop" | "Mobile" | "Tablet" | "Unknown";
+  deviceBrand: string;
+  deviceModel: string;
+  os: string;
+  browser: string;
+  location: {
+    city: string;
+    region: string;
+    country: string;
+    countryCode: string;
+    latitude: number;
+    longitude: number;
+    timezone?: string;
+    isp?: string;
+  };
+  loginAt?: Date;
+  lastActive?: Date;
+  revoked?: boolean;
+  userAgent?: string;
+}) {
+  const now = new Date();
+  const normalizedSession = {
+    ...sessionData,
+    loginAt: sessionData.loginAt || now,
+    lastActive: sessionData.lastActive || now,
+    revoked: Boolean(sessionData.revoked),
+  };
+
+  // Try MongoDB
+  try {
+    await connectDB();
+    const { UserSession } = await import("@/models/UserSession");
+    const existing = await UserSession.findOne({ sessionId: sessionData.sessionId });
+    if (existing) {
+      existing.lastActive = now;
+      existing.ipAddress = sessionData.ipAddress || existing.ipAddress;
+      existing.deviceBrand = sessionData.deviceBrand || existing.deviceBrand;
+      existing.deviceModel = sessionData.deviceModel || existing.deviceModel;
+      existing.location = { ...existing.location, ...sessionData.location };
+      await existing.save();
+      return existing.toJSON();
+    } else {
+      const created = await UserSession.create(normalizedSession);
+      return created.toJSON();
+    }
+  } catch (err: any) {
+    console.warn("MongoDB session save notice:", err?.message || err);
+  }
+
+  // In-memory fallback
+  if (!global.inMemoryUserSessions) {
+    global.inMemoryUserSessions = [];
+  }
+  const idx = global.inMemoryUserSessions.findIndex(
+    (s: any) => s.sessionId === sessionData.sessionId
+  );
+  if (idx !== -1) {
+    global.inMemoryUserSessions[idx] = {
+      ...global.inMemoryUserSessions[idx],
+      ...normalizedSession,
+      lastActive: now,
+    };
+    return global.inMemoryUserSessions[idx];
+  } else {
+    global.inMemoryUserSessions.unshift(normalizedSession);
+    return normalizedSession;
+  }
+}
+
+export async function safeGetUserSessions(userId: string) {
+  let dbSessions: any[] = [];
+  try {
+    await connectDB();
+    const { UserSession } = await import("@/models/UserSession");
+    const found = await UserSession.find({ userId, revoked: { $ne: true } })
+      .sort({ loginAt: -1 })
+      .limit(20)
+      .lean();
+    if (found && found.length > 0) {
+      dbSessions = found.map((s: any) => ({
+        ...s,
+        id: s.sessionId || s._id?.toString(),
+      }));
+    }
+  } catch (err: any) {
+    console.warn("MongoDB getUserSessions notice:", err?.message || err);
+  }
+
+  // Merge with memory sessions
+  const memSessions = (global.inMemoryUserSessions || []).filter(
+    (s: any) => s.userId === userId && !s.revoked
+  );
+
+  const map = new Map<string, any>();
+  for (const s of [...dbSessions, ...memSessions]) {
+    const key = s.sessionId || s.id;
+    if (key && !map.has(key)) {
+      map.set(key, s);
+    }
+  }
+
+  const results = Array.from(map.values()).sort(
+    (a, b) => new Date(b.loginAt).getTime() - new Date(a.loginAt).getTime()
+  );
+
+  return results;
+}
+
+export async function safeDeleteUserSession(userId: string, sessionId: string) {
+  try {
+    await connectDB();
+    const { UserSession } = await import("@/models/UserSession");
+    await UserSession.updateOne(
+      { sessionId, userId },
+      { $set: { revoked: true } }
+    );
+  } catch (err: any) {
+    console.warn("MongoDB deleteSession notice:", err?.message || err);
+  }
+
+  if (global.inMemoryUserSessions) {
+    const idx = global.inMemoryUserSessions.findIndex(
+      (s: any) => s.sessionId === sessionId && s.userId === userId
+    );
+    if (idx !== -1) {
+      global.inMemoryUserSessions[idx].revoked = true;
+    }
+  }
+  return true;
+}
+
 

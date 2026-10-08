@@ -117,8 +117,19 @@ export const adminAuditApi = {
   },
 
   getLoginHistory: async (): Promise<LoginActivityItem[]> => {
+    try {
+      const res = await fetch("/api/admin/audit-logs/logins");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.logins) && data.logins.length > 0) {
+          return data.logins;
+        }
+      }
+    } catch {
+      // Fallback
+    }
     return [
-      { id: "log_1", user: "Nati Demo Admin", userEmail: "nati@admin.com", role: "Admin", device: "MacBook Pro", browser: "Chrome", location: "San Francisco, USA", ip: "192.168.1.45", status: "Successful", timestamp: "Just now" },
+      { id: "log_1", user: "Nati Demo Admin", userEmail: "nati@admin.com", role: "Admin", device: "PC / Windows", browser: "Edge", location: "Addis Ababa, Ethiopia", ip: "197.156.103.45", status: "Successful", timestamp: "Just now" },
     ];
   },
 

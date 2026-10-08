@@ -23,10 +23,21 @@ export interface ProfilePreferences {
 
 export interface DeviceActivity {
   id: string;
+  sessionId?: string;
+  ipAddress?: string;
+  deviceType?: "Desktop" | "Mobile" | "Tablet" | "Unknown";
+  deviceBrand?: string;
+  deviceModel?: string;
   browser: string;
   os: string;
   location: string;
+  city?: string;
+  country?: string;
+  latitude?: number;
+  longitude?: number;
   time: string;
+  loginAt?: string;
+  isCurrentSession?: boolean;
 }
 
 export interface ProfileSecurity {
@@ -41,6 +52,7 @@ interface ProfileState {
   setUser: (user: Partial<ProfileUser>) => void;
   setPreferences: (prefs: Partial<ProfilePreferences>) => void;
   setTwoFactor: (enabled: boolean) => void;
+  setDevices: (devices: DeviceActivity[]) => void;
   removeDevice: (id: string) => void;
   deleteAccount: () => void;
 }
@@ -67,11 +79,7 @@ export const useProfileStore = create<ProfileState>((set) => ({
   },
   security: {
     twoFactorEnabled: false,
-    devices: [
-      { id: "dev-1", browser: "Chrome", os: "Windows", location: "Paris, France", time: "Active Now" },
-      { id: "dev-2", browser: "Safari", os: "iOS", location: "Paris, France", time: "2 hours ago" },
-      { id: "dev-3", browser: "Firefox", os: "macOS", location: "London, UK", time: "3 days ago" },
-    ],
+    devices: [],
   },
 
   setUser: (userData) =>
@@ -83,11 +91,19 @@ export const useProfileStore = create<ProfileState>((set) => ({
   setTwoFactor: (twoFactorEnabled) =>
     set((state) => ({ security: { ...state.security, twoFactorEnabled } })),
 
+  setDevices: (devices) =>
+    set((state) => ({
+      security: {
+        ...state.security,
+        devices,
+      },
+    })),
+
   removeDevice: (id) =>
     set((state) => ({
       security: {
         ...state.security,
-        devices: state.security.devices.filter((d) => d.id !== id),
+        devices: state.security.devices.filter((d) => d.id !== id && d.sessionId !== id),
       },
     })),
 
