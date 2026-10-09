@@ -12,6 +12,7 @@ import {
   ShoppingBag,
   CreditCard,
   LineChart,
+  Globe,
   MessageSquareText,
   Bell,
   Settings,
@@ -59,6 +60,7 @@ export default function AdminSidebar({
     { label: "Orders", href: "/admin/orders", icon: ShoppingBag },
     { label: "Payments", href: "/admin/payments", icon: CreditCard },
     { label: "Analytics", href: "/admin/analytics", icon: LineChart },
+    { label: "Visitor Tracker", href: "/admin/visitors", icon: Globe, badge: "Live" },
     { label: "Reviews", href: "/admin/reviews", icon: MessageSquareText },
     { label: "Notifications", href: "/admin/notifications", icon: Bell },
     { label: "Settings", href: "/admin/settings", icon: Settings },
@@ -136,14 +138,21 @@ export default function AdminSidebar({
               {item.badge && (!isSidebarCollapsed || isMobile) && (
                 <span
                   className={cn(
-                    "text-[10px] px-2 py-0.5 rounded-full font-extrabold",
-                    item.badge.includes("pending")
+                    "text-[10px] px-2 py-0.5 rounded-full font-extrabold flex items-center gap-1",
+                    item.badge === "Live"
+                      ? isActive
+                        ? "bg-emerald-400/30 text-emerald-200 border border-emerald-400/40"
+                        : "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
+                      : item.badge.includes("pending")
                       ? "bg-amber-100 text-amber-700"
                       : isActive
                       ? "bg-white/20 text-white"
                       : "bg-blue-100 text-blue-700"
                   )}
                 >
+                  {item.badge === "Live" && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
+                  )}
                   {item.badge}
                 </span>
               )}

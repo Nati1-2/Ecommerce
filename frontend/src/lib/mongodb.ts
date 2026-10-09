@@ -20,6 +20,7 @@ declare global {
   var inMemoryMetrics: any | undefined;
   var inMemoryAnalytics: any | undefined;
   var inMemoryUserSessions: any[] | undefined;
+  var inMemoryVisitorLogs: any[] | undefined;
   var inMemorySeeded: boolean | undefined;
 }
 
@@ -35,6 +36,10 @@ if (!global.inMemoryUsers) {
 
 if (!global.inMemoryUserSessions) {
   global.inMemoryUserSessions = [];
+}
+
+if (!global.inMemoryVisitorLogs) {
+  global.inMemoryVisitorLogs = [];
 }
 
 // Seed real hashed demo users and vendor data once per process start
