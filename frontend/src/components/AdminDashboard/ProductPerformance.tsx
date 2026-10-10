@@ -10,6 +10,8 @@ interface Props {
 }
 
 export default function ProductPerformance({ products, onApproveProduct }: Props) {
+  const safeProducts = Array.isArray(products) ? products : [];
+
   return (
     <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
       <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
@@ -22,7 +24,7 @@ export default function ProductPerformance({ products, onApproveProduct }: Props
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {products.map((prod) => (
+        {safeProducts.map((prod) => (
           <div
             key={prod.id}
             className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col justify-between space-y-3"
@@ -55,13 +57,13 @@ export default function ProductPerformance({ products, onApproveProduct }: Props
               <div>
                 <p className="text-[10px] text-slate-400">Total Sales</p>
                 <p className="font-extrabold text-slate-900 dark:text-white">
-                  {prod.sales.toLocaleString()}
+                  {(prod.sales ?? 0).toLocaleString()}
                 </p>
               </div>
               <div>
                 <p className="text-[10px] text-slate-400">Revenue</p>
                 <p className="font-extrabold text-emerald-600 dark:text-emerald-400">
-                  ${(prod.revenue / 1000).toFixed(1)}k
+                  ${(((prod.revenue ?? 0) / 1000)).toFixed(1)}k
                 </p>
               </div>
             </div>
@@ -77,9 +79,9 @@ export default function ProductPerformance({ products, onApproveProduct }: Props
               <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
                 <span className="flex items-center gap-1">
                   <Eye className="w-3.5 h-3.5 text-blue-500" />
-                  {prod.views.toLocaleString()} views
+                  {(prod.views ?? 0).toLocaleString()} views
                 </span>
-                <span className="font-mono font-semibold">${prod.price}</span>
+                <span className="font-mono font-semibold">${prod.price ?? 0}</span>
               </div>
             )}
           </div>

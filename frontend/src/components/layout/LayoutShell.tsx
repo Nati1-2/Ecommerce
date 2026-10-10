@@ -10,8 +10,12 @@ import BottomNav from "@/components/layout/BottomNav";
  * Checkout pages use their own minimal chrome so we hide these.
  */
 export default function LayoutShell({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const isMinimal = pathname.startsWith("/checkout") || pathname.startsWith("/payment");
+  const pathname = usePathname() || "";
+  const isMinimal =
+    pathname.startsWith("/checkout") ||
+    pathname.startsWith("/payment") ||
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/vendor");
 
   return (
     <>

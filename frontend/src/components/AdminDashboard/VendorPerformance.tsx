@@ -10,6 +10,8 @@ interface Props {
 }
 
 export default function VendorPerformance({ vendors, onApproveVendor }: Props) {
+  const safeVendors = Array.isArray(vendors) ? vendors : [];
+
   return (
     <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
       <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
@@ -34,7 +36,7 @@ export default function VendorPerformance({ vendors, onApproveVendor }: Props) {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-            {vendors.map((vendor) => (
+            {safeVendors.map((vendor) => (
               <tr key={vendor.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                 <td className="py-3.5 px-4">
                   <div className="flex items-center gap-3">
@@ -54,14 +56,14 @@ export default function VendorPerformance({ vendors, onApproveVendor }: Props) {
                 <td className="py-3.5 px-4">
                   <div className="flex items-center gap-1 text-xs font-bold text-amber-500">
                     <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                    <span>{vendor.rating.toFixed(1)}</span>
+                    <span>{typeof vendor.rating === "number" ? vendor.rating.toFixed(1) : "5.0"}</span>
                   </div>
                 </td>
                 <td className="py-3.5 px-4 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  {vendor.orders.toLocaleString()} orders
+                  {(vendor.orders ?? 0).toLocaleString()} orders
                 </td>
                 <td className="py-3.5 px-4 text-xs font-extrabold text-slate-900 dark:text-white">
-                  ${vendor.revenue.toLocaleString()}
+                  ${(vendor.revenue ?? 0).toLocaleString()}
                 </td>
                 <td className="py-3.5 px-4">
                   <span

@@ -8,6 +8,8 @@ interface Props {
 }
 
 export default function ActivityTimeline({ activities }: Props) {
+  const safeActivities = Array.isArray(activities) ? activities : [];
+
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case "vendor":
@@ -33,7 +35,7 @@ export default function ActivityTimeline({ activities }: Props) {
       </div>
 
       <div className="space-y-4">
-        {activities.map((act, idx) => (
+        {safeActivities.map((act, idx) => (
           <div key={act.id} className="flex items-start gap-3 relative">
             {idx !== activities.length - 1 && (
               <div className="absolute left-4 top-8 bottom-0 w-0.5 bg-slate-200 dark:bg-slate-800 -z-0" />

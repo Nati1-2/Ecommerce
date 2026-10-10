@@ -17,7 +17,8 @@ interface Props {
 }
 
 export default function UserAnalytics({ data }: Props) {
-  const latest = data[data.length - 1] || { newUsers: 0, activeUsers: 0, returningUsers: 0 };
+  const chartData = Array.isArray(data) ? data : [];
+  const latest = chartData[chartData.length - 1] || { newUsers: 0, activeUsers: 0, returningUsers: 0 };
 
   return (
     <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
@@ -35,19 +36,19 @@ export default function UserAnalytics({ data }: Props) {
         <div className="p-3.5 bg-blue-50 dark:bg-blue-950/30 rounded-2xl">
           <p className="text-[11px] font-semibold text-blue-600 dark:text-blue-400">Daily New Users</p>
           <p className="text-lg font-black text-slate-900 dark:text-white mt-0.5">
-            +{latest.newUsers}
+            +{latest.newUsers ?? 0}
           </p>
         </div>
         <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/30 rounded-2xl">
           <p className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">Active Users (DAU)</p>
           <p className="text-lg font-black text-slate-900 dark:text-white mt-0.5">
-            {latest.activeUsers.toLocaleString()}
+            {(latest.activeUsers ?? 0).toLocaleString()}
           </p>
         </div>
         <div className="p-3.5 bg-purple-50 dark:bg-purple-950/30 rounded-2xl">
           <p className="text-[11px] font-semibold text-purple-600 dark:text-purple-400">Returning Buyers</p>
           <p className="text-lg font-black text-slate-900 dark:text-white mt-0.5">
-            {latest.returningUsers.toLocaleString()}
+            {(latest.returningUsers ?? 0).toLocaleString()}
           </p>
         </div>
       </div>

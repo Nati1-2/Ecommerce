@@ -29,9 +29,10 @@ function formatCurrency(amount: number): string {
 export default function RevenueChart({ data, totalUsers }: Props) {
   const { activeTimeframe, setActiveTimeframe } = useAdminDashboardStore();
 
-  const totalPeriodRevenue = data.reduce((acc, d) => acc + d.revenue, 0);
-  const totalPeriodProfit = data.reduce((acc, d) => acc + d.profit, 0);
-  const totalPeriodSales = data.reduce((acc, d) => acc + d.sales, 0);
+  const chartData = Array.isArray(data) ? data : [];
+  const totalPeriodRevenue = chartData.reduce((acc, d) => acc + (d?.revenue || 0), 0);
+  const totalPeriodProfit = chartData.reduce((acc, d) => acc + (d?.profit || 0), 0);
+  const totalPeriodSales = chartData.reduce((acc, d) => acc + (d?.sales || 0), 0);
 
   const conversionRate =
     totalUsers && totalUsers > 0

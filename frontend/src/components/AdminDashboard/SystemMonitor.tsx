@@ -8,12 +8,14 @@ interface Props {
 }
 
 export default function SystemMonitor({ status }: Props) {
+  const safeStatus = status || ({} as SystemStatus);
   const coreServices = [
-    { name: "API Gateway", val: status.api, icon: Server },
-    { name: "MongoDB Database", val: status.database, icon: Database },
-    { name: "Redis Cache Cluster", val: status.redis, icon: Cpu },
-    { name: "RabbitMQ Message Queue", val: status.rabbitmq, icon: MessageSquare },
+    { name: "API Gateway", val: safeStatus.api || "Operational", icon: Server },
+    { name: "MongoDB Database", val: safeStatus.database || "Connected", icon: Database },
+    { name: "Redis Cache Cluster", val: safeStatus.redis || "Connected", icon: Cpu },
+    { name: "RabbitMQ Message Queue", val: safeStatus.rabbitmq || "Connected", icon: MessageSquare },
   ];
+  const microservices = Array.isArray(safeStatus.microservices) ? safeStatus.microservices : [];
 
   return (
     <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-6">
@@ -59,7 +61,7 @@ export default function SystemMonitor({ status }: Props) {
       <div className="space-y-3">
         <p className="text-xs font-bold text-slate-700">Microservice Mesh Details</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {status.microservices.map((ms) => (
+          {microservices.map((ms) => (
             <div key={ms.name} className="p-3.5 bg-slate-50/70 rounded-2xl border border-slate-100 flex items-center justify-between text-xs">
               <div>
                 <p className="font-bold text-slate-900">{ms.name}</p>

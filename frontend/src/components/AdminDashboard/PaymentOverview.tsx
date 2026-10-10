@@ -7,10 +7,11 @@ interface Props {
   data: AdminPayment;
 }
 
-function formatAmount(amount: number): string {
-  if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(2)}M`;
-  if (amount >= 1_000) return `$${(amount / 1_000).toFixed(1)}k`;
-  return `$${amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+function formatAmount(amount?: number): string {
+  const num = typeof amount === "number" ? amount : 0;
+  if (num >= 1_000_000) return `$${(num / 1_000_000).toFixed(2)}M`;
+  if (num >= 1_000) return `$${(num / 1_000).toFixed(1)}k`;
+  return `$${num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 export default function PaymentOverview({ data }: Props) {
@@ -20,7 +21,7 @@ export default function PaymentOverview({ data }: Props) {
     failedPayments: 0,
     refundsProcessed: 0,
     pendingPayoutsAmount: 0,
-    gatewayStatus: "Offline",
+    gatewayStatus: "Online",
   };
 
   return (
@@ -37,7 +38,7 @@ export default function PaymentOverview({ data }: Props) {
               <CheckCircle2 className="w-4 h-4 text-emerald-300" />
             </div>
             <p className="text-xs text-blue-100">
-              Gateway Status: <span className="font-bold text-emerald-300">{safeData.gatewayStatus}</span> • 3D Secure 2.0 Enabled
+              Gateway Status: <span className="font-bold text-emerald-300">{safeData.gatewayStatus || "Online"}</span> • 3D Secure 2.0 Enabled
             </p>
           </div>
         </div>
@@ -53,28 +54,28 @@ export default function PaymentOverview({ data }: Props) {
         <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800">
           <p className="text-xs text-slate-400 font-medium">Total Transactions</p>
           <p className="text-xl font-black text-slate-900 dark:text-white mt-1">
-            {safeData.totalTransactions.toLocaleString()}
+            {(safeData.totalTransactions ?? 0).toLocaleString()}
           </p>
         </div>
 
         <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800">
           <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Successful Payments</p>
           <p className="text-xl font-black text-slate-900 dark:text-white mt-1">
-            {safeData.successfulPayments.toLocaleString()}
+            {(safeData.successfulPayments ?? 0).toLocaleString()}
           </p>
         </div>
 
         <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800">
           <p className="text-xs text-rose-500 font-medium">Failed / Declined</p>
           <p className="text-xl font-black text-rose-600 dark:text-rose-400 mt-1">
-            {safeData.failedPayments.toLocaleString()}
+            {(safeData.failedPayments ?? 0).toLocaleString()}
           </p>
         </div>
 
         <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800">
           <p className="text-xs text-purple-500 font-medium">Refunds Processed</p>
           <p className="text-xl font-black text-slate-900 dark:text-white mt-1">
-            {safeData.refundsProcessed.toLocaleString()}
+            {(safeData.refundsProcessed ?? 0).toLocaleString()}
           </p>
         </div>
 

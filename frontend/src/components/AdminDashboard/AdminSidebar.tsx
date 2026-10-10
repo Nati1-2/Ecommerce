@@ -143,7 +143,7 @@ export default function AdminSidebar({
                       ? isActive
                         ? "bg-emerald-400/30 text-emerald-200 border border-emerald-400/40"
                         : "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
-                      : item.badge.includes("pending")
+                      : item.badge && String(item.badge).includes("pending")
                       ? "bg-amber-100 text-amber-700"
                       : isActive
                       ? "bg-white/20 text-white"

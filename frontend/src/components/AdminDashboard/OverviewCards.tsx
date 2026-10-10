@@ -7,50 +7,52 @@ interface Props {
   stats: PlatformStats;
 }
 
-function formatRevenue(amount: number): string {
-  if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(1)}M`;
-  if (amount >= 1_000) return `$${(amount / 1_000).toFixed(1)}K`;
-  return `$${amount.toFixed(2)}`;
+function formatRevenue(amount?: number): string {
+  const val = typeof amount === "number" ? amount : 0;
+  if (val >= 1_000_000) return `$${(val / 1_000_000).toFixed(1)}M`;
+  if (val >= 1_000) return `$${(val / 1_000).toFixed(1)}K`;
+  return `$${val.toFixed(2)}`;
 }
 
 export default function OverviewCards({ stats }: Props) {
+  const safeStats = stats || ({} as PlatformStats);
   const cards = [
     {
       title: "Total Registered Users",
-      value: stats.users.toLocaleString(),
-      growth: stats.usersGrowth,
+      value: (safeStats.users ?? 0).toLocaleString(),
+      growth: safeStats.usersGrowth ?? 0,
       icon: Users,
       color: "from-blue-600 to-indigo-600",
       bgColor: "bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400",
     },
     {
       title: "Total Marketplace Vendors",
-      value: stats.vendors.toLocaleString(),
-      growth: stats.vendorsGrowth,
+      value: (safeStats.vendors ?? 0).toLocaleString(),
+      growth: safeStats.vendorsGrowth ?? 0,
       icon: Store,
       color: "from-purple-600 to-pink-600",
       bgColor: "bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400",
     },
     {
       title: "Total Listed Products",
-      value: stats.products.toLocaleString(),
-      growth: stats.productsGrowth,
+      value: (safeStats.products ?? 0).toLocaleString(),
+      growth: safeStats.productsGrowth ?? 0,
       icon: Package,
       color: "from-amber-500 to-orange-600",
       bgColor: "bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400",
     },
     {
       title: "Total Processed Orders",
-      value: stats.orders.toLocaleString(),
-      growth: stats.ordersGrowth,
+      value: (safeStats.orders ?? 0).toLocaleString(),
+      growth: safeStats.ordersGrowth ?? 0,
       icon: ShoppingBag,
       color: "from-teal-600 to-emerald-600",
       bgColor: "bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400",
     },
     {
       title: "Platform Gross Revenue",
-      value: formatRevenue(stats.revenue),
-      growth: stats.revenueGrowth,
+      value: formatRevenue(safeStats.revenue),
+      growth: safeStats.revenueGrowth ?? 0,
       icon: DollarSign,
       color: "from-emerald-600 to-green-600",
       bgColor: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400",
