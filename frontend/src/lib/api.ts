@@ -3,7 +3,12 @@ import { useOrderStore } from "@/store/orderStore";
 import { Order, Tracking, Notification, NotificationSettings } from "@/types";
 import { mockProducts } from "@/data/mock";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+const isLocalhost =
+  typeof window !== "undefined" &&
+  (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || (isLocalhost ? "http://localhost:8000/api" : "/api");
 
 export interface GetProductsParams {
   category?: string | string[];

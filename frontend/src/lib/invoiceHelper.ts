@@ -203,7 +203,7 @@ export function generateInvoicePDF(order: Order) {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   doc.text("Thank you for shopping at Nati Store!", margin, y + 6);
-  doc.text("If you have any questions about this invoice, please contact support@nati.store", margin, y + 10);
+  doc.text("If you have any questions about this invoice, please contact natnaelman368@gmail.com (Telegram: @natimanboss)", margin, y + 10);
   
   doc.setTextColor(150, 150, 150);
   doc.text("Generated automatically on checkout.", pageWidth - margin - 50, y + 6);

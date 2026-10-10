@@ -14,28 +14,37 @@ export function useRealtimeStock(productId: string, initialStock: number) {
 
   useEffect(() => {
     let socket: any;
-    import("socket.io-client").then(({ io }) => {
-      socket = io(process.env.NEXT_PUBLIC_WS_URL || "http://localhost:8009", {
-        autoConnect: false,
-        reconnectionAttempts: 1,
-        timeout: 2000,
-      });
 
-      socket.connect();
+    const isLocalhost =
+      typeof window !== "undefined" &&
+      (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
 
-      socket.on("STOCK_UPDATED", (data: { id: string; stock: number; name?: string }) => {
-        if (data.id === productId) {
-          setStock(data.stock);
-          addSocketLog("STOCK_UPDATED", `Stock updated for ${data.name || productId}: ${data.stock} units`);
-        }
-      });
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || (isLocalhost ? "http://localhost:8009" : "");
 
-      socket.on("LOW_STOCK_ALERT", (data: { id: string; stock: number; name?: string }) => {
-        if (data.id === productId) {
-          addSocketLog("LOW_STOCK_ALERT", `ALERT: Low stock warning for ${data.name || productId} (${data.stock} left)`);
-        }
-      });
-    });
+    if (wsUrl) {
+      import("socket.io-client").then(({ io }) => {
+        socket = io(wsUrl, {
+          autoConnect: false,
+          reconnectionAttempts: 1,
+          timeout: 2000,
+        });
+
+        socket.connect();
+
+        socket.on("STOCK_UPDATED", (data: { id: string; stock: number; name?: string }) => {
+          if (data.id === productId) {
+            setStock(data.stock);
+            addSocketLog("STOCK_UPDATED", `Stock updated for ${data.name || productId}: ${data.stock} units`);
+          }
+        });
+
+        socket.on("LOW_STOCK_ALERT", (data: { id: string; stock: number; name?: string }) => {
+          if (data.id === productId) {
+            addSocketLog("LOW_STOCK_ALERT", `ALERT: Low stock warning for ${data.name || productId} (${data.stock} left)`);
+          }
+        });
+      }).catch(() => {});
+    }
 
     // Fallback simulation: periodically ticks down stock to mimic real purchases
     const simulationInterval = setInterval(() => {

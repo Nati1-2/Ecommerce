@@ -17,37 +17,49 @@ export function useAdminRealtime() {
 
   useEffect(() => {
     let socket: any;
-    import("socket.io-client").then(({ io }) => {
-      socket = io(process.env.NEXT_PUBLIC_WS_URL || "http://localhost:8009", {
-        autoConnect: false,
-        reconnectionAttempts: 1,
-        timeout: 2000,
-      });
 
-      socket.connect();
+    const isLocalhost =
+      typeof window !== "undefined" &&
+      (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
 
-      socket.on("NEW_VENDOR", (data: { storeName: string }) => {
-        addNotification({
-          type: "NEW_VENDOR",
-          title: "New Vendor Registration",
-          message: `${data.storeName} submitted verification request`,
-          timestamp: "Just now",
-          severity: "info",
+    // Only attempt socket connection if an explicit external WS URL is configured, or running locally
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || (isLocalhost ? "http://localhost:8009" : "");
+
+    if (wsUrl) {
+      import("socket.io-client").then(({ io }) => {
+        socket = io(wsUrl, {
+          autoConnect: false,
+          reconnectionAttempts: 1,
+          timeout: 2000,
         });
-        showToast(`New Vendor Registered: ${data.storeName}`, "info");
-      });
 
-      socket.on("LARGE_ORDER", (data: { orderId: string; amount: number }) => {
-        addNotification({
-          type: "LARGE_ORDER",
-          title: "High Value Order",
-          message: `Order #${data.orderId} placed for $${data.amount.toLocaleString()}`,
-          timestamp: "Just now",
-          severity: "success",
+        socket.connect();
+
+        socket.on("NEW_VENDOR", (data: { storeName: string }) => {
+          addNotification({
+            type: "NEW_VENDOR",
+            title: "New Vendor Registration",
+            message: `${data.storeName} submitted verification request`,
+            timestamp: "Just now",
+            severity: "info",
+          });
+          showToast(`New Vendor Registered: ${data.storeName}`, "info");
         });
-        showToast(`High Value Order #${data.orderId}`, "success");
+
+        socket.on("LARGE_ORDER", (data: { orderId: string; amount: number }) => {
+          addNotification({
+            type: "LARGE_ORDER",
+            title: "High Value Order",
+            message: `Order #${data.orderId} placed for $${data.amount.toLocaleString()}`,
+            timestamp: "Just now",
+            severity: "success",
+          });
+          showToast(`High Value Order #${data.orderId}`, "success");
+        });
+      }).catch(() => {
+        // Ignore socket import error
       });
-    });
+    }
 
     // Fallback periodic simulation for live demo
     const interval = setInterval(() => {

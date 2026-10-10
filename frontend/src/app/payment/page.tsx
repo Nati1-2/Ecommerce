@@ -66,25 +66,33 @@ function PaymentContent() {
 
     // Socket.IO integration setup dynamically loaded
     let socket: any;
-    import("socket.io-client").then(({ io }) => {
-      socket = io(process.env.NEXT_PUBLIC_WS_URL || "http://localhost:8009", {
-        autoConnect: false,
-        reconnectionAttempts: 2,
-      });
+    const isLocalhost =
+      typeof window !== "undefined" &&
+      (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
 
-      socket.connect();
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || (isLocalhost ? "http://localhost:8009" : "");
 
-      socket.on("connect", () => {
-        setSocketStatus("Connected to payment channel");
-      });
+    if (wsUrl) {
+      import("socket.io-client").then(({ io }) => {
+        socket = io(wsUrl, {
+          autoConnect: false,
+          reconnectionAttempts: 2,
+        });
 
-      socket.on("payment_status", (data: { status: string; message: string }) => {
-        setSocketStatus(data.message);
-        if (data.status === "succeeded") {
-          setPaymentStatus("success");
-        }
-      });
-    });
+        socket.connect();
+
+        socket.on("connect", () => {
+          setSocketStatus("Connected to payment channel");
+        });
+
+        socket.on("payment_status", (data: { status: string; message: string }) => {
+          setSocketStatus(data.message);
+          if (data.status === "succeeded") {
+            setPaymentStatus("success");
+          }
+        });
+      }).catch(() => {});
+    }
 
     return () => {
       if (socket) socket.disconnect();

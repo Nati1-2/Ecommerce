@@ -7,7 +7,7 @@ import {
   Search, Mail, Phone, MapPin, Building, Briefcase, Download,
   TrendingUp, HelpCircle, Truck, RotateCcw, Compass, Ruler, Zap,
   Plus, CheckCircle, ArrowRight, Lock, FileText, Gift, DollarSign,
-  Users, BookOpen, ChevronRight, Home, ArrowLeft, RefreshCw, Sparkles
+  Users, BookOpen, ChevronRight, Home, ArrowLeft, RefreshCw, Sparkles, Send
 } from "lucide-react";
 import { mockProducts } from "@/data/mock";
 import { useCartStore } from "@/store/cart";
@@ -649,6 +649,30 @@ export default function FooterPageClient({ slug }: FooterPageClientProps) {
                 <h4 className="text-sm font-bold text-gray-955">Submit a Ticket</h4>
                 <p className="text-xs text-gray-400 font-semibold">Can&apos;t find your answers? Message support.</p>
               </div>
+
+              {/* Direct Support Contact */}
+              <div className="p-3.5 bg-blue-50/70 border border-blue-100/80 rounded-2xl space-y-2 text-xs">
+                <p className="text-[10px] uppercase font-bold text-blue-600 tracking-wider">Direct Assistance</p>
+                <div className="flex flex-col gap-1.5 font-medium text-gray-700">
+                  <a
+                    href="mailto:natnaelman368@gmail.com"
+                    className="flex items-center gap-2 hover:text-[#007BFF] transition-colors"
+                  >
+                    <Mail className="w-3.5 h-3.5 text-[#007BFF] shrink-0" />
+                    <span>natnaelman368@gmail.com</span>
+                  </a>
+                  <a
+                    href="https://t.me/natimanboss"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 hover:text-[#007BFF] transition-colors"
+                  >
+                    <Send className="w-3.5 h-3.5 text-[#007BFF] shrink-0" />
+                    <span>Telegram: @natimanboss</span>
+                  </a>
+                </div>
+              </div>
+
               <form onSubmit={handleSupportSubmit} className="space-y-4">
                 <div>
                   <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Email Address</label>

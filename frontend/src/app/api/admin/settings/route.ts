@@ -4,7 +4,8 @@ import { requireAdmin } from "@/lib/authHelper";
 let systemSettings = {
   general: {
     siteName: "Apex Multi-Vendor Marketplace Engine",
-    supportEmail: "support@natistore.com",
+    supportEmail: "natnaelman368@gmail.com",
+    telegramSupport: "@natimanboss",
     currency: "USD",
     commissionRate: 15,
     autoApproveProducts: false,

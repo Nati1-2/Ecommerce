@@ -54,21 +54,28 @@ function TrackingContent({ params }: TrackingPageProps) {
 
     // Initialize Socket.IO Client dynamically
     let socket: any;
-    import("socket.io-client").then(({ io }) => {
-      socket = io(process.env.NEXT_PUBLIC_WS_URL || "http://localhost:8009", {
-        autoConnect: false,
-        reconnectionAttempts: 2,
-      });
+    const isLocalhost =
+      typeof window !== "undefined" &&
+      (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
 
-      socket.connect();
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || (isLocalhost ? "http://localhost:8009" : "");
 
-      socket.on("connect", () => {
-        setSocketStatus("Connected to logistics stream");
-      });
+    if (wsUrl) {
+      import("socket.io-client").then(({ io }) => {
+        socket = io(wsUrl, {
+          autoConnect: false,
+          reconnectionAttempts: 2,
+        });
 
-      socket.on("connect_error", () => {
-        setSocketStatus("Logistics gateway unavailable. Sandbox simulation running.");
-      });
+        socket.connect();
+
+        socket.on("connect", () => {
+          setSocketStatus("Connected to logistics stream");
+        });
+
+        socket.on("connect_error", () => {
+          setSocketStatus("Logistics gateway unavailable. Sandbox simulation running.");
+        });
 
       // Listen to real-time order update event payload
       socket.on("ORDER_STATUS_UPDATED", (data: { orderId: string; status: string; timestamp: string; location: string; description: string }) => {
@@ -77,6 +84,7 @@ function TrackingContent({ params }: TrackingPageProps) {
         }
       });
     });
+    }
 
     // Sandbox Simulation Loop: status shifts every 15s to demonstrate UI transitions in standard showcase environment
     let simIndex = 0;

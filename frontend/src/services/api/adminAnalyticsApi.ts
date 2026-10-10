@@ -86,7 +86,11 @@ let mockRealtime: RealtimeStats = {
   activeSellers: 3420,
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_GATEWAY_URL || "http://localhost:8000/api/v1";
+const isLocalhost =
+  typeof window !== "undefined" &&
+  (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+
+const API_BASE = process.env.NEXT_PUBLIC_API_GATEWAY_URL || (isLocalhost ? "http://localhost:8000/api/v1" : "/api");
 const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 function getToken(): string {
