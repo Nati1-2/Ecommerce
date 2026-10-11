@@ -5,18 +5,16 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ShieldCheck,
   Lock,
-  ArrowLeft,
   HelpCircle,
   ChevronLeft,
 } from "lucide-react";
 
 import { useCheckoutStore } from "@/store/checkoutStore";
 import { useCartStore } from "@/store/cart";
+import { useAuthStore } from "@/store/auth";
 
 import CheckoutSteps from "@/components/Checkout/CheckoutSteps";
-import AddressSelector from "@/components/Checkout/AddressSelector";
 import ShippingMethod from "@/components/Checkout/ShippingMethod";
 import OrderReview from "@/components/Checkout/OrderReview";
 import PriceSummary from "@/components/Checkout/PriceSummary";
@@ -31,21 +29,27 @@ const stepVariants = {
   exit: { opacity: 0, x: -40, transition: { duration: 0.2 } },
 };
 
-import { useAuthStore } from "@/store/auth";
-
 export default function CheckoutPage() {
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
 
-  const { step, setStep, selectedAddressId, shippingMethodId } =
-    useCheckoutStore();
+  const { step, setStep, shippingMethodId } = useCheckoutStore();
   const totalItems = useCartStore((s) => s.totalItems);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
   useEffect(() => {
     setMounted(true);
-    const token = typeof window !== "undefined" ? (localStorage.getItem("auth_token") || document.cookie.match(/(?:^|;\s*)token=([^;]*)/)?.[1]) : null;
-    if (!useAuthStore.getState().isAuthenticated || !token || token === "null" || token === "undefined") {
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("auth_token") ||
+          document.cookie.match(/(?:^|;\s*)token=([^;]*)/)?.[1]
+        : null;
+    if (
+      !useAuthStore.getState().isAuthenticated ||
+      !token ||
+      token === "null" ||
+      token === "undefined"
+    ) {
       router.push("/login?redirect=/checkout");
     }
   }, [router]);
@@ -56,33 +60,31 @@ export default function CheckoutPage() {
   const [createOrderError, setCreateOrderError] = useState("");
 
   const goNext = async () => {
-    if (step === 3) {
+    if (step === 2) {
       setIsCreatingOrder(true);
       setCreateOrderError("");
       try {
         const { orderApi } = await import("@/services/api/orderApi");
         const cartState = useCartStore.getState();
         const checkoutState = useCheckoutStore.getState();
-        
-        const address = checkoutState.addresses.find(a => a.id === checkoutState.selectedAddressId);
-        
+
         const orderData = {
-          items: cartState.items.map(item => ({
+          items: cartState.items.map((item) => ({
             productId: item.productId,
             name: item.name,
             price: item.price,
             quantity: item.quantity,
             image: item.image || (item as any).imageUrl || "/iphone17.png",
-            imageUrl: item.image || (item as any).imageUrl || "/iphone17.png"
+            imageUrl: item.image || (item as any).imageUrl || "/iphone17.png",
           })),
           shippingAddress: {
-            street: address?.street || "123 Main St",
-            city: address?.city || "San Francisco",
-            state: address?.state || "CA",
-            country: address?.country || "US",
-            zipCode: address?.postalCode || "94105",
+            street: "Standard Delivery",
+            city: "Online Order",
+            state: "NA",
+            country: "US",
+            zipCode: "00000",
           },
-          shippingMethod: checkoutState.shippingMethodId,
+          shippingMethod: checkoutState.shippingMethodId || "standard",
           totalAmount: cartState.totalPrice(),
           grandTotal: cartState.totalPrice(),
         };
@@ -93,13 +95,17 @@ export default function CheckoutPage() {
         if (order && createdId) {
           setCreatedOrderId(createdId);
           setCreatedOrderAmount(order.grandTotal || order.totalAmount || cartState.totalPrice());
-          setStep(4);
+          setStep(3);
         } else {
           throw new Error("Invalid order response");
         }
       } catch (err: any) {
         console.error("Failed to create order:", err);
-        const errMsg = err.response?.data?.error || err.response?.data?.message || err.message || "Failed to create order";
+        const errMsg =
+          err.response?.data?.error ||
+          err.response?.data?.message ||
+          err.message ||
+          "Failed to create order";
         if (errMsg.includes("Authentication required") || errMsg.includes("401")) {
           setCreateOrderError("Sign in required. Redirecting to login page...");
           setTimeout(() => {
@@ -111,7 +117,7 @@ export default function CheckoutPage() {
       } finally {
         setIsCreatingOrder(false);
       }
-    } else if (step < 4) {
+    } else if (step < 3) {
       setStep(step + 1);
     }
   };
@@ -128,16 +134,14 @@ export default function CheckoutPage() {
 
   // Button labels per step
   const buttonLabels: Record<number, string> = {
-    1: "Continue to Shipping",
-    2: "Continue to Review",
-    3: isCreatingOrder ? "Processing..." : "Continue to Payment",
+    1: "Continue to Review",
+    2: isCreatingOrder ? "Processing..." : "Continue to Payment",
   };
 
   // Disable conditions per step
   const isDisabled: Record<number, boolean> = {
-    1: !selectedAddressId,
-    2: !shippingMethodId,
-    3: isCreatingOrder,
+    1: !shippingMethodId,
+    2: isCreatingOrder,
   };
 
   if (!mounted) {
@@ -194,23 +198,16 @@ export default function CheckoutPage() {
           {/* Left: Step content */}
           <div className="lg:col-span-2">
             <AnimatePresence mode="wait">
-              {/* ── STEP 1: SHIPPING ADDRESS ─── */}
+              {/* ── STEP 1: DELIVERY METHOD ──── */}
               {step === 1 && (
                 <motion.div key="step-1" {...stepVariants}>
-                  <AddressSelector />
-                </motion.div>
-              )}
-
-              {/* ── STEP 2: DELIVERY METHOD ──── */}
-              {step === 2 && (
-                <motion.div key="step-2" {...stepVariants}>
                   <ShippingMethod />
                 </motion.div>
               )}
 
-              {/* ── STEP 3: ORDER REVIEW ─────── */}
-              {step === 3 && (
-                <motion.div key="step-3" {...stepVariants} className="space-y-6">
+              {/* ── STEP 2: ORDER REVIEW ─────── */}
+              {step === 2 && (
+                <motion.div key="step-2" {...stepVariants} className="space-y-6">
                   {createOrderError && (
                     <div className="p-3 bg-red-50 text-red-600 rounded-xl text-xs font-semibold">
                       {createOrderError}
@@ -227,14 +224,14 @@ export default function CheckoutPage() {
                 </motion.div>
               )}
 
-              {/* ── STEP 4: PAYMENT ──────────── */}
-              {step === 4 && (
-                <motion.div key="step-4" {...stepVariants}>
-                  <PaymentForm 
-                    onSuccess={handlePaymentSuccess} 
+              {/* ── STEP 3: PAYMENT ──────────── */}
+              {step === 3 && (
+                <motion.div key="step-3" {...stepVariants}>
+                  <PaymentForm
+                    onSuccess={handlePaymentSuccess}
                     onBack={goBack}
-                    orderId={createdOrderId!} 
-                    amount={createdOrderAmount} 
+                    orderId={createdOrderId!}
+                    amount={createdOrderAmount}
                   />
                 </motion.div>
               )}
@@ -243,7 +240,7 @@ export default function CheckoutPage() {
 
           {/* Right: Sticky sidebar */}
           <div className="lg:sticky lg:top-20 space-y-4">
-            {step < 4 && (
+            {step < 3 && (
               <>
                 <PriceSummary
                   onContinue={goNext}
@@ -254,13 +251,13 @@ export default function CheckoutPage() {
               </>
             )}
 
-            {step === 4 && <SecurityBadge />}
+            {step === 3 && <SecurityBadge />}
           </div>
         </div>
       </div>
 
       {/* ── MOBILE STICKY BOTTOM BAR (< lg) ───────────────────────── */}
-      {step < 4 && (
+      {step < 3 && (
         <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 p-3 sm:p-4 pb-[max(1rem,env(safe-area-inset-bottom))] z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.12)]">
           <button
             onClick={goNext}

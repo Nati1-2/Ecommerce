@@ -9,9 +9,10 @@ import {
   Trash2,
   Download,
   CheckCircle2,
+  Calendar,
 } from "lucide-react";
 import { useSimulateVisitorHit, useClearVisitorLogs } from "@/hooks/useAdminVisitorsQuery";
-import { VisitorLogItem } from "@/types/adminVisitors";
+import { VisitorLogItem, VisitorTimeframe } from "@/types/adminVisitors";
 
 interface HeaderProps {
   isAutoRefresh: boolean;
@@ -20,6 +21,8 @@ interface HeaderProps {
   isFetching: boolean;
   visitors: VisitorLogItem[];
   liveCount: number;
+  timeframe: VisitorTimeframe;
+  onTimeframeChange: (timeframe: VisitorTimeframe) => void;
 }
 
 export default function VisitorTrackerHeader({
@@ -29,6 +32,8 @@ export default function VisitorTrackerHeader({
   isFetching,
   visitors,
   liveCount,
+  timeframe,
+  onTimeframeChange,
 }: HeaderProps) {
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -36,10 +41,18 @@ export default function VisitorTrackerHeader({
   const simulateMutation = useSimulateVisitorHit();
   const clearMutation = useClearVisitorLogs();
 
+  const timeframeOptions: { label: string; value: VisitorTimeframe; desc: string }[] = [
+    { label: "All Time", value: "all", desc: "All historical sessions" },
+    { label: "Daily (24h)", value: "daily", desc: "Past 24 hours" },
+    { label: "Weekly (7d)", value: "weekly", desc: "Past 7 days" },
+    { label: "Monthly (30d)", value: "monthly", desc: "Past 30 days" },
+    { label: "Yearly (1y)", value: "yearly", desc: "Past 365 days" },
+  ];
+
   const handleSimulate = async () => {
     try {
       await simulateMutation.mutateAsync();
-      setToastMsg("Simulated visitor hit recorded!");
+      setToastMsg("Simulated live visitor recorded in database!");
       setTimeout(() => setToastMsg(null), 3000);
     } catch {
       setToastMsg("Failed to simulate visitor");
@@ -107,85 +120,129 @@ export default function VisitorTrackerHeader({
 
   return (
     <div className="relative">
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 p-6 bg-white border border-slate-200/80 rounded-3xl shadow-sm">
-        {/* Title & Live Status */}
-        <div className="space-y-1.5">
-          <div className="flex flex-wrap items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
-              <Globe className="w-5 h-5" />
+      <div className="flex flex-col gap-5 p-6 bg-white border border-slate-200/80 rounded-3xl shadow-sm">
+        {/* Top Section: Title & Actions */}
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+          {/* Title & Live Status */}
+          <div className="space-y-1.5">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+                <Globe className="w-5 h-5" />
+              </div>
+              <div>
+                <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2.5">
+                  Visitor Tracker
+                  <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-700 border border-emerald-500/20">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    {liveCount} Active Now
+                  </span>
+                </h1>
+              </div>
             </div>
-            <div>
-              <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2.5">
-                Visitor Tracker
-                <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-700 border border-emerald-500/20">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  {liveCount} Active Now
-                </span>
-              </h1>
-            </div>
+            <p className="text-xs text-slate-500 max-w-xl">
+              Real-time web traffic telemetry: inspect visitor IP addresses, device types (Mobile, PC, Tablet),
+              operating systems, countries, and traffic acquisition channels (Social Media, Search Engines, Direct).
+            </p>
           </div>
-          <p className="text-xs text-slate-500 max-w-xl">
-            Real-time web traffic telemetry: inspect visitor IP addresses, device types (Mobile, PC, Tablet),
-            operating systems, countries, and traffic acquisition channels (Social Media, Search Engines, Direct).
-          </p>
+
+          {/* Action Controls */}
+          <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+            {/* Auto Refresh Toggle */}
+            <button
+              onClick={onToggleAutoRefresh}
+              className={`px-3.5 py-2 rounded-2xl text-xs font-bold border transition-all flex items-center gap-2 ${
+                isAutoRefresh
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm"
+                  : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
+              }`}
+              title={isAutoRefresh ? "Auto-refreshing every 10s" : "Auto-refresh paused"}
+            >
+              <Radio className={`w-3.5 h-3.5 ${isAutoRefresh ? "text-emerald-500 animate-pulse" : "text-slate-400"}`} />
+              <span>{isAutoRefresh ? "Live 10s" : "Paused"}</span>
+            </button>
+
+            {/* Manual Refresh */}
+            <button
+              onClick={onManualRefresh}
+              disabled={isFetching}
+              className="p-2.5 rounded-2xl text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors disabled:opacity-50"
+              title="Refresh Data"
+            >
+              <RefreshCw className={`w-4 h-4 ${isFetching ? "animate-spin text-blue-600" : ""}`} />
+            </button>
+
+            {/* Simulate Hit */}
+            <button
+              onClick={handleSimulate}
+              disabled={simulateMutation.isPending}
+              className="px-3.5 py-2 rounded-2xl text-xs font-bold bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-colors flex items-center gap-2"
+              title="Generate a test simulated visitor hit stored in MongoDB"
+            >
+              <PlusCircle className="w-3.5 h-3.5" />
+              <span>{simulateMutation.isPending ? "Sending..." : "Simulate Visit"}</span>
+            </button>
+
+            {/* Export CSV */}
+            <button
+              onClick={handleExportCSV}
+              disabled={!visitors.length}
+              className="px-3.5 py-2 rounded-2xl text-xs font-bold bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 transition-colors flex items-center gap-2 disabled:opacity-40"
+              title="Export visitor logs to CSV"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Export CSV</span>
+            </button>
+
+            {/* Clear Logs */}
+            <button
+              onClick={() => setShowClearConfirm(true)}
+              className="p-2.5 rounded-2xl text-slate-400 hover:text-red-600 hover:bg-red-50 border border-slate-200 hover:border-red-200 transition-colors"
+              title="Clear all logs"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
-        {/* Action Controls */}
-        <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
-          {/* Auto Refresh Toggle */}
-          <button
-            onClick={onToggleAutoRefresh}
-            className={`px-3.5 py-2 rounded-2xl text-xs font-bold border transition-all flex items-center gap-2 ${
-              isAutoRefresh
-                ? "bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm"
-                : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
-            }`}
-            title={isAutoRefresh ? "Auto-refreshing every 10s" : "Auto-refresh paused"}
-          >
-            <Radio className={`w-3.5 h-3.5 ${isAutoRefresh ? "text-emerald-500 animate-pulse" : "text-slate-400"}`} />
-            <span>{isAutoRefresh ? "Live 10s" : "Paused"}</span>
-          </button>
+        {/* Date Filter Bar: Yearly, Monthly, Weekly, Daily, All Time */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-4 border-t border-slate-100">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+              <Calendar className="w-3.5 h-3.5" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-slate-900 flex items-center gap-2">
+                Date Range Filter
+                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 uppercase tracking-wider">
+                  Real Backend
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400">
+                Filter traffic metrics by live database timeframe
+              </p>
+            </div>
+          </div>
 
-          {/* Manual Refresh */}
-          <button
-            onClick={onManualRefresh}
-            disabled={isFetching}
-            className="p-2.5 rounded-2xl text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors disabled:opacity-50"
-            title="Refresh Data"
-          >
-            <RefreshCw className={`w-4 h-4 ${isFetching ? "animate-spin text-blue-600" : ""}`} />
-          </button>
-
-          {/* Simulate Hit */}
-          <button
-            onClick={handleSimulate}
-            disabled={simulateMutation.isPending}
-            className="px-3.5 py-2 rounded-2xl text-xs font-bold bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-colors flex items-center gap-2"
-            title="Generate a test simulated visitor hit"
-          >
-            <PlusCircle className="w-3.5 h-3.5" />
-            <span>{simulateMutation.isPending ? "Sending..." : "Simulate Visit"}</span>
-          </button>
-
-          {/* Export CSV */}
-          <button
-            onClick={handleExportCSV}
-            disabled={!visitors.length}
-            className="px-3.5 py-2 rounded-2xl text-xs font-bold bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 transition-colors flex items-center gap-2 disabled:opacity-40"
-            title="Export visitor logs to CSV"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>Export CSV</span>
-          </button>
-
-          {/* Clear Logs */}
-          <button
-            onClick={() => setShowClearConfirm(true)}
-            className="p-2.5 rounded-2xl text-slate-400 hover:text-red-600 hover:bg-red-50 border border-slate-200 hover:border-red-200 transition-colors"
-            title="Clear all logs"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+          {/* Timeframe Selector Pills */}
+          <div className="flex items-center p-1 bg-slate-100/90 rounded-2xl border border-slate-200/80 text-xs font-semibold overflow-x-auto max-w-full scrollbar-none">
+            {timeframeOptions.map((opt) => {
+              const isSelected = timeframe === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  onClick={() => onTimeframeChange(opt.value)}
+                  title={opt.desc}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
+                    isSelected
+                      ? "bg-slate-900 text-white shadow-sm"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
+                  }`}
+                >
+                  <span>{opt.label}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
@@ -199,7 +256,7 @@ export default function VisitorTrackerHeader({
             <div className="text-center space-y-1">
               <h3 className="text-base font-bold text-slate-900">Clear All Visitor Logs?</h3>
               <p className="text-xs text-slate-500">
-                This will reset all recorded visitor tracking sessions. This action cannot be undone.
+                This will reset all recorded visitor tracking sessions in MongoDB. This action cannot be undone.
               </p>
             </div>
             <div className="flex gap-2">

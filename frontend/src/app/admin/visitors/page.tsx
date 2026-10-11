@@ -10,12 +10,14 @@ import DeviceOSDistribution from "@/components/AdminVisitors/DeviceOSDistributio
 import GeoDistributionCard from "@/components/AdminVisitors/GeoDistributionCard";
 import VisitorTable from "@/components/AdminVisitors/VisitorTable";
 import VisitorTrackerSkeleton from "@/components/AdminVisitors/VisitorTrackerSkeleton";
+import { VisitorTimeframe } from "@/types/adminVisitors";
 
 export default function AdminVisitorTrackerPage() {
   const [isAutoRefresh, setIsAutoRefresh] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSource, setSelectedSource] = useState("all");
   const [selectedDevice, setSelectedDevice] = useState("all");
+  const [timeframe, setTimeframe] = useState<VisitorTimeframe>("all");
   const [currentPage, setCurrentPage] = useState(1);
 
   // Poll every 10 seconds if auto-refresh is active
@@ -33,6 +35,7 @@ export default function AdminVisitorTrackerPage() {
       searchQuery,
       sourceType: selectedSource,
       deviceType: selectedDevice,
+      timeframe,
       page: currentPage,
       limit: 25,
     },
@@ -82,7 +85,7 @@ export default function AdminVisitorTrackerPage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16">
-      {/* Page Header with Controls */}
+      {/* Page Header with Controls & Date Filter */}
       <VisitorTrackerHeader
         isAutoRefresh={isAutoRefresh}
         onToggleAutoRefresh={() => setIsAutoRefresh((prev) => !prev)}
@@ -90,6 +93,11 @@ export default function AdminVisitorTrackerPage() {
         isFetching={isFetching}
         visitors={visitors}
         liveCount={stats.liveActive}
+        timeframe={timeframe}
+        onTimeframeChange={(tf) => {
+          setTimeframe(tf);
+          setCurrentPage(1);
+        }}
       />
 
       {/* Real-time KPI Metric Summary */}
@@ -144,6 +152,11 @@ export default function AdminVisitorTrackerPage() {
         selectedDevice={selectedDevice}
         onSelectDevice={(d) => {
           setSelectedDevice(d);
+          setCurrentPage(1);
+        }}
+        timeframe={timeframe}
+        onTimeframeChange={(tf) => {
+          setTimeframe(tf);
           setCurrentPage(1);
         }}
       />

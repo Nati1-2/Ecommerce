@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Mail, Phone, MapPin } from "lucide-react";
+import { Mail } from "lucide-react";
 
 const FacebookIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" fill="currentColor" className={className || "w-4 h-4"}>
@@ -86,8 +86,6 @@ export function Footer() {
               {[
                 { icon: Mail, text: "natnaelman368@gmail.com", href: "mailto:natnaelman368@gmail.com" },
                 { icon: TelegramIcon, text: "@natimanboss", href: "https://t.me/natimanboss" },
-                { icon: Phone, text: "+1 (800) 123-4567", href: "tel:+18001234567" },
-                { icon: MapPin, text: "San Francisco, CA, USA", href: "https://maps.google.com/?q=San+Francisco,+CA" },
               ].map(({ icon: Icon, text, href }) => (
                 <a
                   key={text}

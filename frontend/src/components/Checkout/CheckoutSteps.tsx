@@ -9,10 +9,9 @@ interface CheckoutStepsProps {
 }
 
 const STEPS = [
-  { number: 1, label: "Address" },
-  { number: 2, label: "Shipping" },
-  { number: 3, label: "Review" },
-  { number: 4, label: "Payment" },
+  { number: 1, label: "Shipping" },
+  { number: 2, label: "Review" },
+  { number: 3, label: "Payment" },
 ];
 
 export default function CheckoutSteps({ currentStep }: CheckoutStepsProps) {

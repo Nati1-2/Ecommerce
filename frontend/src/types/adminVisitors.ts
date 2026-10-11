@@ -89,11 +89,13 @@ export interface VisitorStats {
   topCountries: CountryShareItem[];
 }
 
+export type VisitorTimeframe = "daily" | "weekly" | "monthly" | "yearly" | "all";
+
 export interface VisitorFilterOptions {
   sourceType?: string;
   deviceType?: string;
   searchQuery?: string;
-  timeframe?: "1h" | "24h" | "7d" | "30d" | "all";
+  timeframe?: VisitorTimeframe | string;
   page?: number;
   limit?: number;
 }

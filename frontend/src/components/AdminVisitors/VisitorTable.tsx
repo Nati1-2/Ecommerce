@@ -16,7 +16,7 @@ import {
   Navigation,
   Megaphone,
 } from "lucide-react";
-import { VisitorLogItem, DeviceType, TrafficSourceType } from "@/types/adminVisitors";
+import { VisitorLogItem, DeviceType, TrafficSourceType, VisitorTimeframe } from "@/types/adminVisitors";
 import VisitorDetailsModal from "./VisitorDetailsModal";
 
 interface TableProps {
@@ -31,6 +31,8 @@ interface TableProps {
   onSelectSource: (s: string) => void;
   selectedDevice: string;
   onSelectDevice: (d: string) => void;
+  timeframe?: VisitorTimeframe;
+  onTimeframeChange?: (t: VisitorTimeframe) => void;
 }
 
 export default function VisitorTable({
@@ -45,6 +47,8 @@ export default function VisitorTable({
   onSelectSource,
   selectedDevice,
   onSelectDevice,
+  timeframe,
+  onTimeframeChange,
 }: TableProps) {
   const [selectedVisitor, setSelectedVisitor] = useState<VisitorLogItem | null>(null);
   const [copiedIp, setCopiedIp] = useState<string | null>(null);
@@ -138,9 +142,9 @@ export default function VisitorTable({
         </div>
 
         {/* Search & Device Filter */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {/* Search Input */}
-          <div className="relative flex-1 sm:w-64">
+          <div className="relative flex-1 sm:w-56">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
@@ -150,6 +154,22 @@ export default function VisitorTable({
               className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium"
             />
           </div>
+
+          {/* Timeframe Select */}
+          {onTimeframeChange && (
+            <select
+              value={timeframe || "all"}
+              onChange={(e) => onTimeframeChange(e.target.value as VisitorTimeframe)}
+              className="px-3 py-1.5 text-xs font-bold rounded-xl border border-slate-200 bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+              title="Filter by Timeframe"
+            >
+              <option value="all">All Time</option>
+              <option value="daily">Daily (24h)</option>
+              <option value="weekly">Weekly (7d)</option>
+              <option value="monthly">Monthly (30d)</option>
+              <option value="yearly">Yearly (1y)</option>
+            </select>
+          )}
 
           {/* Device Type Select */}
           <select
@@ -190,12 +210,13 @@ export default function VisitorTable({
                     <p className="text-xs text-slate-400">
                       Try clearing filters or search terms to display more session data.
                     </p>
-                    {(searchQuery || selectedSource !== "all" || selectedDevice !== "all") && (
+                    {(searchQuery || selectedSource !== "all" || selectedDevice !== "all" || (timeframe && timeframe !== "all")) && (
                       <button
                         onClick={() => {
                           onSearchChange("");
                           onSelectSource("all");
                           onSelectDevice("all");
+                          if (onTimeframeChange) onTimeframeChange("all");
                         }}
                         className="text-xs font-bold text-blue-600 hover:underline"
                       >
