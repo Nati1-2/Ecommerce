@@ -10,7 +10,6 @@ import {
   Store,
   Package,
   ShoppingBag,
-  CreditCard,
   LineChart,
   Globe,
   MessageSquareText,
@@ -21,7 +20,6 @@ import {
   ChevronRight,
   LogOut,
   Sparkles,
-  Zap,
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 
@@ -64,22 +62,21 @@ export default function AdminSidebar({
       ],
     },
     {
-      title: "E-Commerce",
+      title: "E-Commerce Operations",
       items: [
         { label: "Orders", href: "/admin/orders", icon: ShoppingBag },
         { label: "Products", href: "/admin/products", icon: Package },
         { label: "Vendors", href: "/admin/vendors", icon: Store, badge: formattedVendorsBadge },
         { label: "Users", href: "/admin/users", icon: Users, badge: formattedUsersBadge },
-        { label: "Payments", href: "/admin/payments", icon: CreditCard },
       ],
     },
     {
-      title: "Management",
+      title: "Governance & Config",
       items: [
         { label: "Reviews", href: "/admin/reviews", icon: MessageSquareText },
         { label: "Notifications", href: "/admin/notifications", icon: Bell },
         { label: "Audit Logs", href: "/admin/audit-logs", icon: ShieldCheck },
-        { label: "Settings", href: "/admin/settings", icon: Settings },
+        { label: "System Settings", href: "/admin/settings", icon: Settings },
       ],
     },
   ];
@@ -87,29 +84,29 @@ export default function AdminSidebar({
   return (
     <aside
       className={cn(
-        "flex flex-col bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-r border-slate-200/80 dark:border-slate-800/80 shadow-xs transition-all duration-300 relative",
+        "flex flex-col bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-r border-slate-200/80 dark:border-slate-800/80 shadow-xs transition-all duration-300 relative select-none",
         isMobile ? "w-full h-full" : isSidebarCollapsed ? "w-20" : "w-64",
-        "h-screen sticky top-0 z-30 select-none"
+        "h-screen sticky top-0 z-30"
       )}
     >
       {/* Brand Header */}
-      <div className="p-5 flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 shrink-0">
+      <div className="p-4 sm:p-5 flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 shrink-0">
         <Link
           href="/admin/dashboard"
           onClick={onCloseMobile}
-          className="flex items-center gap-3 overflow-hidden group"
+          className="flex items-center gap-3 overflow-hidden group focus:outline-none"
         >
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-blue-700 flex items-center justify-center text-white shrink-0 shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform font-black">
-            <Sparkles className="w-5 h-5" />
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-violet-600 flex items-center justify-center text-white shrink-0 shadow-md shadow-blue-500/20 group-hover:scale-105 transition-all">
+            <Sparkles className="w-5 h-5 text-white" />
           </div>
           {(!isSidebarCollapsed || isMobile) && (
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 font-black text-slate-900 dark:text-white text-base tracking-tight truncate">
-                Nati Admin
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span>Nati Admin</span>
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               </div>
-              <span className="text-[10px] text-blue-600 dark:text-blue-400 font-extrabold tracking-wider uppercase">
-                Enterprise Cloud
+              <span className="text-[10px] text-blue-600 dark:text-blue-400 font-extrabold tracking-wider uppercase block">
+                Enterprise Suite
               </span>
             </div>
           )}
@@ -119,8 +116,9 @@ export default function AdminSidebar({
         {!isMobile && (
           <button
             onClick={toggleSidebar}
-            className="w-7 h-7 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-all absolute -right-3.5 top-7 border border-slate-200 dark:border-slate-800 shadow-xs"
+            className="w-7 h-7 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-all absolute -right-3.5 top-6 border border-slate-200 dark:border-slate-800 shadow-xs focus:outline-none"
             title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+            aria-label={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
           >
             {isSidebarCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
           </button>
@@ -128,11 +126,11 @@ export default function AdminSidebar({
       </div>
 
       {/* Navigation Sections */}
-      <nav className="flex-1 overflow-y-auto px-3.5 py-4 space-y-6 scrollbar-thin">
+      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-6 scrollbar-thin">
         {navSections.map((section) => (
           <div key={section.title} className="space-y-1">
             {(!isSidebarCollapsed || isMobile) && (
-              <p className="px-3 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">
+              <p className="px-3 text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">
                 {section.title}
               </p>
             )}
@@ -151,7 +149,7 @@ export default function AdminSidebar({
                     if (onCloseMobile) onCloseMobile();
                   }}
                   className={cn(
-                    "flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all relative group",
+                    "flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all relative group focus:outline-none focus:ring-2 focus:ring-blue-500/20",
                     isActive
                       ? "bg-blue-600 text-white shadow-md shadow-blue-500/25"
                       : "hover:bg-slate-100/80 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
@@ -159,7 +157,7 @@ export default function AdminSidebar({
                 >
                   <Icon
                     className={cn(
-                      "w-4 h-4 shrink-0 transition-transform group-hover:scale-110",
+                      "w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-110",
                       isActive ? "text-white" : "text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400"
                     )}
                   />
@@ -171,7 +169,7 @@ export default function AdminSidebar({
                   {item.badge && (!isSidebarCollapsed || isMobile) && (
                     <span
                       className={cn(
-                        "text-[10px] px-2 py-0.5 rounded-full font-black flex items-center gap-1",
+                        "text-[10px] px-2 py-0.5 rounded-full font-black flex items-center gap-1 shrink-0",
                         item.badge === "Live"
                           ? isActive
                             ? "bg-white/20 text-white"
@@ -206,8 +204,8 @@ export default function AdminSidebar({
       {/* Logout / User Info Footer */}
       <div className="p-3.5 border-t border-slate-100 dark:border-slate-800/80 shrink-0 space-y-2">
         {(!isSidebarCollapsed || isMobile) && (
-          <div className="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800">
-            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">Appearance</span>
+          <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800">
+            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">Mode</span>
             <ThemeToggle variant="pill" />
           </div>
         )}
@@ -217,13 +215,13 @@ export default function AdminSidebar({
             window.location.href = "/login";
           }}
           className={cn(
-            "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all group",
+            "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all group focus:outline-none",
             isSidebarCollapsed && !isMobile && "justify-center"
           )}
           title="Sign Out"
         >
           <LogOut className="w-4 h-4 shrink-0 text-slate-400 group-hover:text-rose-600 transition-colors" />
-          {(!isSidebarCollapsed || isMobile) && <span>Sign Out Portal</span>}
+          {(!isSidebarCollapsed || isMobile) && <span>Sign Out</span>}
         </button>
       </div>
     </aside>

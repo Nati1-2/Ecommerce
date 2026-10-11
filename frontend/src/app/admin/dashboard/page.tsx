@@ -17,6 +17,7 @@ import {
 } from "@/hooks/useAdminQuery";
 
 import OverviewCards from "@/components/AdminDashboard/OverviewCards";
+import AdminPageHeader from "@/components/AdminShared/AdminPageHeader";
 import MarketplaceHealth from "@/components/AdminDashboard/MarketplaceHealth";
 import OrderOverview from "@/components/AdminDashboard/OrderOverview";
 import VendorPerformance from "@/components/AdminDashboard/VendorPerformance";
@@ -136,55 +137,47 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-16">
-      {/* Elevated Hero Header with Real DB Connection and Telemetry */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 bg-gradient-to-r from-white via-slate-50/70 to-blue-50/30 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800/60 p-6 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
-        <div>
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-              Platform Command Center
-            </h1>
-            <span className="px-2.5 py-1 bg-blue-600 text-white font-extrabold text-[11px] rounded-lg shadow-2xs tracking-wide">
-              ADMIN LIVE
-            </span>
-          </div>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-1.5 max-w-2xl leading-relaxed">
-            Real-time multi-vendor governance, GMV revenue analytics, customer order pipeline, and live MongoDB telemetry.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3">
-          {/* Live MongoDB Status Pill */}
-          <div
-            className={`px-4 py-2.5 rounded-2xl text-xs font-black flex items-center gap-2.5 border shadow-2xs transition-all ${
-              isDbConnected
-                ? "bg-emerald-50/90 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
-                : "bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border-amber-200 dark:border-amber-800"
-            }`}
-          >
-            <span
-              className={`w-2.5 h-2.5 rounded-full ${
-                isDbConnected ? "bg-emerald-500 animate-pulse" : "bg-amber-500"
+      {/* Platform Header with Real DB Connection and Telemetry */}
+      <AdminPageHeader
+        title="Platform Command Center"
+        description="Real-time multi-vendor governance, GMV revenue analytics, customer order pipeline, and live MongoDB telemetry."
+        badge="Live Telemetry"
+        badgeVariant="blue"
+        actions={
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Live MongoDB Status Pill */}
+            <div
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 border shadow-2xs transition-all ${
+                isDbConnected
+                  ? "bg-emerald-50/90 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
+                  : "bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border-amber-200 dark:border-amber-800"
               }`}
-            />
-            <Database className="w-3.5 h-3.5" />
-            <span>
-              MongoDB: {isDbConnected ? "Connected" : "Disconnected"}
-              {dbLatency > 0 && <span className="font-semibold text-emerald-600 dark:text-emerald-400 ml-1">({dbLatency}ms)</span>}
-            </span>
-          </div>
+            >
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  isDbConnected ? "bg-emerald-500 animate-pulse" : "bg-amber-500"
+                }`}
+              />
+              <Database className="w-3.5 h-3.5" />
+              <span>
+                MongoDB: {isDbConnected ? "Connected" : "Disconnected"}
+                {dbLatency > 0 && <span className="font-semibold text-emerald-600 dark:text-emerald-400 ml-1">({dbLatency}ms)</span>}
+              </span>
+            </div>
 
-          {/* Quick Refresh Button */}
-          <button
-            onClick={handleRetryAll}
-            title="Refresh real-time platform telemetry"
-            disabled={isStatsFetching}
-            className="px-3.5 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-slate-900 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-2xl transition-all border border-slate-200/80 dark:border-slate-700 shadow-2xs flex items-center gap-2 disabled:opacity-50"
-          >
-            <RefreshCw className={`w-4 h-4 ${isStatsFetching ? "animate-spin text-blue-600" : ""}`} />
-            <span className="hidden sm:inline">Refresh Data</span>
-          </button>
-        </div>
-      </div>
+            {/* Quick Refresh Button */}
+            <button
+              onClick={handleRetryAll}
+              title="Refresh real-time platform telemetry"
+              disabled={isStatsFetching}
+              className="px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-slate-900 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl transition-all border border-slate-200/80 dark:border-slate-700 shadow-2xs flex items-center gap-2 disabled:opacity-50"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isStatsFetching ? "animate-spin text-blue-600" : ""}`} />
+              <span className="hidden sm:inline">Refresh Data</span>
+            </button>
+          </div>
+        }
+      />
 
       {/* 1. Platform KPI Overview Cards */}
       <OverviewCards stats={safeStats} />

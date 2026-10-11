@@ -2,6 +2,8 @@
 
 import { AdminReviewModel } from "@/types/adminReview";
 import ReviewRow from "./ReviewRow";
+import AdminEmptyState from "@/components/AdminShared/AdminEmptyState";
+import { MessageSquare } from "lucide-react";
 
 interface Props {
   reviews: AdminReviewModel[];
@@ -27,7 +29,7 @@ export default function ReviewTable({
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+    <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[700px] text-left text-sm">
           <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase font-semibold">
@@ -53,8 +55,12 @@ export default function ReviewTable({
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {reviews.length === 0 ? (
               <tr>
-                <td colSpan={9} className="py-12 text-center text-slate-400 text-sm">
-                  No customer reviews found matching your active filter criteria.
+                <td colSpan={9} className="py-12">
+                  <AdminEmptyState
+                    icon={MessageSquare}
+                    title="No Customer Reviews Found"
+                    description="No customer reviews match your active filter criteria or query parameters."
+                  />
                 </td>
               </tr>
             ) : (

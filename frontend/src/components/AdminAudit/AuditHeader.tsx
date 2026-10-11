@@ -2,6 +2,7 @@
 
 import { useAdminAuditStore, AuditViewTab } from "@/store/adminAuditStore";
 import { ShieldCheck, Download, FileText, Clock } from "lucide-react";
+import AdminPageHeader from "@/components/AdminShared/AdminPageHeader";
 
 export default function AuditHeader() {
   const {
@@ -21,35 +22,32 @@ export default function AuditHeader() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
-            <ShieldCheck className="w-7 h-7 text-blue-600" />
-            Audit Logs & SIEM Security Monitoring
-          </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Realtime security telemetry, administrative audit trail, and OpenSearch compliance logging.
-          </p>
-        </div>
+      <AdminPageHeader
+        title="Audit Logs & SIEM Security Monitoring"
+        description="Realtime security telemetry, administrative audit trail, and OpenSearch compliance logging."
+        breadcrumbs={[{ label: "Audit Logs" }]}
+        badge="SIEM Security"
+        badgeVariant="blue"
+        actions={
+          <div className="flex flex-wrap items-center gap-2.5">
+            <button
+              onClick={() => setIsRetentionModalOpen(true)}
+              className="px-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition-all flex items-center gap-2 shadow-2xs"
+            >
+              <Clock className="w-3.5 h-3.5 text-amber-500" />
+              <span>Retention Policy</span>
+            </button>
 
-        <div className="flex flex-wrap items-center gap-2.5">
-          <button
-            onClick={() => setIsRetentionModalOpen(true)}
-            className="px-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5 shadow-sm"
-          >
-            <Clock className="w-4 h-4 text-amber-500" />
-            <span>Retention Policy</span>
-          </button>
-
-          <button
-            onClick={() => setIsComplianceModalOpen(true)}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-colors shadow-md shadow-blue-500/25 flex items-center gap-1.5"
-          >
-            <FileText className="w-4 h-4" />
-            <span>Security Report (SOC2)</span>
-          </button>
-        </div>
-      </div>
+            <button
+              onClick={() => setIsComplianceModalOpen(true)}
+              className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all shadow-xs flex items-center gap-2"
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span>Security Report (SOC2)</span>
+            </button>
+          </div>
+        }
+      />
 
       {/* Navigation View Tabs */}
       <div className="flex items-center gap-1 overflow-x-auto p-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm text-xs font-semibold">

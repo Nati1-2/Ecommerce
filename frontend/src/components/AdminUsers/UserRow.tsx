@@ -14,6 +14,7 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import AdminStatusBadge from "@/components/AdminShared/AdminStatusBadge";
 
 interface Props {
   user: AdminUser;
@@ -43,17 +44,6 @@ export default function UserRow({
         return "bg-amber-50 text-amber-600 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800";
       default:
         return "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-300 dark:border-slate-700";
-    }
-  };
-
-  const getStatusBadge = (status: AdminUser["status"]) => {
-    switch (status) {
-      case "Active":
-        return "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800";
-      case "Blocked":
-        return "bg-rose-50 text-rose-600 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800";
-      default:
-        return "bg-amber-50 text-amber-600 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800";
     }
   };
 
@@ -103,9 +93,7 @@ export default function UserRow({
 
       {/* Status */}
       <td className="py-4 px-6">
-        <span className={cn("text-[11px] font-bold px-2.5 py-0.5 rounded-full border", getStatusBadge(user.status))}>
-          {user.status}
-        </span>
+        <AdminStatusBadge status={user.status} size="sm" />
       </td>
 
       {/* Orders & Spent */}

@@ -16,11 +16,11 @@ export default function VendorOrderChart() {
   const { data = [], isLoading } = useVendorOrderDistribution();
 
   if (isLoading) {
-    return <div className="h-56 bg-slate-100 dark:bg-slate-800 rounded-3xl animate-pulse" />;
+    return <div className="h-56 bg-slate-100 dark:bg-slate-800/50 rounded-2xl animate-pulse" />;
   }
 
   return (
-    <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs space-y-4">
       <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
         <div className="flex items-center gap-2">
           <Store className="w-5 h-5 text-blue-500" />

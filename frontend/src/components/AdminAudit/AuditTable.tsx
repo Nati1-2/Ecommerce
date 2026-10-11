@@ -2,6 +2,7 @@
 
 import { useAuditLogs } from "@/hooks/useAdminAuditQuery";
 import { useAdminAuditStore } from "@/store/adminAuditStore";
+import AdminEmptyState from "@/components/AdminShared/AdminEmptyState";
 import { Shield, Eye, ShieldAlert, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -27,7 +28,7 @@ export default function AuditTable() {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden space-y-4 p-6">
+    <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs overflow-hidden space-y-4 p-6">
       <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
         <div className="flex items-center gap-2">
           <Shield className="w-5 h-5 text-blue-600" />
@@ -52,7 +53,18 @@ export default function AuditTable() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
-            {logs.map((log) => (
+            {logs.length === 0 ? (
+              <tr>
+                <td colSpan={9} className="py-12">
+                  <AdminEmptyState
+                    icon={ShieldAlert}
+                    title="No Security Logs Recorded"
+                    description="No system audit logs found matching the current timeframe or security filter."
+                  />
+                </td>
+              </tr>
+            ) : (
+              logs.map((log) => (
               <tr
                 key={log.id}
                 onClick={() => setSelectedLog(log)}
@@ -93,7 +105,7 @@ export default function AuditTable() {
                   </button>
                 </td>
               </tr>
-            ))}
+            )))}
           </tbody>
         </table>
       </div>

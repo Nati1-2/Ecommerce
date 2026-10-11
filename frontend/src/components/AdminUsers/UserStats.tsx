@@ -1,80 +1,48 @@
 "use client";
 
 import { UserStatsData } from "@/types/adminUser";
-import { Users, UserCheck, UserX, UserPlus, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { Users, UserCheck, UserX, UserPlus } from "lucide-react";
+import AdminMetricCard from "@/components/AdminShared/AdminMetricCard";
 
 interface Props {
   stats: UserStatsData;
 }
 
 export default function UserStats({ stats }: Props) {
-  const cards = [
-    {
-      title: "Total Registered Users",
-      count: (stats.totalUsers || 0).toLocaleString(),
-      growth: stats.usersGrowth || 0,
-      icon: Users,
-      color: "bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400",
-    },
-    {
-      title: "Active Platform Users",
-      count: (stats.activeUsers || 0).toLocaleString(),
-      growth: stats.activeGrowth || 0,
-      icon: UserCheck,
-      color: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400",
-    },
-    {
-      title: "Blocked / Suspended Accounts",
-      count: (stats.blockedUsers || 0).toLocaleString(),
-      growth: stats.blockedChange || 0,
-      icon: UserX,
-      color: "bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400",
-    },
-    {
-      title: "New Registrations Today",
-      count: `+${stats.newUsersToday || 0}`,
-      growth: stats.todayGrowth || 0,
-      icon: UserPlus,
-      color: "bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400",
-    },
-  ];
-
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {cards.map((card) => {
-        const Icon = card.icon;
-        const isPositive = card.growth > 0;
-        const isNeutral = card.growth === 0;
-        const GrowthIcon = isNeutral ? Minus : isPositive ? TrendingUp : TrendingDown;
-        const growthColor = isNeutral
-          ? "text-slate-400 dark:text-slate-500"
-          : isPositive
-          ? "text-emerald-600 dark:text-emerald-400"
-          : "text-rose-500 dark:text-rose-400";
-
-        return (
-          <div
-            key={card.title}
-            className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between"
-          >
-            <div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">{card.title}</p>
-              <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{card.count}</p>
-              <div className={`flex items-center gap-1 mt-1 text-[11px] font-bold ${growthColor}`}>
-                <GrowthIcon className="w-3.5 h-3.5" />
-                <span>
-                  {isNeutral
-                    ? "No change vs last month"
-                    : `${isPositive ? "↑" : "↓"} ${Math.abs(card.growth)}% vs last month`}
-                </span>
-              </div>
-            </div>
-            <div className={`p-3 rounded-2xl ${card.color}`}>
-              <Icon className="w-6 h-6" />
-            </div>
-          </div>
-        );
-      })}
+      <AdminMetricCard
+        title="Total Registered Users"
+        value={stats.totalUsers || 0}
+        growth={stats.usersGrowth || 0}
+        comparison="vs last month"
+        icon={Users}
+        variant="primary"
+      />
+      <AdminMetricCard
+        title="Active Platform Users"
+        value={stats.activeUsers || 0}
+        growth={stats.activeGrowth || 0}
+        comparison="active accounts"
+        icon={UserCheck}
+        variant="emerald"
+      />
+      <AdminMetricCard
+        title="Blocked / Suspended"
+        value={stats.blockedUsers || 0}
+        growth={stats.blockedChange || 0}
+        comparison="restricted"
+        icon={UserX}
+        variant="slate"
+      />
+      <AdminMetricCard
+        title="New Registrations Today"
+        value={`+${stats.newUsersToday || 0}`}
+        growth={stats.todayGrowth || 0}
+        comparison="today"
+        icon={UserPlus}
+        variant="violet"
+      />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useNotificationCampaigns } from "@/hooks/useAdminNotificationQuery";
+import AdminEmptyState from "@/components/AdminShared/AdminEmptyState";
 import { Megaphone, Play, Pause, Trash2, Edit } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -25,7 +26,7 @@ export default function CampaignTable() {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden space-y-4 p-6">
+    <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs overflow-hidden space-y-4 p-6">
       <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
         <div className="flex items-center gap-2">
           <Megaphone className="w-5 h-5 text-emerald-500" />
@@ -49,7 +50,18 @@ export default function CampaignTable() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
-            {campaigns.map((c) => (
+            {campaigns.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="py-12">
+                  <AdminEmptyState
+                    icon={Megaphone}
+                    title="No Campaigns Scheduled"
+                    description="No marketing notifications or scheduled broadcast campaigns are currently queued."
+                  />
+                </td>
+              </tr>
+            ) : (
+              campaigns.map((c) => (
               <tr key={c.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
                 <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">{c.name}</td>
                 <td className="py-3 px-4 text-blue-600 dark:text-blue-400 font-semibold">{c.channel}</td>
@@ -73,7 +85,7 @@ export default function CampaignTable() {
                   </div>
                 </td>
               </tr>
-            ))}
+            )))}
           </tbody>
         </table>
       </div>

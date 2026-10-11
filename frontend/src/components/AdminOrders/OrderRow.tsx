@@ -13,6 +13,7 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import AdminStatusBadge from "@/components/AdminShared/AdminStatusBadge";
 
 interface Props {
   order: AdminOrderModel;
@@ -26,34 +27,6 @@ export default function OrderRow({ order, isSelected, onToggleSelect, onCancel }
   const router = useRouter();
 
   const { setOrderDetailsModal, setStatusModalOrder, setRefundModalOrder } = useAdminOrderStore();
-
-  const getOrderStatusBadge = (status: AdminOrderModel["orderStatus"]) => {
-    switch (status) {
-      case "Delivered":
-        return "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800";
-      case "Shipped":
-        return "bg-blue-50 text-blue-600 dark:bg-blue-950/40 border-blue-200 dark:border-blue-800";
-      case "Processing":
-      case "Confirmed":
-        return "bg-purple-50 text-purple-600 dark:bg-purple-950/40 border-purple-200 dark:border-purple-800";
-      case "Pending":
-        return "bg-amber-50 text-amber-600 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800";
-      case "Cancelled":
-      case "Refunded":
-        return "bg-rose-50 text-rose-600 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800";
-    }
-  };
-
-  const getPaymentStatusBadge = (status: AdminOrderModel["paymentStatus"]) => {
-    switch (status) {
-      case "Paid":
-        return "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800";
-      case "Pending":
-        return "bg-amber-50 text-amber-600 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800";
-      default:
-        return "bg-rose-50 text-rose-600 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800";
-    }
-  };
 
   const mainProduct = order.products[0];
 
@@ -124,16 +97,12 @@ export default function OrderRow({ order, isSelected, onToggleSelect, onCancel }
 
       {/* Payment Status */}
       <td className="py-4 px-6">
-        <span className={cn("text-[11px] font-bold px-2.5 py-0.5 rounded-full border", getPaymentStatusBadge(order.paymentStatus))}>
-          {order.paymentStatus}
-        </span>
+        <AdminStatusBadge status={order.paymentStatus} size="sm" />
       </td>
 
       {/* Order Status */}
       <td className="py-4 px-6">
-        <span className={cn("text-[11px] font-bold px-2.5 py-0.5 rounded-full border", getOrderStatusBadge(order.orderStatus))}>
-          {order.orderStatus}
-        </span>
+        <AdminStatusBadge status={order.orderStatus} size="sm" />
       </td>
 
       {/* Created Date */}

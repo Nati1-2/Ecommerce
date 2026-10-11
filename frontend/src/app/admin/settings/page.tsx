@@ -4,6 +4,7 @@ import { useAdminSettingsStore } from "@/store/adminSettingsStore";
 import { useSystemSettings } from "@/hooks/useAdminSettingsQuery";
 
 import SettingsSidebar from "@/components/AdminSettings/SettingsSidebar";
+import AdminPageHeader from "@/components/AdminShared/AdminPageHeader";
 import GeneralSettings from "@/components/AdminSettings/GeneralSettings";
 import UserSettings from "@/components/AdminSettings/UserSettings";
 import VendorSettings from "@/components/AdminSettings/VendorSettings";
@@ -52,15 +53,14 @@ export default function AdminSettingsPage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-24">
-      {/* Top Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Admin System Control Panel & Settings</h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Enterprise microservices configuration gateway, feature flags, security policies, and DB backups.
-          </p>
-        </div>
-      </div>
+      {/* Page Header */}
+      <AdminPageHeader
+        title="Admin System Control Panel & Settings"
+        description="Enterprise microservices configuration gateway, feature flags, security policies, and DB backups."
+        breadcrumbs={[{ label: "Settings" }]}
+        badge="System Config"
+        badgeVariant="slate"
+      />
 
       {/* Main Settings Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">

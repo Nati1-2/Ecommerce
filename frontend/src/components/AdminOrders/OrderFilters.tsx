@@ -19,7 +19,7 @@ export default function OrderFilters({ selectedCount, onBulkCancel }: Props) {
   } = useAdminOrderStore();
 
   return (
-    <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+    <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs space-y-3.5">
       <div className="flex flex-col lg:flex-row items-center justify-between gap-3">
         {/* Search */}
         <div className="relative w-full lg:w-96">
@@ -29,7 +29,7 @@ export default function OrderFilters({ selectedCount, onBulkCancel }: Props) {
             value={filters.searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by Order ID, customer, vendor, or product..."
-            className="w-full pl-10 pr-4 py-2 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-600 font-medium"
+            className="w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50/80 dark:bg-slate-800/50 text-slate-900 dark:text-white rounded-xl border border-slate-200/80 dark:border-slate-700/80 outline-none focus:ring-2 focus:ring-blue-600 font-medium transition-all"
           />
         </div>
 
@@ -39,7 +39,7 @@ export default function OrderFilters({ selectedCount, onBulkCancel }: Props) {
           <select
             value={filters.orderStatusFilter}
             onChange={(e) => setOrderStatusFilter(e.target.value)}
-            className="px-3 py-2 text-xs font-semibold bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-600"
+            className="px-3.5 py-2.5 text-xs font-bold bg-slate-50/80 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 rounded-xl border border-slate-200/80 dark:border-slate-700/80 outline-none focus:ring-2 focus:ring-blue-600 transition-all cursor-pointer"
           >
             <option value="All">All Order Statuses</option>
             <option value="Pending">Pending</option>

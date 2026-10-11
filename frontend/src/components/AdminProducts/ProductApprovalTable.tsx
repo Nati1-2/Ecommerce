@@ -2,6 +2,8 @@
 
 import { AdminProductModel } from "@/types/adminProduct";
 import ProductRow from "./ProductRow";
+import { Package } from "lucide-react";
+import AdminEmptyState from "@/components/AdminShared/AdminEmptyState";
 
 interface Props {
   products: AdminProductModel[];
@@ -29,7 +31,7 @@ export default function ProductApprovalTable({
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[700px] text-left text-sm">
           <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase font-semibold">
@@ -56,8 +58,13 @@ export default function ProductApprovalTable({
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {products.length === 0 ? (
               <tr>
-                <td colSpan={10} className="py-12 text-center text-slate-400 text-sm">
-                  No catalog products found matching your active filter criteria.
+                <td colSpan={10} className="py-8 px-6">
+                  <AdminEmptyState
+                    icon={Package}
+                    title="No Matching Products"
+                    description="No catalog products found matching your active filter criteria."
+                    className="border-0 my-0 bg-transparent py-4"
+                  />
                 </td>
               </tr>
             ) : (

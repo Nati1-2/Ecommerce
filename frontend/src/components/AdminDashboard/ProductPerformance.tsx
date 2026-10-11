@@ -3,6 +3,7 @@
 import { AdminProduct } from "@/types/admin";
 import { Package, Eye, CheckCircle2, AlertOctagon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import AdminStatusBadge from "@/components/AdminShared/AdminStatusBadge";
 
 interface Props {
   products: AdminProduct[];
@@ -58,16 +59,9 @@ export default function ProductPerformance({ products, onApproveProduct }: Props
                     {prod.name}
                   </h4>
                   <p className="text-[11px] text-slate-400 truncate">{prod.vendorName}</p>
-                  <span
-                    className={cn(
-                      "text-[10px] font-extrabold px-2 py-0.5 rounded-full border shadow-2xs inline-block mt-1",
-                      prod.status === "Approved"
-                        ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800"
-                        : "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 border-amber-200 dark:border-amber-800"
-                    )}
-                  >
-                    {prod.status}
-                  </span>
+                  <div className="mt-1">
+                    <AdminStatusBadge status={prod.status} size="sm" />
+                  </div>
                 </div>
               </div>
 

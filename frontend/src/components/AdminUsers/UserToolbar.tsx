@@ -20,7 +20,7 @@ export default function UserToolbar({
     useAdminUserStore();
 
   return (
-    <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+    <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs space-y-3.5">
       {/* Top Search & Dropdown Filters */}
       <div className="flex flex-col lg:flex-row items-center justify-between gap-3">
         {/* Search */}
@@ -31,7 +31,7 @@ export default function UserToolbar({
             value={filters.searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search users by name, email, user ID, or phone..."
-            className="w-full pl-10 pr-4 py-2 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-600 font-medium"
+            className="w-full pl-10 pr-4 py-2.5 text-xs bg-slate-50/80 dark:bg-slate-800/50 text-slate-900 dark:text-white rounded-xl border border-slate-200/80 dark:border-slate-700/80 outline-none focus:ring-2 focus:ring-blue-600 font-medium transition-all"
           />
         </div>
 

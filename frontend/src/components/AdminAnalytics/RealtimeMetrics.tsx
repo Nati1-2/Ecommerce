@@ -9,7 +9,7 @@ export default function RealtimeMetrics() {
   if (isLoading || !data) return null;
 
   return (
-    <div className="bg-slate-900 text-white p-5 rounded-3xl border border-slate-800 shadow-xl space-y-3 relative overflow-hidden">
+    <div className="bg-slate-900 text-white p-5 rounded-2xl border border-slate-800/80 shadow-md space-y-3 relative overflow-hidden">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="relative flex h-3 w-3">

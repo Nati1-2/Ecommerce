@@ -3,6 +3,7 @@
 import { useAdminNotificationStore, AdminNotificationTab } from "@/store/adminNotificationStore";
 import { useRouter } from "next/navigation";
 import { Send, Megaphone, LayoutTemplate, Plus } from "lucide-react";
+import AdminPageHeader from "@/components/AdminShared/AdminPageHeader";
 
 export default function NotificationHeader() {
   const router = useRouter();
@@ -31,40 +32,40 @@ export default function NotificationHeader() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Notification Center & FCM Gateway</h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Broadcast transactional emails, Firebase push notifications, SMS alerts, marketing campaigns, and Socket.IO events.
-          </p>
-        </div>
+      <AdminPageHeader
+        title="Notification Center & Messaging Gateway"
+        description="Broadcast transactional emails, Firebase push notifications, SMS alerts, marketing campaigns, and Socket.IO events."
+        breadcrumbs={[{ label: "Notifications" }]}
+        badge="Omnichannel Comms"
+        badgeVariant="violet"
+        actions={
+          <div className="flex flex-wrap items-center gap-2.5">
+            <button
+              onClick={() => setIsTemplateModalOpen(true)}
+              className="px-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition-all flex items-center gap-2 shadow-2xs"
+            >
+              <LayoutTemplate className="w-3.5 h-3.5 text-purple-500" />
+              <span>Manage Templates</span>
+            </button>
 
-        <div className="flex flex-wrap items-center gap-2.5">
-          <button
-            onClick={() => setIsTemplateModalOpen(true)}
-            className="px-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5 shadow-sm"
-          >
-            <LayoutTemplate className="w-4 h-4 text-purple-500" />
-            <span>Manage Templates</span>
-          </button>
+            <button
+              onClick={() => setIsCampaignWizardOpen(true)}
+              className="px-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition-all flex items-center gap-2 shadow-2xs"
+            >
+              <Megaphone className="w-3.5 h-3.5 text-emerald-500" />
+              <span>Create Campaign</span>
+            </button>
 
-          <button
-            onClick={() => setIsCampaignWizardOpen(true)}
-            className="px-3.5 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5 shadow-sm"
-          >
-            <Megaphone className="w-4 h-4 text-emerald-500" />
-            <span>Create Campaign</span>
-          </button>
-
-          <button
-            onClick={() => handleTabClick("create")}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-colors shadow-md shadow-blue-500/25 flex items-center gap-1.5"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Create Notification</span>
-          </button>
-        </div>
-      </div>
+            <button
+              onClick={() => handleTabClick("create")}
+              className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all shadow-xs flex items-center gap-2"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Send Message</span>
+            </button>
+          </div>
+        }
+      />
 
       {/* Navigation Tabs Bar */}
       <div className="flex items-center gap-1 overflow-x-auto p-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm text-xs font-semibold">

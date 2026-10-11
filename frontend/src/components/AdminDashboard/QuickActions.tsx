@@ -1,7 +1,8 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useAdminDashboardStore } from "@/store/adminDashboardStore";
-import { Store, Package, Users, CreditCard, Megaphone, ArrowUpRight } from "lucide-react";
+import { Store, Package, Users, ShoppingBag, Megaphone, ArrowUpRight } from "lucide-react";
 
 interface Props {
   onApproveVendorClick: () => void;
@@ -12,8 +13,8 @@ export default function QuickActions({
   onApproveVendorClick,
   onReviewProductClick,
 }: Props) {
+  const router = useRouter();
   const setIsAnnouncementModalOpen = useAdminDashboardStore((state) => state.setIsAnnouncementModalOpen);
-  const showToast = useAdminDashboardStore((state) => state.showToast);
 
   const actions = [
     {
@@ -34,18 +35,14 @@ export default function QuickActions({
       label: "Platform Buyers",
       desc: "Manage customer accounts",
       icon: Users,
-      onClick: () => {
-        window.location.href = "/admin/users";
-      },
+      onClick: () => router.push("/admin/users"),
       color: "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200/60 dark:border-emerald-900/40",
     },
     {
-      label: "Stripe Escrow",
-      desc: "View payout & fee ledger",
-      icon: CreditCard,
-      onClick: () => {
-        window.location.href = "/admin/payments";
-      },
+      label: "Orders & Escrow",
+      desc: "View fulfillment & fee ledger",
+      icon: ShoppingBag,
+      onClick: () => router.push("/admin/orders"),
       color: "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border-amber-200/60 dark:border-amber-900/40",
     },
     {

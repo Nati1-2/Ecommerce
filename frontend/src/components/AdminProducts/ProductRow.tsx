@@ -14,6 +14,7 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import AdminStatusBadge from "@/components/AdminShared/AdminStatusBadge";
 
 interface Props {
   product: AdminProductModel;
@@ -31,21 +32,6 @@ export default function ProductRow({ product, isSelected, onToggleSelect, onDele
     setRequestChangesProduct,
     setPreviewModalProduct,
   } = useAdminProductStore();
-
-  const getStatusBadge = (status: AdminProductModel["status"]) => {
-    switch (status) {
-      case "Approved":
-        return "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800";
-      case "Pending":
-        return "bg-amber-50 text-amber-600 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800";
-      case "Reported":
-        return "bg-rose-50 text-rose-600 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800";
-      case "Rejected":
-        return "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-300 dark:border-slate-700";
-      default:
-        return "bg-purple-50 text-purple-600 dark:bg-purple-950/40 border-purple-200 dark:border-purple-800";
-    }
-  };
 
   return (
     <tr className={cn("hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors", isSelected && "bg-blue-50/30 dark:bg-blue-900/10")}>
@@ -127,9 +113,7 @@ export default function ProductRow({ product, isSelected, onToggleSelect, onDele
 
       {/* Status */}
       <td className="py-4 px-6">
-        <span className={cn("text-[11px] font-bold px-2.5 py-0.5 rounded-full border", getStatusBadge(product.status))}>
-          {product.status}
-        </span>
+        <AdminStatusBadge status={product.status} size="sm" />
       </td>
 
       {/* Created Date */}

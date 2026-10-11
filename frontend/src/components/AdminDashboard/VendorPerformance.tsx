@@ -3,6 +3,7 @@
 import { AdminVendor } from "@/types/admin";
 import { Store, Star, CheckCircle2, Clock, Eye, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import AdminStatusBadge from "@/components/AdminShared/AdminStatusBadge";
 
 interface Props {
   vendors: AdminVendor[];
@@ -88,17 +89,7 @@ export default function VendorPerformance({ vendors, onApproveVendor }: Props) {
                     ${(vendor.revenue ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </td>
                   <td className="py-4 px-4">
-                    <span
-                      className={cn(
-                        "text-[10px] font-black px-2.5 py-1 rounded-full border shadow-2xs inline-flex items-center gap-1",
-                        vendor.status === "Active"
-                          ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border-emerald-200/80 dark:border-emerald-800"
-                          : "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 border-amber-200/80 dark:border-amber-800"
-                      )}
-                    >
-                      <span className={`w-1.5 h-1.5 rounded-full ${vendor.status === "Active" ? "bg-emerald-500" : "bg-amber-500"}`} />
-                      {vendor.status}
-                    </span>
+                    <AdminStatusBadge status={vendor.status} size="sm" />
                   </td>
                   <td className="py-4 px-4 text-right">
                     {vendor.status === "Pending" ? (
