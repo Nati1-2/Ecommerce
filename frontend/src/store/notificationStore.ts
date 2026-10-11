@@ -44,42 +44,9 @@ const defaultSettings: NotificationSettings = {
   security: true,
 };
 
-const initialNotifications: Notification[] = [
-  {
-    id: "notif-welcome",
-    title: "Welcome to Nati Store! 🎉",
-    message:
-      "Your account is verified and ready for fast checkout & 10% off with code NATI10.",
-    type: "SYSTEM",
-    actionUrl: "/products",
-    read: false,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "notif-promo-1",
-    title: "Summer Flash Sale Live! ⚡",
-    message:
-      "Get up to 50% off top electronics, fashion & gaming gear.",
-    type: "PROMOTION",
-    actionUrl: "/flash-sale",
-    read: false,
-    createdAt: new Date(Date.now() - 3600000).toISOString(),
-  },
-  {
-    id: "notif-shipping-1",
-    title: "Free Express Shipping 🚚",
-    message:
-      "Enjoy free express 2-day delivery on all orders over $50.",
-    type: "ORDER",
-    actionUrl: "/shipping",
-    read: true,
-    createdAt: new Date(Date.now() - 86400000).toISOString(),
-  },
-];
-
 export const useNotificationStore = create<NotificationState>((set, get) => ({
-  notifications: [...initialNotifications],
-  unreadCount: initialNotifications.filter((n) => !n.read).length,
+  notifications: [],
+  unreadCount: 0,
   loading: false,
   error: null,
   filters: { ...defaultFilters },

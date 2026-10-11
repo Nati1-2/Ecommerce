@@ -21,6 +21,7 @@ interface AdminDashboardState {
   setActiveTimeframe: (timeframe: AdminTimeframe) => void;
   setSearchQuery: (query: string) => void;
   setIsAnnouncementModalOpen: (open: boolean) => void;
+  setNotifications: (notifications: AdminNotification[]) => void;
   addNotification: (notification: Omit<AdminNotification, "id" | "read">) => void;
   markNotificationRead: (id: string) => void;
   markAllNotificationsRead: () => void;
@@ -34,44 +35,7 @@ export const useAdminDashboardStore = create<AdminDashboardState>((set) => ({
   activeTimeframe: "30d",
   searchQuery: "",
   isAnnouncementModalOpen: false,
-  notifications: [
-    {
-      id: "an_1",
-      type: "NEW_VENDOR",
-      title: "New Vendor Registration",
-      message: "Quantum Gear Labs submitted store verification application",
-      timestamp: "5 mins ago",
-      severity: "info",
-      read: false,
-    },
-    {
-      id: "an_2",
-      type: "LARGE_ORDER",
-      title: "High Value Order Detected",
-      message: "Order #ORD-ADMIN-9920 placed for $14,250.00",
-      timestamp: "24 mins ago",
-      severity: "success",
-      read: false,
-    },
-    {
-      id: "an_3",
-      type: "PAYMENT_FAILED",
-      title: "Payment Gateway Alert",
-      message: "Stripe payout batch #PO-8812 experienced a 0.2% retry delay",
-      timestamp: "1 hour ago",
-      severity: "warning",
-      read: false,
-    },
-    {
-      id: "an_4",
-      type: "PRODUCT_REPORTED",
-      title: "Product Listing Flagged",
-      message: "Wireless Earbuds Pro flagged by 3 users for copyright review",
-      timestamp: "2 hours ago",
-      severity: "error",
-      read: true,
-    },
-  ],
+  notifications: [],
   toast: null,
 
   toggleSidebar: () => set((state) => ({ isSidebarCollapsed: !state.isSidebarCollapsed })),
@@ -81,6 +45,8 @@ export const useAdminDashboardStore = create<AdminDashboardState>((set) => ({
   setActiveTimeframe: (activeTimeframe) => set({ activeTimeframe }),
   setSearchQuery: (searchQuery) => set({ searchQuery }),
   setIsAnnouncementModalOpen: (isAnnouncementModalOpen) => set({ isAnnouncementModalOpen }),
+
+  setNotifications: (notifications) => set({ notifications }),
 
   addNotification: (notif) =>
     set((state) => ({

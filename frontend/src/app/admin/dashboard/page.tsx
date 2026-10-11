@@ -26,7 +26,7 @@ import SystemMonitor from "@/components/AdminDashboard/SystemMonitor";
 import QuickActions from "@/components/AdminDashboard/QuickActions";
 import ActivityTimeline from "@/components/AdminDashboard/ActivityTimeline";
 import DashboardSkeleton from "@/components/AdminDashboard/DashboardSkeleton";
-import { AlertCircle, RefreshCw } from "lucide-react";
+import { RefreshCw, Database, Server, Activity, ShieldCheck } from "lucide-react";
 
 // Dynamic imports for chart components
 const RevenueChart = dynamic(() => import("@/components/AdminDashboard/RevenueChart"), {
@@ -41,15 +41,15 @@ const UserAnalytics = dynamic(() => import("@/components/AdminDashboard/UserAnal
 export default function AdminDashboardPage() {
   const { activeTimeframe } = useAdminDashboardStore();
 
-  const { data: stats, isLoading: statsLoading, isError: statsError, refetch: refetchStats } = usePlatformStats();
-  const { data: systemStatus, isLoading: statusLoading, isError: statusError, refetch: refetchStatus } = useSystemStatus();
-  const { data: health, isLoading: healthLoading, isError: healthError, refetch: refetchHealth } = useMarketplaceHealth();
-  const { data: vendors = [], isLoading: vendorsLoading, isError: vendorsError, refetch: refetchVendors } = useAdminVendors();
-  const { data: products = [], isLoading: productsLoading, isError: productsError, refetch: refetchProducts } = useAdminProducts();
-  const { data: orders = [], isLoading: ordersLoading, isError: ordersError, refetch: refetchOrders } = useAdminOrders();
-  const { data: payments, isLoading: paymentsLoading, isError: paymentsError, refetch: refetchPayments } = useAdminPayments();
-  const { data: activities = [], isLoading: activitiesLoading, isError: activitiesError, refetch: refetchActivities } = useAdminActivities();
-  const { data: analytics, isLoading: analyticsLoading, isError: analyticsError, refetch: refetchAnalytics } = useAdminAnalytics(activeTimeframe);
+  const { data: stats, isLoading: statsLoading, refetch: refetchStats, isFetching: isStatsFetching } = usePlatformStats();
+  const { data: systemStatus, isLoading: statusLoading, refetch: refetchStatus } = useSystemStatus();
+  const { data: health, isLoading: healthLoading, refetch: refetchHealth } = useMarketplaceHealth();
+  const { data: vendors = [], isLoading: vendorsLoading, refetch: refetchVendors } = useAdminVendors();
+  const { data: products = [], isLoading: productsLoading, refetch: refetchProducts } = useAdminProducts();
+  const { data: orders = [], isLoading: ordersLoading, refetch: refetchOrders } = useAdminOrders();
+  const { data: payments, isLoading: paymentsLoading, refetch: refetchPayments } = useAdminPayments();
+  const { data: activities = [], isLoading: activitiesLoading, refetch: refetchActivities } = useAdminActivities();
+  const { data: analytics, isLoading: analyticsLoading, refetch: refetchAnalytics } = useAdminAnalytics(activeTimeframe);
 
   const approveVendorMutation = useApproveVendor();
   const approveProductMutation = useApproveProduct();
@@ -60,8 +60,16 @@ export default function AdminDashboardPage() {
     if (el) el.scrollIntoView({ behavior: "smooth" });
   };
 
-  const isError = statsError || statusError || healthError || vendorsError || productsError || ordersError || paymentsError || activitiesError || analyticsError;
-  const isAllLoading = statsLoading && statusLoading && healthLoading && vendorsLoading && productsLoading && ordersLoading && paymentsLoading && activitiesLoading && analyticsLoading;
+  const isAllLoading =
+    statsLoading &&
+    statusLoading &&
+    healthLoading &&
+    vendorsLoading &&
+    productsLoading &&
+    ordersLoading &&
+    paymentsLoading &&
+    activitiesLoading &&
+    analyticsLoading;
 
   const handleRetryAll = () => {
     refetchStats();
@@ -92,22 +100,13 @@ export default function AdminDashboardPage() {
     revenueGrowth: 0,
   };
 
-  const safeSystemStatus = (typeof systemStatus === "object" && systemStatus !== null && Array.isArray((systemStatus as any).microservices))
-    ? systemStatus
-    : {
-        api: "Operational",
-        database: "Connected",
-        redis: "Connected",
-        rabbitmq: "Connected",
-        microservices: [
-          { name: "Auth Service", status: "Healthy" as const, latencyMs: 24, uptimePercent: 99.98 },
-          { name: "User Service", status: "Healthy" as const, latencyMs: 18, uptimePercent: 99.95 },
-          { name: "Product Service", status: "Healthy" as const, latencyMs: 31, uptimePercent: 99.99 },
-          { name: "Inventory Service", status: "Healthy" as const, latencyMs: 28, uptimePercent: 99.92 },
-          { name: "Order Service", status: "Healthy" as const, latencyMs: 35, uptimePercent: 99.94 },
-          { name: "Payment Service", status: "Healthy" as const, latencyMs: 42, uptimePercent: 99.97 },
-        ],
-      };
+  const safeSystemStatus = systemStatus || {
+    api: "Operational",
+    database: "Connected",
+    redis: "Connected",
+    rabbitmq: "Connected",
+    microservices: [],
+  };
 
   const safeHealth = health || {
     activeVendors: 0,
@@ -132,47 +131,62 @@ export default function AdminDashboardPage() {
     userGrowthData: Array.isArray(analytics?.userGrowthData) ? analytics.userGrowthData : [],
   };
 
-  const isDbConnected = safeSystemStatus.database === "Connected";
+  const isDbConnected = safeSystemStatus.database === "Connected" || (safeSystemStatus as any).database?.status === "connected";
+  const dbLatency = (safeSystemStatus as any)?.dbLatencyMs ?? 0;
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-16">
-      {/* Title Header with DB Connection Status Badge */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
+      {/* Elevated Hero Header with Real DB Connection and Telemetry */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 bg-gradient-to-r from-white via-slate-50/70 to-blue-50/30 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800/60 p-6 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
         <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-              Platform Control Center & Marketplace Overview
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+              Platform Command Center
             </h1>
-            <span className="px-2.5 py-0.5 bg-blue-50 text-blue-700 font-extrabold text-[11px] rounded-md border border-blue-200/60">
-              Admin v2.4
+            <span className="px-2.5 py-1 bg-blue-600 text-white font-extrabold text-[11px] rounded-lg shadow-2xs tracking-wide">
+              ADMIN LIVE
             </span>
           </div>
-          <p className="text-xs text-slate-500 font-medium mt-1">
-            Monitor multi-vendor ecosystem health, gross merchandise value (GMV), microservices telemetry, and live database operations.
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mt-1.5 max-w-2xl leading-relaxed">
+            Real-time multi-vendor governance, GMV revenue analytics, customer order pipeline, and live MongoDB telemetry.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className={`px-4 py-2 rounded-2xl text-xs font-extrabold flex items-center gap-2.5 border shadow-2xs ${
-            isDbConnected 
-              ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-              : "bg-amber-50 text-amber-800 border-amber-200"
-          }`}>
-            <span className={`w-2.5 h-2.5 rounded-full ${isDbConnected ? "bg-emerald-500 animate-pulse" : "bg-amber-500"}`} />
-            <span>MongoDB Database: {safeSystemStatus.database}</span>
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Live MongoDB Status Pill */}
+          <div
+            className={`px-4 py-2.5 rounded-2xl text-xs font-black flex items-center gap-2.5 border shadow-2xs transition-all ${
+              isDbConnected
+                ? "bg-emerald-50/90 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
+                : "bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border-amber-200 dark:border-amber-800"
+            }`}
+          >
+            <span
+              className={`w-2.5 h-2.5 rounded-full ${
+                isDbConnected ? "bg-emerald-500 animate-pulse" : "bg-amber-500"
+              }`}
+            />
+            <Database className="w-3.5 h-3.5" />
+            <span>
+              MongoDB: {isDbConnected ? "Connected" : "Disconnected"}
+              {dbLatency > 0 && <span className="font-semibold text-emerald-600 dark:text-emerald-400 ml-1">({dbLatency}ms)</span>}
+            </span>
           </div>
 
+          {/* Quick Refresh Button */}
           <button
             onClick={handleRetryAll}
-            title="Refresh dashboard telemetry data"
-            className="p-2.5 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200/80 rounded-2xl transition-colors border border-slate-200/60"
+            title="Refresh real-time platform telemetry"
+            disabled={isStatsFetching}
+            className="px-3.5 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-slate-900 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-2xl transition-all border border-slate-200/80 dark:border-slate-700 shadow-2xs flex items-center gap-2 disabled:opacity-50"
           >
-            <RefreshCw className="w-4 h-4" />
+            <RefreshCw className={`w-4 h-4 ${isStatsFetching ? "animate-spin text-blue-600" : ""}`} />
+            <span className="hidden sm:inline">Refresh Data</span>
           </button>
         </div>
       </div>
 
-      {/* 1. Platform Overview Cards */}
+      {/* 1. Platform KPI Overview Cards */}
       <OverviewCards stats={safeStats} />
 
       {/* 2. Admin Quick Shortcuts */}

@@ -31,75 +31,6 @@ async function apiFetch<T>(url: string, options: RequestInit = {}): Promise<T> {
   return res.json();
 }
 
-let mockOrdersFallback: AdminOrderModel[] = [
-  {
-    id: "ord-demo-1001",
-    customerName: "Sarah Connor",
-    customerEmail: "sarah.c@gmail.com",
-    customerAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
-    customerPhone: "+1 (415) 890-1234",
-    shippingAddress: "742 Evergreen Terrace, Springfield, IL 62704",
-    vendorStore: "Apex Tech Wearables Store",
-    vendorId: "usr-demo-vendor",
-    products: [
-      {
-        id: "prod-demo-1",
-        name: "Apex Smart Watch Ultra",
-        image: "https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?auto=format&fit=crop&w=150&q=80",
-        quantity: 1,
-        price: 249.99,
-        variant: "Standard",
-      },
-    ],
-    amount: 249.99,
-    subtotal: 249.99,
-    tax: 20.00,
-    shippingFee: 0.00,
-    discount: 0.00,
-    paymentStatus: "Paid",
-    orderStatus: "Processing",
-    paymentMethod: "Stripe Card",
-    stripeChargeId: "ch_NATI_1001",
-    carrier: "FedEx Express",
-    trackingNumber: "TRK-NATI-1001-925",
-    estimatedDelivery: "2026-08-10",
-    createdAt: "2026-08-06",
-  },
-  {
-    id: "ord-demo-1002",
-    customerName: "John Connor",
-    customerEmail: "john.c@gmail.com",
-    customerAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
-    customerPhone: "+1 (206) 555-9012",
-    shippingAddress: "123 Cyberdyne Systems Rd, Pasadena, CA 91101",
-    vendorStore: "Apex Tech Wearables Store",
-    vendorId: "usr-demo-vendor",
-    products: [
-      {
-        id: "prod-demo-2",
-        name: "Sonic Bass Pro Wireless Headphones",
-        image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=150&q=80",
-        quantity: 2,
-        price: 159.99,
-        variant: "Matte Black",
-      },
-    ],
-    amount: 319.98,
-    subtotal: 319.98,
-    tax: 25.00,
-    shippingFee: 10.00,
-    discount: 0.00,
-    paymentStatus: "Paid",
-    orderStatus: "Shipped",
-    paymentMethod: "Stripe Card",
-    stripeChargeId: "ch_NATI_1002",
-    carrier: "UPS Ground",
-    trackingNumber: "TRK-NATI-1002-841",
-    estimatedDelivery: "2026-08-11",
-    createdAt: "2026-08-05",
-  },
-];
-
 export const adminOrderApi = {
   getOrderStats: async (): Promise<OrderStatsData> => {
     try {
@@ -145,31 +76,31 @@ export const adminOrderApi = {
         id: o.id,
         customerName: o.customerName || "Customer",
         customerEmail: o.customerEmail || "",
-        customerAvatar: o.customerAvatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
-        customerPhone: "+1 (555) 019-2831",
-        shippingAddress: o.shippingAddress || "N/A",
-        vendorStore: o.vendorName || "Vendor Store",
-        vendorId: o.vendorId || "v_101",
-        products: (o.items || []).map((item: any) => ({
-          id: item.productId || "prod_1",
-          name: item.productName || item.name || "Order Item",
-          image: item.productImage || item.image || "https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?auto=format&fit=crop&w=150&q=80",
+        customerAvatar: o.customerAvatar || "",
+        customerPhone: o.customerPhone || "",
+        shippingAddress: o.shippingAddress || "Direct Fulfillment",
+        vendorStore: o.vendorName || "Direct Merchant",
+        vendorId: o.vendorId || "",
+        products: (o.products || o.items || []).map((item: any) => ({
+          id: item.id || item.productId || "prod_1",
+          name: item.name || item.productName || "Order Item",
+          image: item.image || item.productImage || "",
           quantity: item.quantity || 1,
-          price: item.unitPrice || item.price || 0,
-          variant: "Standard",
+          price: item.price || item.unitPrice || 0,
+          variant: item.variant || "Standard",
         })),
         amount: o.totalAmount || 0,
-        subtotal: o.totalAmount || 0,
-        tax: 0.00,
-        shippingFee: 0.00,
-        discount: 0.00,
+        subtotal: o.subtotal || o.totalAmount || 0,
+        tax: o.tax || 0.0,
+        shippingFee: o.shippingFee || 0.0,
+        discount: o.discount || 0.0,
         paymentStatus: o.paymentStatus || "Paid",
         orderStatus: o.status || "Processing",
         paymentMethod: o.paymentMethod || "Stripe Card",
-        stripeChargeId: o.orderNumber ? `ch_${o.orderNumber}` : `ch_${o.id}`,
-        carrier: "FedEx Express",
+        stripeChargeId: o.stripeChargeId || (o.orderNumber ? `ch_${o.orderNumber}` : `ch_${o.id}`),
+        carrier: o.carrier || "Standard Carrier",
         trackingNumber: o.trackingNumber || `TRK-${o.orderNumber || o.id}`,
-        estimatedDelivery: "2-4 Business Days",
+        estimatedDelivery: o.estimatedDelivery || "2-4 Business Days",
         createdAt: o.createdAt || new Date().toISOString(),
       }));
     } catch {
@@ -186,7 +117,8 @@ export const adminOrderApi = {
     const list = await adminOrderApi.getOrders();
     const o = list.find((order) => order.id === id);
     if (o) o.orderStatus = newStatus;
-    return o || mockOrdersFallback[0];
+    if (!o) throw new Error("Order not found");
+    return o;
   },
 
   processRefund: async (id: string, amount: number, reason: string): Promise<AdminOrderModel> => {
@@ -196,7 +128,8 @@ export const adminOrderApi = {
       o.orderStatus = "Refunded";
       o.paymentStatus = "Refunded";
     }
-    return o || mockOrdersFallback[0];
+    if (!o) throw new Error("Order not found");
+    return o;
   },
 
   resolveDispute: async (disputeId: string, resolution: "Refund" | "Dismiss"): Promise<boolean> => {
@@ -210,14 +143,16 @@ export const adminOrderApi = {
       o.carrier = carrier;
       o.trackingNumber = trackingNumber;
     }
-    return o || mockOrdersFallback[0];
+    if (!o) throw new Error("Order not found");
+    return o;
   },
 
   cancelOrder: async (id: string): Promise<AdminOrderModel> => {
     const list = await adminOrderApi.getOrders();
     const o = list.find((order) => order.id === id);
     if (o) o.orderStatus = "Cancelled";
-    return o || mockOrdersFallback[0];
+    if (!o) throw new Error("Order not found");
+    return o;
   },
 
   bulkUpdateStatus: async (ids: string[], status: OrderStatus): Promise<boolean> => {
@@ -225,22 +160,40 @@ export const adminOrderApi = {
   },
 
   getVendorDistribution: async (): Promise<VendorOrderDistributionPoint[]> => {
-    return [
-      { vendor: "Apex Tech Labs", orders: 8900, revenue: 3450000 },
-      { vendor: "Quantum Sound", orders: 7400, revenue: 2150000 },
-      { vendor: "Hyperion Ergo", orders: 3900, revenue: 1120000 },
-    ];
+    try {
+      const data = await apiFetch<{ vendors: any[] }>("/api/admin/vendors");
+      return (data.vendors || []).map((v) => ({
+        vendor: v.storeName,
+        orders: v.orders || v.sales || 0,
+        revenue: v.revenue || 0,
+      }));
+    } catch {
+      return [];
+    }
   },
 
   getPaymentSummary: async (): Promise<PaymentSummaryData> => {
-    return {
-      successfulPayments: 316800,
-      successfulAmount: 12500000,
-      failedPayments: 3200,
-      pendingPayments: 1250,
-      refundedPayments: 1450,
-      refundedAmount: 189000,
-    };
+    try {
+      const data = await apiFetch<{ payments: any }>("/api/admin/payments");
+      const p = data.payments || {};
+      return {
+        successfulPayments: p.successfulPayments || 0,
+        successfulAmount: p.pendingPayoutsAmount || 0,
+        failedPayments: p.failedPayments || 0,
+        pendingPayments: 0,
+        refundedPayments: p.refundsProcessed || 0,
+        refundedAmount: 0,
+      };
+    } catch {
+      return {
+        successfulPayments: 0,
+        successfulAmount: 0,
+        failedPayments: 0,
+        pendingPayments: 0,
+        refundedPayments: 0,
+        refundedAmount: 0,
+      };
+    }
   },
 
   getDisputes: async (): Promise<DisputeCase[]> => {

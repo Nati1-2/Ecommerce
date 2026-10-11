@@ -4,7 +4,7 @@ import { VendorProduct } from "@/models/VendorProduct";
 import { Order } from "@/models/Order";
 import { requireVendor } from "@/lib/authHelper";
 
-// GET /api/vendor/metrics — live computed metrics from DB
+// GET /api/vendor/metrics — live computed metrics strictly from MongoDB
 export async function GET(req: NextRequest) {
   const auth = requireVendor(req);
   if ("error" in auth) {
@@ -17,25 +17,33 @@ export async function GET(req: NextRequest) {
 
     // Products
     const products = await VendorProduct.find({ vendorId: payload.id });
+    const productIds = products.map((p) => p._id.toString());
+
     const totalRevenue = products.reduce((s, p) => s + (p.revenueGenerated || 0), 0);
     const productsSold = products.reduce((s, p) => s + (p.salesCount || 0), 0);
-    const lowStockCount = products.filter(p => p.stock > 0 && p.stock <= p.lowStockThreshold).length;
-    const outOfStockCount = products.filter(p => p.stock === 0).length;
+    const lowStockCount = products.filter((p) => p.stock > 0 && p.stock <= p.lowStockThreshold).length;
+    const outOfStockCount = products.filter((p) => p.stock === 0).length;
 
     // Orders
-    const orders = await Order.find({ "items.productId": { $in: products.map(p => p._id.toString()) } });
+    const orders = await Order.find({
+      $or: [
+        { "items.productId": { $in: productIds } },
+        { "items.vendorId": payload.id },
+      ],
+    });
+
     const totalOrders = orders.length;
-    const pendingOrdersCount = orders.filter(o => o.orderStatus === "PENDING").length;
-    const processingOrdersCount = orders.filter(o => o.orderStatus === "PROCESSING").length;
-    const shippedOrdersCount = orders.filter(o => o.orderStatus === "SHIPPED").length;
-    const deliveredOrdersCount = orders.filter(o => o.orderStatus === "DELIVERED").length;
-    const cancelledOrdersCount = orders.filter(o => o.orderStatus === "CANCELLED").length;
+    const pendingOrdersCount = orders.filter((o) => o.orderStatus === "PENDING").length;
+    const processingOrdersCount = orders.filter((o) => o.orderStatus === "PROCESSING" || o.orderStatus === "PAID").length;
+    const shippedOrdersCount = orders.filter((o) => o.orderStatus === "SHIPPED").length;
+    const deliveredOrdersCount = orders.filter((o) => o.orderStatus === "DELIVERED").length;
+    const cancelledOrdersCount = orders.filter((o) => o.orderStatus === "CANCELLED").length;
 
     // Unique customers
-    const uniqueCustomers = new Set(orders.map(o => o.userId)).size;
+    const uniqueCustomers = new Set(orders.map((o) => o.userId).filter(Boolean)).size;
 
     const metrics = {
-      totalRevenue,
+      totalRevenue: Math.round(totalRevenue * 100) / 100,
       revenueChangePercent: 0,
       totalOrders,
       ordersChangePercent: 0,

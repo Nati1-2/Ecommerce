@@ -14,14 +14,17 @@ export async function GET(req: NextRequest) {
     await connectDB();
 
     const products = await VendorProduct.find({ vendorId: payload.id });
-    const productIds = products.map(p => p._id.toString());
+    const productIds = products.map((p) => p._id.toString());
 
     // Get last 7 days of orders
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
     const orders = await Order.find({
-      "items.productId": { $in: productIds },
+      $or: [
+        { "items.productId": { $in: productIds } },
+        { "items.vendorId": payload.id },
+      ],
       createdAt: { $gte: sevenDaysAgo },
     });
 
@@ -38,8 +41,8 @@ export async function GET(req: NextRequest) {
       const day = new Date(order.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" });
       if (dailyMap[day]) {
         const relevantTotal = order.items
-          .filter(i => productIds.includes(i.productId))
-          .reduce((s, i) => s + i.price * i.quantity, 0);
+          .filter((i: any) => productIds.includes(i.productId) || i.vendorId === payload.id)
+          .reduce((s: number, i: any) => s + (i.price || 0) * (i.quantity || 1), 0);
         dailyMap[day].revenue += relevantTotal;
         dailyMap[day].orders += 1;
         dailyMap[day].profit += relevantTotal * 0.3; // ~30% margin estimate
@@ -58,9 +61,10 @@ export async function GET(req: NextRequest) {
     // Category breakdown from products
     const categoryMap: Record<string, { revenue: number; sales: number }> = {};
     for (const p of products) {
-      if (!categoryMap[p.category]) categoryMap[p.category] = { revenue: 0, sales: 0 };
-      categoryMap[p.category].revenue += p.revenueGenerated || 0;
-      categoryMap[p.category].sales += p.salesCount || 0;
+      const cat = p.category || "Uncategorized";
+      if (!categoryMap[cat]) categoryMap[cat] = { revenue: 0, sales: 0 };
+      categoryMap[cat].revenue += p.revenueGenerated || 0;
+      categoryMap[cat].sales += p.salesCount || 0;
     }
     const categoryBreakdown = Object.entries(categoryMap).map(([category, data]) => ({
       category,
@@ -70,9 +74,12 @@ export async function GET(req: NextRequest) {
 
     const totalOrders = orders.length;
     const totalRevenue = orders.reduce((s, o) => {
-      return s + o.items
-        .filter(i => productIds.includes(i.productId))
-        .reduce((ss, i) => ss + i.price * i.quantity, 0);
+      return (
+        s +
+        o.items
+          .filter((i: any) => productIds.includes(i.productId) || i.vendorId === payload.id)
+          .reduce((ss: number, i: any) => ss + (i.price || 0) * (i.quantity || 1), 0)
+      );
     }, 0);
 
     const analytics = {

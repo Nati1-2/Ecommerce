@@ -22,24 +22,24 @@ export async function GET(req: NextRequest) {
     orders = await Promise.all(
       dbOrders.map(async (o) => {
         let customerName = "Customer";
-        let customerEmail = "customer@natistore.com";
-        let customerPhone = "+1 (555) 019-2831";
+        let customerEmail = "";
+        let customerPhone = "";
 
         try {
           if (o.userId) {
             const user = await User.findById(o.userId).select("name email phone").catch(() => null);
             if (user) {
               customerName = user.name || user.email?.split("@")[0] || "Customer";
-              customerEmail = user.email || customerEmail;
-              customerPhone = user.phone || customerPhone;
+              customerEmail = user.email || "";
+              customerPhone = user.phone || "";
             }
           }
         } catch {
           // ignore user lookup failure
         }
 
-        let vendorName = "Nati Store Labs";
-        let vendorId = "usr-demo-vendor";
+        let vendorName = "Direct Merchant";
+        let vendorId = "";
 
         if (o.items?.[0]?.productId) {
           const pid = o.items[0].productId;
@@ -67,14 +67,14 @@ export async function GET(req: NextRequest) {
           PAID: "Processing",
         };
 
-        const shippingStr = o.shippingAddress
-          ? `${o.shippingAddress.street}, ${o.shippingAddress.city}, ${o.shippingAddress.state} ${o.shippingAddress.zipCode}`
-          : "742 Evergreen Terrace, Springfield, IL";
+        const shippingStr = o.shippingAddress && o.shippingAddress.street
+          ? `${o.shippingAddress.street}, ${o.shippingAddress.city || ""}, ${o.shippingAddress.state || ""} ${o.shippingAddress.zipCode || ""}`.trim()
+          : "Standard Electronic / Digital Delivery";
 
         const mappedProducts = (o.items || []).map((item: any) => ({
           id: item.productId || "prod_1",
           name: item.name || "Order Product Item",
-          image: item.image || "https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?auto=format&fit=crop&w=150&q=80",
+          image: item.image || "",
           quantity: item.quantity || 1,
           price: item.price || 0,
           variant: "Standard",
@@ -104,12 +104,12 @@ export async function GET(req: NextRequest) {
           tax: o.tax || 0,
           shippingFee: o.shippingCost || 0,
           paymentStatus: o.paymentStatus || "Paid",
-          status: statusMap[o.orderStatus] || "Pending",
-          paymentMethod: "Stripe Card",
-          stripeChargeId: `ch_${o.orderId || o._id.toString()}`,
-          carrier: "FedEx Express",
-          trackingNumber: o.trackingNumber || `TRK-${o.orderId || o._id.toString()}`,
-          estimatedDelivery: "2-4 Business Days",
+          status: statusMap[o.orderStatus] || o.orderStatus || "Pending",
+          paymentMethod: (o as any).paymentMethod || "Stripe Card",
+          stripeChargeId: o.paymentIntentId || (o as any).stripeChargeId || `ch_${o.orderId || o._id.toString()}`,
+          carrier: (o as any).carrier || "Standard Carrier",
+          trackingNumber: o.trackingNumber || `TRK-${o.orderId || o._id.toString().substring(0, 8)}`,
+          estimatedDelivery: (o as any).estimatedDelivery || "2-4 Business Days",
           createdAt: timeStr,
         };
       })
@@ -121,4 +121,3 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({ success: true, orders: orders || [] });
 }
-

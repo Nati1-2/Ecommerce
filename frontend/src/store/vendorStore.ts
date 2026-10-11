@@ -1,11 +1,19 @@
 import { create } from "zustand";
 
+interface VendorNotification {
+  id: string;
+  title: string;
+  message: string;
+  timestamp: string;
+  read: boolean;
+}
+
 interface VendorState {
   isSidebarCollapsed: boolean;
   isMobileDrawerOpen: boolean;
   searchQuery: string;
   selectedProductIds: string[];
-  notifications: { id: string; title: string; message: string; timestamp: string; read: boolean }[];
+  notifications: VendorNotification[];
   toast: { message: string; type: "success" | "error" | "info" } | null;
 
   toggleSidebar: () => void;
@@ -16,6 +24,7 @@ interface VendorState {
   toggleSelectProduct: (id: string) => void;
   selectAllProducts: (ids: string[]) => void;
   clearProductSelection: () => void;
+  setNotifications: (notifications: VendorNotification[]) => void;
   addNotification: (title: string, message: string) => void;
   markNotificationRead: (id: string) => void;
   showToast: (message: string, type?: "success" | "error" | "info") => void;
@@ -27,11 +36,7 @@ export const useVendorStore = create<VendorState>((set) => ({
   isMobileDrawerOpen: false,
   searchQuery: "",
   selectedProductIds: [],
-  notifications: [
-    { id: "n1", title: "New Order Received", message: "Sarah Jenkins placed order ORD-2026-8940 for $2,299.00", timestamp: "10 mins ago", read: false },
-    { id: "n2", title: "Low Stock Alert", message: "SonicPro Wireless Headphones has 4 units left.", timestamp: "1 hour ago", read: false },
-    { id: "n3", title: "Payout Processed", message: "Stripe payout of $14,820.00 arrived in your bank.", timestamp: "3 hours ago", read: true },
-  ],
+  notifications: [],
   toast: null,
 
   toggleSidebar: () => set((state) => ({ isSidebarCollapsed: !state.isSidebarCollapsed })),
@@ -47,6 +52,7 @@ export const useVendorStore = create<VendorState>((set) => ({
     })),
   selectAllProducts: (ids) => set({ selectedProductIds: ids }),
   clearProductSelection: () => set({ selectedProductIds: [] }),
+  setNotifications: (notifications) => set({ notifications }),
   addNotification: (title, message) =>
     set((state) => ({
       notifications: [

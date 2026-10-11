@@ -53,7 +53,7 @@ export const vendorApi = {
       const p = data.profile || {};
       return {
         id: p.id || p._id || p.userId || "usr-demo-vendor",
-        storeName: p.storeName || "vendor's Store",
+        storeName: p.storeName || "Vendor's Store",
         slug: p.slug || "vendors-store",
         logo: p.logo || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=150&q=80",
         banner: p.banner || "https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&w=1200&q=80",
@@ -63,14 +63,14 @@ export const vendorApi = {
         verified: p.verified ?? true,
         productCount: p.productCount ?? 0,
         joinedDate: p.joinedDate || new Date().toISOString().split("T")[0],
-        email: p.email || "vendor@natistore.com",
-        phone: p.phone || "+1 (555) 019-2831",
-        address: p.address || { street: "123 Commerce St", city: "San Francisco", state: "CA", zip: "94105", country: "US" },
+        email: p.email || "",
+        phone: p.phone || "",
+        address: p.address || { street: "", city: "", state: "", zip: "", country: "" },
       };
     } catch {
       return {
         id: "usr-demo-vendor",
-        storeName: "vendor's Store",
+        storeName: "Vendor's Store",
         slug: "vendors-store",
         logo: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=150&q=80",
         banner: "https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&w=1200&q=80",
@@ -80,10 +80,20 @@ export const vendorApi = {
         verified: true,
         productCount: 0,
         joinedDate: new Date().toISOString().split("T")[0],
-        email: "vendor@natistore.com",
-        phone: "+1 (555) 019-2831",
-        address: { street: "123 Commerce St", city: "San Francisco", state: "CA", zip: "94105", country: "US" },
+        email: "",
+        phone: "",
+        address: { street: "", city: "", state: "", zip: "", country: "" },
       };
+    }
+  },
+
+  // ─── NOTIFICATIONS ──────────────────────────────────────────
+  getNotifications: async (): Promise<{ id: string; title: string; message: string; timestamp: string; read: boolean }[]> => {
+    try {
+      const data = await apiFetch<{ notifications: any[] }>("/api/vendor/notifications");
+      return data.notifications || [];
+    } catch {
+      return [];
     }
   },
 
