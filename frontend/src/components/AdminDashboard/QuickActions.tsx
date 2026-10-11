@@ -1,7 +1,7 @@
 "use client";
 
 import { useAdminDashboardStore } from "@/store/adminDashboardStore";
-import { Store, Package, Users, CreditCard, Megaphone, ShieldCheck } from "lucide-react";
+import { Store, Package, Users, CreditCard, Megaphone, ArrowUpRight } from "lucide-react";
 
 interface Props {
   onApproveVendorClick: () => void;
@@ -17,49 +17,55 @@ export default function QuickActions({
 
   const actions = [
     {
-      label: "Approve Vendors",
-      desc: "Review seller applications",
+      label: "Review Vendors",
+      desc: "Approve merchant applications",
       icon: Store,
       onClick: onApproveVendorClick,
-      color: "bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 hover:bg-blue-100",
+      color: "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 border-blue-200/60 dark:border-blue-900/40",
     },
     {
-      label: "Review Products",
-      desc: "Approve catalog submissions",
+      label: "Moderate Catalog",
+      desc: "Clear product listings",
       icon: Package,
       onClick: onReviewProductClick,
-      color: "bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 hover:bg-purple-100",
+      color: "text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/40 border-purple-200/60 dark:border-purple-900/40",
     },
     {
-      label: "Manage Users",
-      desc: "View buyer accounts & security",
+      label: "Platform Buyers",
+      desc: "Manage customer accounts",
       icon: Users,
-      onClick: () => showToast("Opening User Management Panel", "info"),
-      color: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100",
+      onClick: () => {
+        window.location.href = "/admin/users";
+      },
+      color: "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200/60 dark:border-emerald-900/40",
     },
     {
-      label: "View Payments",
-      desc: "Stripe escrow & payouts",
+      label: "Stripe Escrow",
+      desc: "View payout & fee ledger",
       icon: CreditCard,
-      onClick: () => showToast("Opening Payments & Escrow Ledger", "info"),
-      color: "bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 hover:bg-amber-100",
+      onClick: () => {
+        window.location.href = "/admin/payments";
+      },
+      color: "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border-amber-200/60 dark:border-amber-900/40",
     },
     {
-      label: "Send Announcement",
-      desc: "Broadcast platform alert",
+      label: "Platform Broadcast",
+      desc: "Send system announcements",
       icon: Megaphone,
       onClick: () => setIsAnnouncementModalOpen(true),
-      color: "bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 hover:bg-rose-100",
+      color: "text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border-rose-200/60 dark:border-rose-900/40",
     },
   ];
 
   return (
-    <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+    <div className="bg-white dark:bg-slate-900 p-6 sm:p-7 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
       <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
         <div>
-          <h3 className="text-base font-bold text-slate-900 dark:text-white">Admin Quick Shortcuts</h3>
+          <h3 className="text-base font-black text-slate-900 dark:text-white tracking-tight">
+            Administrative Shortcuts & Commands
+          </h3>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            1-click actions for seller approval, catalog clearance, and announcements.
+            Instant 1-click execution for catalog moderation, seller clearance, and broadcast notices.
           </p>
         </div>
       </div>
@@ -72,19 +78,22 @@ export default function QuickActions({
             <button
               key={act.label}
               onClick={act.onClick}
-              className={`p-4 rounded-2xl border border-slate-100 dark:border-slate-800 text-left transition-all flex items-start gap-3.5 group ${act.color}`}
+              className="p-4 rounded-2xl border border-slate-200/70 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-700 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-white dark:hover:bg-slate-800 text-left transition-all flex items-center justify-between gap-3 group shadow-2xs hover:shadow-xs"
             >
-              <div className="p-2.5 bg-white dark:bg-slate-900 rounded-xl shadow-sm group-hover:scale-105 transition-transform">
-                <Icon className="w-5 h-5" />
+              <div className="flex items-center gap-3 min-w-0">
+                <div className={`p-2.5 rounded-xl ${act.color} group-hover:scale-105 transition-transform shrink-0`}>
+                  <Icon className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-black text-slate-900 dark:text-white text-xs truncate">
+                    {act.label}
+                  </p>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 truncate font-medium">
+                    {act.desc}
+                  </p>
+                </div>
               </div>
-              <div className="min-w-0">
-                <p className="font-bold text-slate-900 dark:text-white text-xs truncate">
-                  {act.label}
-                </p>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
-                  {act.desc}
-                </p>
-              </div>
+              <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors shrink-0" />
             </button>
           );
         })}

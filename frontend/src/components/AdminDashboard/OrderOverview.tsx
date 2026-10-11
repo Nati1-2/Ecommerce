@@ -17,46 +17,65 @@ export default function OrderOverview({ orders }: Props) {
   const cancelled = safeOrders.filter((o) => o.status === "Cancelled").length;
 
   const statuses = [
-    { label: "Pending", count: pending, percent: total > 0 ? Math.round((pending / total) * 100) : 0, color: "bg-amber-500", text: "text-amber-500", icon: Clock },
-    { label: "Processing", count: processing, percent: total > 0 ? Math.round((processing / total) * 100) : 0, color: "bg-blue-500", text: "text-blue-500", icon: PackageCheck },
-    { label: "Shipped", count: shipped, percent: total > 0 ? Math.round((shipped / total) * 100) : 0, color: "bg-purple-500", text: "text-purple-500", icon: Truck },
-    { label: "Delivered", count: delivered, percent: total > 0 ? Math.round((delivered / total) * 100) : 0, color: "bg-emerald-500", text: "text-emerald-500", icon: CheckCircle2 },
-    { label: "Cancelled", count: cancelled, percent: total > 0 ? Math.round((cancelled / total) * 100) : 0, color: "bg-rose-500", text: "text-rose-500", icon: XCircle },
+    { label: "Pending Payment", count: pending, percent: total > 0 ? Math.round((pending / total) * 100) : 0, color: "bg-amber-500", text: "text-amber-500", icon: Clock },
+    { label: "Processing & Packaging", count: processing, percent: total > 0 ? Math.round((processing / total) * 100) : 0, color: "bg-blue-500", text: "text-blue-500", icon: PackageCheck },
+    { label: "Shipped & Dispatched", count: shipped, percent: total > 0 ? Math.round((shipped / total) * 100) : 0, color: "bg-purple-500", text: "text-purple-500", icon: Truck },
+    { label: "Delivered & Complete", count: delivered, percent: total > 0 ? Math.round((delivered / total) * 100) : 0, color: "bg-emerald-500", text: "text-emerald-500", icon: CheckCircle2 },
+    { label: "Cancelled / Returned", count: cancelled, percent: total > 0 ? Math.round((cancelled / total) * 100) : 0, color: "bg-rose-500", text: "text-rose-500", icon: XCircle },
   ];
 
   return (
-    <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
-      <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+    <div className="bg-white dark:bg-slate-900 p-6 sm:p-7 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-6">
+      <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-5">
         <div>
-          <h3 className="text-base font-bold text-slate-900 dark:text-white">Global Order Fulfillment Pipeline</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight">
+              Order Fulfillment Pipeline
+            </h3>
+            <span className="text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+              {total} Orders
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Real-time status breakdown across all platform vendor orders.
           </p>
         </div>
       </div>
 
-      {/* Progress Bars List */}
-      <div className="space-y-4">
+      {/* Segmented Stacked Progress Bar */}
+      <div className="space-y-2">
+        <div className="h-3 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex shadow-inner">
+          {statuses.map((st) => (
+            <div
+              key={st.label}
+              className={`${st.color} transition-all duration-500`}
+              style={{ width: `${st.percent}%` }}
+              title={`${st.label}: ${st.count} orders (${st.percent}%)`}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Progress Bars Detail List */}
+      <div className="space-y-3.5 pt-1">
         {statuses.map((st) => {
           const Icon = st.icon;
 
           return (
-            <div key={st.label} className="space-y-1.5">
-              <div className="flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2 font-bold text-slate-800 dark:text-slate-200">
-                  <Icon className={`w-4 h-4 ${st.text}`} />
-                  <span>{st.label}</span>
+            <div key={st.label} className="flex items-center justify-between text-xs p-2.5 rounded-xl bg-slate-50/60 dark:bg-slate-800/40 border border-slate-100/80 dark:border-slate-800/60">
+              <div className="flex items-center gap-2.5 font-bold text-slate-800 dark:text-slate-200">
+                <div className={`p-1.5 rounded-lg bg-white dark:bg-slate-900 shadow-2xs ${st.text}`}>
+                  <Icon className="w-3.5 h-3.5" />
                 </div>
-                <span className="font-extrabold text-slate-900 dark:text-white">
-                  {st.count} orders ({st.percent}%)
-                </span>
+                <span>{st.label}</span>
               </div>
-
-              <div className="w-full h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                <div
-                  className={`h-full ${st.color} rounded-full transition-all duration-500`}
-                  style={{ width: `${st.count > 0 ? Math.max(st.percent, 4) : 0}%` }}
-                />
+              <div className="flex items-center gap-2">
+                <span className="font-mono font-black text-slate-900 dark:text-white tabular-nums">
+                  {st.count}
+                </span>
+                <span className="text-[11px] text-slate-400 font-bold">
+                  ({st.percent}%)
+                </span>
               </div>
             </div>
           );
