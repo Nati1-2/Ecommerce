@@ -32,16 +32,16 @@ export async function GET(req: NextRequest) {
           name: u.name || u.email.split("@")[0],
           email: u.email,
           avatar: u.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
-          phone: u.phone || "+1 (555) 019-2831",
+          phone: u.phone || "N/A",
           role: roleMap[u.role] || "Customer",
           status: u.isVerified !== false ? "Active" : "Pending Verification",
-          location: u.address || "United States",
+          location: u.address || "N/A",
           totalOrders: totalOrders,
           totalSpent: Math.round(totalSpent * 100) / 100,
-          createdAt: u.createdAt ? u.createdAt.toISOString().split("T")[0] : "2026-01-15",
-          lastLogin: "Active recently",
-          lastLoginIp: "192.168.1.45",
-          lastLoginLocation: "USA",
+          createdAt: u.createdAt ? u.createdAt.toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
+          lastLogin: "Recent",
+          lastLoginIp: "N/A",
+          lastLoginLocation: "N/A",
         };
       })
     );

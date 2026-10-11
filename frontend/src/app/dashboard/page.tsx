@@ -118,7 +118,23 @@ function DashboardContent() {
                 }));
                 useDashboardStore.setState({ orders: mappedOrders });
               })
-              .catch((err) => console.warn("Dashboard orders fetch notice:", err));
+            // Fetch user notifications
+            fetch("/api/notifications", {
+              headers: { Authorization: `Bearer ${token}` },
+            })
+              .then((res) => res.json())
+              .then((notifData) => {
+                if (notifData.success && Array.isArray(notifData.notifications)) {
+                  const mappedNotifs = notifData.notifications.map((n: any) => ({
+                    id: n.id,
+                    type: n.type === "ORDER" ? "shipping" : n.type === "PROMO" ? "discount" : "success",
+                    message: n.message || n.title,
+                    time: n.createdAt ? new Date(n.createdAt).toLocaleDateString() : "Recent",
+                  }));
+                  useDashboardStore.getState().setNotifications(mappedNotifs);
+                }
+              })
+              .catch((err) => console.warn("Dashboard notifications fetch notice:", err));
 
             setProfileLoaded(true);
           }

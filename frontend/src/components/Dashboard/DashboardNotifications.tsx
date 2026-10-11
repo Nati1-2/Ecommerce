@@ -68,34 +68,36 @@ export default function DashboardNotifications() {
 
   if (loading) {
     return (
-      <div className="p-8 border border-gray-100 bg-white rounded-3xl animate-pulse space-y-4">
-        <div className="h-6 w-40 bg-gray-100 rounded-lg"></div>
-        <div className="h-24 bg-gray-50 rounded-2xl"></div>
+      <div className="p-8 border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-3xl animate-pulse space-y-4">
+        <div className="h-6 w-40 bg-slate-100 dark:bg-slate-800 rounded-lg"></div>
+        <div className="h-24 bg-slate-50 dark:bg-slate-800/50 rounded-2xl"></div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 border border-gray-100 bg-white rounded-3xl shadow-sm space-y-6 select-none">
+    <div className="p-6 border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-3xl shadow-xs space-y-6 select-none transition-colors">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
+          <div className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
             <Bell className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-base font-black text-gray-900">Notifications</h2>
-            <p className="text-[11px] text-gray-400 font-semibold">
+            <h2 className="text-base font-black text-slate-900 dark:text-white">Notifications</h2>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">
               System alerts, order updates, and promotions
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="p-1 bg-gray-100 rounded-xl flex text-xs font-bold">
+          <div className="p-1 bg-slate-100 dark:bg-slate-800 rounded-xl flex text-xs font-bold">
             <button
               onClick={() => setFilter("all")}
               className={`px-3 py-1.5 rounded-lg transition-colors ${
-                filter === "all" ? "bg-white text-gray-900 shadow-xs" : "text-gray-500 hover:text-gray-900"
+                filter === "all"
+                  ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
               All
@@ -103,7 +105,9 @@ export default function DashboardNotifications() {
             <button
               onClick={() => setFilter("unread")}
               className={`px-3 py-1.5 rounded-lg transition-colors ${
-                filter === "unread" ? "bg-white text-gray-900 shadow-xs" : "text-gray-500 hover:text-gray-900"
+                filter === "unread"
+                  ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
               Unread
@@ -112,7 +116,7 @@ export default function DashboardNotifications() {
 
           <button
             onClick={handleMarkAllRead}
-            className="py-2 px-3 text-xs font-bold text-[#007BFF] hover:bg-blue-50 rounded-xl transition-colors"
+            className="py-2 px-3 text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 rounded-xl transition-colors"
           >
             Mark All Read
           </button>
@@ -120,31 +124,33 @@ export default function DashboardNotifications() {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="py-12 text-center text-xs text-gray-400 font-semibold">
+        <div className="py-12 text-center text-xs text-slate-400 dark:text-slate-500 font-semibold">
           No notifications found.
         </div>
       ) : (
-        <div className="divide-y divide-gray-100 border border-gray-100 rounded-2xl overflow-hidden bg-white">
+        <div className="divide-y divide-slate-100 dark:divide-slate-800 border border-slate-200/80 dark:border-slate-800 rounded-2xl overflow-hidden bg-white dark:bg-slate-900">
           {filtered.map((n) => (
             <div
               key={n.id}
               className={`p-4 flex items-start justify-between gap-4 transition-colors ${
-                !n.read ? "bg-blue-50/20" : "hover:bg-gray-50/50"
+                !n.read
+                  ? "bg-blue-50/40 dark:bg-blue-950/20"
+                  : "hover:bg-slate-50/60 dark:hover:bg-slate-800/40"
               }`}
             >
               <div className="flex items-start gap-3.5">
-                <div className="w-9 h-9 rounded-xl bg-gray-100 border border-gray-200/60 flex items-center justify-center shrink-0 mt-0.5">
+                <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 flex items-center justify-center shrink-0 mt-0.5">
                   {getTypeIcon(n.type)}
                 </div>
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <h4 className="text-xs font-black text-gray-900">{n.title}</h4>
+                    <h4 className="text-xs font-black text-slate-900 dark:text-white">{n.title}</h4>
                     {!n.read && (
-                      <span className="w-2 h-2 rounded-full bg-[#007BFF] shrink-0" />
+                      <span className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-500 shrink-0" />
                     )}
                   </div>
-                  <p className="text-xs text-gray-600 font-medium leading-relaxed">{n.message}</p>
-                  <p className="text-[10px] text-gray-400 font-semibold pt-0.5">
+                  <p className="text-xs text-slate-600 dark:text-slate-300 font-medium leading-relaxed">{n.message}</p>
+                  <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold pt-0.5">
                     {new Date(n.createdAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
                   </p>
                 </div>
@@ -153,15 +159,17 @@ export default function DashboardNotifications() {
               <div className="flex items-center gap-1 shrink-0">
                 <button
                   onClick={() => handleToggleRead(n.id)}
-                  className="p-1.5 text-gray-400 hover:text-[#007BFF] hover:bg-blue-50 rounded-lg transition-colors"
+                  className="p-1.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 rounded-lg transition-colors"
                   title={n.read ? "Mark as unread" : "Mark as read"}
+                  aria-label={n.read ? "Mark as unread" : "Mark as read"}
                 >
                   <Check className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => handleDelete(n.id)}
-                  className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                  className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors"
                   title="Delete notification"
+                  aria-label="Delete notification"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>

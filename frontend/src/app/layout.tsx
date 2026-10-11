@@ -24,7 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${inter.className} antialiased min-h-screen flex flex-col bg-white text-gray-900`}
+        className={`${inter.className} antialiased min-h-screen flex flex-col bg-[#F8FAFC] dark:bg-[#090D16] text-slate-900 dark:text-slate-100 transition-colors duration-200`}
       >
         <Providers>
           <LayoutShell>{children}</LayoutShell>

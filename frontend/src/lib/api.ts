@@ -148,62 +148,11 @@ export async function fetchProducts(params: GetProductsParams): Promise<Products
     console.warn("Next.js internal /api/products unavailable:", err);
   }
 
-  // Fallback to mock data filtering
-  let filtered = [...mockProducts];
-
-  // Category filter
-  if (params.category) {
-    const catStr = Array.isArray(params.category) ? params.category[0] : params.category;
-    if (catStr && typeof catStr === "string") {
-      filtered = filtered.filter(p => p.category && p.category.toLowerCase() === catStr.toLowerCase());
-    }
-  }
-
-  // Search filter
-  if (params.search && typeof params.search === "string") {
-    const term = params.search.toLowerCase().trim();
-    if (term) {
-      filtered = filtered.filter(
-        p => p.name.toLowerCase().includes(term) || (p.description && p.description.toLowerCase().includes(term))
-      );
-    }
-  }
-
-  // Brands filter
-  if (params.brands && params.brands.length > 0) {
-    filtered = filtered.filter(p => p.brand && params.brands?.includes(p.brand));
-  }
-
-  // Price range filter
-  if (params.priceMin !== undefined) {
-    filtered = filtered.filter(p => p.price >= params.priceMin!);
-  }
-  if (params.priceMax !== undefined) {
-    filtered = filtered.filter(p => p.price <= params.priceMax!);
-  }
-
-  // Sort
-  if (params.sort) {
-    if (params.sort === "price-asc") {
-      filtered.sort((a, b) => a.price - b.price);
-    } else if (params.sort === "price-desc") {
-      filtered.sort((a, b) => b.price - a.price);
-    } else if (params.sort === "rating") {
-      filtered.sort((a, b) => b.rating - a.rating);
-    }
-  }
-
-  const page = params.page || 1;
-  const limit = params.limit || 8;
-  const total = filtered.length;
-  const totalPages = Math.ceil(total / limit) || 1;
-  const paginated = filtered.slice((page - 1) * limit, page * limit);
-
   return {
-    products: paginated,
-    total,
-    page,
-    totalPages
+    products: [],
+    total: 0,
+    page: params.page || 1,
+    totalPages: 1,
   };
 }
 
@@ -221,11 +170,25 @@ export async function fetchProductById(id: string): Promise<Product | null> {
       if (data.success && data.data) return data.data;
     }
   } catch (err) {
-    console.warn("Backend fetchProductById failed, trying mockProducts fallback:", err);
+    console.warn("Backend fetchProductById failed:", err);
   }
 
-  const found = mockProducts.find(p => p.id === id || p.slug === id);
-  return found || mockProducts[0] || null;
+  // Also try Next.js /api/products route
+  try {
+    const nextUrl = typeof window !== "undefined"
+      ? `${window.location.origin}/api/products/${id}`
+      : `http://localhost:3000/api/products/${id}`;
+    const res = await fetch(nextUrl, { headers: getAuthHeaders() });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && data.data) return data.data;
+      if (data.product) return data.product;
+    }
+  } catch (err) {
+    // ignore
+  }
+
+  return null;
 }
 
 /**

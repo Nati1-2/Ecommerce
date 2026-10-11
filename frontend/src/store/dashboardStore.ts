@@ -34,6 +34,7 @@ interface DashboardState {
   wishlistCount: number;
   reviewsCount: number;
   updateProfile: (profile: Partial<UserProfile>) => void;
+  setNotifications: (notifications: DashboardNotification[]) => void;
   addNotification: (noti: DashboardNotification) => void;
   removeNotification: (id: string) => void;
   clearNotifications: () => void;
@@ -51,29 +52,12 @@ export const useDashboardStore = create<DashboardState>((set) => ({
   wishlistCount: 0,
   reviewsCount: 0,
   orders: [],
-  notifications: [
-    {
-      id: "noti-1",
-      type: "success",
-      message: "Payment completed for order #ORD-123456",
-      time: "2 hours ago",
-    },
-    {
-      id: "noti-2",
-      type: "shipping",
-      message: "Order #ORD-123456 has been shipped via DHL",
-      time: "8 hours ago",
-    },
-    {
-      id: "noti-3",
-      type: "discount",
-      message: "New 20% discount coupon available in your inbox",
-      time: "1 day ago",
-    },
-  ],
+  notifications: [],
 
   updateProfile: (profile) =>
     set((state) => ({ user: { ...state.user, ...profile } })),
+
+  setNotifications: (notifications) => set({ notifications }),
 
   addNotification: (noti) =>
     set((state) => ({ notifications: [noti, ...state.notifications] })),

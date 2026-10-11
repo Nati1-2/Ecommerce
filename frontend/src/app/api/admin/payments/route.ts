@@ -31,15 +31,19 @@ export async function GET(req: NextRequest) {
     if (total === 0 && global.inMemoryOrders) {
       total = global.inMemoryOrders.length;
       successful = global.inMemoryOrders.filter((o: any) => o.paymentStatus === "PAID").length;
-      failed = 0;
-      refunded = 0;
-      pendingPayoutsAmount = 1450.00;
+      failed = global.inMemoryOrders.filter((o: any) => o.paymentStatus === "FAILED").length;
+      refunded = global.inMemoryOrders.filter((o: any) => o.paymentStatus === "REFUNDED").length;
+      pendingPayoutsAmount = global.inMemoryOrders
+        .filter((o: any) => o.paymentStatus === "PENDING")
+        .reduce((sum: number, o: any) => sum + (o.grandTotal || o.totalAmount || 0), 0);
     }
   } catch (err: any) {
     console.warn("Admin Payments DB notice:", err?.message || err);
-    total = global.inMemoryOrders?.length || 2;
-    successful = total;
-    pendingPayoutsAmount = 1450.00;
+    total = 0;
+    successful = 0;
+    failed = 0;
+    refunded = 0;
+    pendingPayoutsAmount = 0;
   }
 
   return NextResponse.json({

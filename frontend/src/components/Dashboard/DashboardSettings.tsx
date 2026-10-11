@@ -132,30 +132,30 @@ export default function DashboardSettings() {
   };
 
   return (
-    <div className="space-y-8 select-none">
+    <div className="space-y-8 select-none transition-colors">
       {/* ── PERSONAL PROFILE SECTION ─────────────────────────────── */}
-      <div className="p-6 border border-gray-100 bg-white rounded-3xl shadow-sm space-y-6">
+      <div className="p-6 border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-3xl shadow-xs space-y-6">
         <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-[#007BFF]">
+          <div className="w-10 h-10 rounded-2xl bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/40 flex items-center justify-center text-blue-600 dark:text-blue-400">
             <User className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-base font-black text-gray-900">Personal Information</h2>
-            <p className="text-[11px] text-gray-400 font-semibold">
+            <h2 className="text-base font-black text-slate-900 dark:text-white">Personal Information</h2>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">
               Update your account details and public avatar URL
             </p>
           </div>
         </div>
 
         {profileSuccess && (
-          <div className="p-3.5 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-2xl text-xs font-bold flex items-center gap-2">
-            <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+          <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/40 rounded-2xl text-xs font-bold flex items-center gap-2">
+            <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
             Profile details saved successfully to database!
           </div>
         )}
 
         {profileError && (
-          <div className="p-3.5 bg-red-50 text-red-600 border border-red-100 rounded-2xl text-xs font-semibold">
+          <div className="p-3.5 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/40 rounded-2xl text-xs font-semibold">
             {profileError}
           </div>
         )}
@@ -163,7 +163,7 @@ export default function DashboardSettings() {
         <form onSubmit={handleUpdateProfile} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+              <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-1">
                 Full Name
               </label>
               <input
@@ -172,26 +172,26 @@ export default function DashboardSettings() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="John Smith"
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#007BFF]/30"
+                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-blue-500/30"
               />
             </div>
 
             <div>
-              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+              <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-1">
                 Email Address
               </label>
               <input
                 type="email"
                 disabled
                 value={email}
-                className="w-full px-4 py-3 bg-gray-100 border border-gray-200 text-gray-400 rounded-xl text-xs font-semibold cursor-not-allowed"
+                className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 rounded-xl text-xs font-semibold cursor-not-allowed"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+              <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-1">
                 Phone Number
               </label>
               <input
@@ -199,12 +199,12 @@ export default function DashboardSettings() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+1 (555) 019-2834"
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#007BFF]/30"
+                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-blue-500/30"
               />
             </div>
 
             <div>
-              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+              <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-1">
                 Avatar Image URL
               </label>
               <input
@@ -212,7 +212,7 @@ export default function DashboardSettings() {
                 value={avatar}
                 onChange={(e) => setAvatar(e.target.value)}
                 placeholder="https://images.unsplash.com/..."
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#007BFF]/30"
+                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-blue-500/30"
               />
             </div>
           </div>
@@ -221,7 +221,7 @@ export default function DashboardSettings() {
             <button
               type="submit"
               disabled={profileSubmitting}
-              className="py-3 px-6 bg-[#007BFF] hover:bg-blue-600 disabled:opacity-50 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/15 flex items-center gap-2 transition-all"
+              className="py-3 px-6 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold text-xs rounded-xl shadow-md flex items-center gap-2 transition-all cursor-pointer"
             >
               {profileSubmitting ? (
                 <>
@@ -240,35 +240,35 @@ export default function DashboardSettings() {
       </div>
 
       {/* ── SECURITY & PASSWORD SECTION ───────────────────────────── */}
-      <div className="p-6 border border-gray-100 bg-white rounded-3xl shadow-sm space-y-6">
+      <div className="p-6 border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-3xl shadow-xs space-y-6">
         <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
+          <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-100 dark:border-amber-900/40 flex items-center justify-center text-amber-600 dark:text-amber-400">
             <Lock className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-base font-black text-gray-900">Security & Password</h2>
-            <p className="text-[11px] text-gray-400 font-semibold">
+            <h2 className="text-base font-black text-slate-900 dark:text-white">Security & Password</h2>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">
               Change your password and manage account security
             </p>
           </div>
         </div>
 
         {passwordSuccess && (
-          <div className="p-3.5 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-2xl text-xs font-bold flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+          <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/40 rounded-2xl text-xs font-bold flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
             Password updated securely in database!
           </div>
         )}
 
         {passwordError && (
-          <div className="p-3.5 bg-red-50 text-red-600 border border-red-100 rounded-2xl text-xs font-semibold">
+          <div className="p-3.5 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/40 rounded-2xl text-xs font-semibold">
             {passwordError}
           </div>
         )}
 
         <form onSubmit={handleUpdatePassword} className="space-y-4 max-w-xl">
           <div>
-            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+            <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-1">
               Current Password
             </label>
             <input
@@ -276,13 +276,13 @@ export default function DashboardSettings() {
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#007BFF]/30"
+              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-blue-500/30"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+              <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-1">
                 New Password
               </label>
               <input
@@ -291,12 +291,12 @@ export default function DashboardSettings() {
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#007BFF]/30"
+                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-blue-500/30"
               />
             </div>
 
             <div>
-              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+              <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-1">
                 Confirm New Password
               </label>
               <input
@@ -305,7 +305,7 @@ export default function DashboardSettings() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#007BFF]/30"
+                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-blue-500/30"
               />
             </div>
           </div>
@@ -314,7 +314,7 @@ export default function DashboardSettings() {
             <button
               type="submit"
               disabled={passwordSubmitting}
-              className="py-3 px-6 bg-gray-900 hover:bg-black disabled:opacity-50 text-white font-bold text-xs rounded-xl shadow-lg flex items-center gap-2 transition-all"
+              className="py-3 px-6 bg-slate-900 dark:bg-slate-100 hover:bg-black dark:hover:bg-white text-white dark:text-slate-900 disabled:opacity-50 font-bold text-xs rounded-xl shadow-md flex items-center gap-2 transition-all cursor-pointer"
             >
               {passwordSubmitting ? (
                 <>
@@ -323,7 +323,7 @@ export default function DashboardSettings() {
                 </>
               ) : (
                 <>
-                  <Lock className="w-4 h-4 text-amber-400" />
+                  <Lock className="w-4 h-4 text-amber-500 dark:text-amber-600" />
                   Update Password
                 </>
               )}
@@ -333,56 +333,56 @@ export default function DashboardSettings() {
       </div>
 
       {/* ── NOTIFICATION PREFERENCES ─────────────────────────────── */}
-      <div className="p-6 border border-gray-100 bg-white rounded-3xl shadow-sm space-y-6">
+      <div className="p-6 border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-3xl shadow-xs space-y-6">
         <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-2xl bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600">
+          <div className="w-10 h-10 rounded-2xl bg-purple-50 dark:bg-purple-950/40 border border-purple-100 dark:border-purple-900/40 flex items-center justify-center text-purple-600 dark:text-purple-400">
             <Bell className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-base font-black text-gray-900">Notification Preferences</h2>
-            <p className="text-[11px] text-gray-400 font-semibold">
+            <h2 className="text-base font-black text-slate-900 dark:text-white">Notification Preferences</h2>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">
               Choose how you want to be notified about your orders and offers
             </p>
           </div>
         </div>
 
         <div className="space-y-4 max-w-xl">
-          <div className="flex items-center justify-between p-4 bg-gray-50/50 rounded-2xl border border-gray-100">
+          <div className="flex items-center justify-between p-4 bg-slate-50/70 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
             <div>
-              <h4 className="text-xs font-black text-gray-900">Email Order Updates</h4>
-              <p className="text-[11px] text-gray-500 font-medium">Receive tracking & status changes via email</p>
+              <h4 className="text-xs font-black text-slate-900 dark:text-white">Email Order Updates</h4>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Receive tracking & status changes via email</p>
             </div>
             <input
               type="checkbox"
               checked={emailAlerts}
               onChange={(e) => setEmailAlerts(e.target.checked)}
-              className="w-4 h-4 rounded text-[#007BFF] focus:ring-[#007BFF]"
+              className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
             />
           </div>
 
-          <div className="flex items-center justify-between p-4 bg-gray-50/50 rounded-2xl border border-gray-100">
+          <div className="flex items-center justify-between p-4 bg-slate-50/70 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
             <div>
-              <h4 className="text-xs font-black text-gray-900">SMS Delivery Alerts</h4>
-              <p className="text-[11px] text-gray-500 font-medium">Get SMS notifications when package is out for delivery</p>
+              <h4 className="text-xs font-black text-slate-900 dark:text-white">SMS Delivery Alerts</h4>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Get SMS notifications when package is out for delivery</p>
             </div>
             <input
               type="checkbox"
               checked={smsAlerts}
               onChange={(e) => setSmsAlerts(e.target.checked)}
-              className="w-4 h-4 rounded text-[#007BFF] focus:ring-[#007BFF]"
+              className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
             />
           </div>
 
-          <div className="flex items-center justify-between p-4 bg-gray-50/50 rounded-2xl border border-gray-100">
+          <div className="flex items-center justify-between p-4 bg-slate-50/70 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
             <div>
-              <h4 className="text-xs font-black text-gray-900">Promotions & Flash Sales</h4>
-              <p className="text-[11px] text-gray-500 font-medium">Receive exclusive member coupons and flash sale invites</p>
+              <h4 className="text-xs font-black text-slate-900 dark:text-white">Promotions & Flash Sales</h4>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Receive exclusive member coupons and flash sale invites</p>
             </div>
             <input
               type="checkbox"
               checked={promoAlerts}
               onChange={(e) => setPromoAlerts(e.target.checked)}
-              className="w-4 h-4 rounded text-[#007BFF] focus:ring-[#007BFF]"
+              className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
             />
           </div>
         </div>

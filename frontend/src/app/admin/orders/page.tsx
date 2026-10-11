@@ -52,10 +52,6 @@ export default function AdminOrdersPage() {
     return matchesSearch && matchesOrderStatus && matchesPaymentStatus;
   });
 
-  if (statsLoading || ordersLoading || !stats) {
-    return <OrderSkeleton />;
-  }
-
   if (isError) {
     return (
       <div className="max-w-xl mx-auto my-12 p-8 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800 rounded-3xl text-center space-y-4">
@@ -68,7 +64,7 @@ export default function AdminOrdersPage() {
         </p>
         <button
           onClick={() => refetch()}
-          className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-md transition-colors inline-flex items-center gap-2"
+          className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-md transition-colors inline-flex items-center gap-2 cursor-pointer"
         >
           <RefreshCw className="w-4 h-4" />
           <span>Retry Connection</span>
@@ -77,13 +73,30 @@ export default function AdminOrdersPage() {
     );
   }
 
+  if (statsLoading || ordersLoading) {
+    return <OrderSkeleton />;
+  }
+
+  const safeStats = stats || {
+    totalOrders: filteredOrders.length,
+    totalGrowth: 0,
+    todayOrders: 0,
+    todayGrowth: 0,
+    pendingOrders: 0,
+    completedOrders: 0,
+    cancelledOrders: 0,
+    cancelledChange: 0,
+    totalRevenue: 0,
+    revenueGrowth: 0,
+  };
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16">
       {/* Page Header */}
       <OrderHeader />
 
       {/* Summary Statistics Cards */}
-      <OrderStats stats={stats} />
+      <OrderStats stats={safeStats} />
 
       {/* Payment Counters Summary */}
       <PaymentSummary />

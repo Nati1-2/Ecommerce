@@ -71,59 +71,11 @@ export async function GET(req: NextRequest) {
       })
     );
 
-    if (rawActivities.length === 0) {
-      rawActivities = [
-        {
-          id: "act_init_1",
-          user: "Apex Tech Labs",
-          userAvatar: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=150&q=80",
-          action: "Verified and onboarded merchant store: Apex Tech Wearables Store",
-          timestamp: "10 mins ago",
-          category: "vendor",
-          rawDate: new Date(),
-        },
-        {
-          id: "act_init_2",
-          user: "Sarah Connor",
-          userAvatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=120&q=80",
-          action: "Placed order #NATI-1001 for Apex Smart Watch Ultra ($249.99)",
-          timestamp: "2 hours ago",
-          category: "payment",
-          rawDate: new Date(),
-        },
-        {
-          id: "act_init_3",
-          user: "Merchant Team",
-          userAvatar: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=120&q=80",
-          action: "Published product 'Sonic Bass Pro Wireless Headphones' to catalog",
-          timestamp: "1 day ago",
-          category: "product",
-          rawDate: new Date(),
-        },
-      ];
-    }
+    // Return real activities sorted by date
+    rawActivities.sort((a, b) => new Date(b.rawDate).getTime() - new Date(a.rawDate).getTime());
   } catch (err: any) {
     console.warn("Admin Activities DB notice:", err?.message || err);
-    rawActivities = [
-      {
-        id: "act_init_1",
-        user: "Apex Tech Labs",
-        userAvatar: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=150&q=80",
-        action: "Verified and onboarded merchant store: Apex Tech Wearables Store",
-        timestamp: "10 mins ago",
-        category: "vendor",
-        rawDate: new Date(),
-      },
-      {
-        id: "act_init_2",
-        user: "Sarah Connor",
-        userAvatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=120&q=80",
-        action: "Placed order #NATI-1001 for Apex Smart Watch Ultra ($249.99)",
-        timestamp: "2 hours ago",
-        category: "payment",
-        rawDate: new Date(),
-      },
-    ];
+    rawActivities = [];
   }
 
   const activities = rawActivities.slice(0, 10).map(({ rawDate, ...item }) => item);

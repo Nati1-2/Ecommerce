@@ -38,52 +38,30 @@ export async function GET(req: NextRequest) {
         };
       })
     );
-    if (vendors.length === 0) {
-      const p = global.inMemoryProfile || {
-        _id: "usr-demo-vendor",
-        userId: "usr-demo-vendor",
-        storeName: "Apex Tech Wearables Store",
-        email: "vendor@natistore.com",
-        logo: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=150&q=80",
-        rating: 4.8,
-        verified: true,
-      };
+    if (vendors.length === 0 && global.inMemoryProfile) {
+      const p = global.inMemoryProfile;
       const prods = global.inMemoryProducts || [];
-      const sales = prods.reduce((s: number, prod: any) => s + (prod.salesCount || 0), 0) || 447;
-      const revenue = prods.reduce((s: number, prod: any) => s + (prod.revenueGenerated || 0), 0) || 67765.53;
+      const sales = prods.reduce((s: number, prod: any) => s + (prod.salesCount || 0), 0);
+      const revenue = prods.reduce((s: number, prod: any) => s + (prod.revenueGenerated || 0), 0);
       vendors = [
         {
-          id: p._id?.toString() || "usr-demo-vendor",
-          storeName: p.storeName || "Apex Tech Wearables Store",
-          logo: p.logo || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=150&q=80",
-          ownerName: "Apex Tech Merchant",
-          email: p.email || "vendor@natistore.com",
+          id: p._id?.toString() || p.userId || "vendor_1",
+          storeName: p.storeName || "Vendor Store",
+          logo: p.logo || "",
+          ownerName: p.email ? p.email.split("@")[0] : "Merchant",
+          email: p.email || "",
           sales,
           revenue: Math.round(revenue * 100) / 100,
-          rating: p.rating || 4.8,
+          rating: p.rating || 5.0,
           orders: sales,
-          joinedDate: "2026-01-15",
-          status: "Active",
+          joinedDate: p.joinedDate || new Date().toISOString().split("T")[0],
+          status: p.verified ? "Active" : "Pending",
         }
       ];
     }
   } catch (err: any) {
     console.warn("Admin Vendors DB notice:", err?.message || err);
-    vendors = [
-      {
-        id: "usr-demo-vendor",
-        storeName: "Apex Tech Wearables Store",
-        logo: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=150&q=80",
-        ownerName: "Apex Tech Merchant",
-        email: "vendor@natistore.com",
-        sales: 447,
-        revenue: 67765.53,
-        rating: 4.8,
-        orders: 447,
-        joinedDate: "2026-01-15",
-        status: "Active",
-      }
-    ];
+    vendors = [];
   }
 
   return NextResponse.json({ success: true, vendors: vendors || [] });

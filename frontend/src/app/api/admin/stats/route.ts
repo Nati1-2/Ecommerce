@@ -76,35 +76,35 @@ export async function GET(req: NextRequest) {
     const revPrev = revPrevMonth[0]?.total || 0;
     revenueGrowth = revPrev > 0 ? Math.round(((revThis - revPrev) / revPrev) * 1000) / 10 : (revThis > 0 ? 100 : 0);
 
-    // If DB is connected but empty, or fallback
+    // If DB is connected but empty, or in-memory stores are in use
     if (userCount === 0 && global.inMemoryUsers && global.inMemoryUsers.size > 0) {
       userCount = global.inMemoryUsers.size;
-      vendorCount = 1;
-      productCount = global.inMemoryProducts?.length || 3;
-      orderCount = global.inMemoryOrders?.length || 2;
+      vendorCount = global.inMemoryProfile ? 1 : 0;
+      productCount = global.inMemoryProducts?.length || 0;
+      orderCount = global.inMemoryOrders?.length || 0;
       const memRev = (global.inMemoryOrders || []).reduce((acc: number, o: any) => acc + (o.grandTotal || o.totalAmount || 0), 0);
-      totalRevenue = Math.round((memRev || 67765.53) * 100) / 100;
-      usersGrowth = 12.5;
-      vendorsGrowth = 10.0;
-      productsGrowth = 15.2;
-      ordersGrowth = 8.4;
-      revenueGrowth = 14.1;
+      totalRevenue = Math.round(memRev * 100) / 100;
+      usersGrowth = 0;
+      vendorsGrowth = 0;
+      productsGrowth = 0;
+      ordersGrowth = 0;
+      revenueGrowth = 0;
     }
 
   } catch (err: any) {
-    console.warn("Admin Stats DB notice (using fallback stats):", err?.message || err);
+    console.warn("Admin Stats DB notice:", err?.message || err);
     if (global.inMemoryUsers && global.inMemoryUsers.size > 0) {
       userCount = global.inMemoryUsers.size;
-      vendorCount = 1;
-      productCount = global.inMemoryProducts?.length || 3;
-      orderCount = global.inMemoryOrders?.length || 2;
+      vendorCount = global.inMemoryProfile ? 1 : 0;
+      productCount = global.inMemoryProducts?.length || 0;
+      orderCount = global.inMemoryOrders?.length || 0;
       const memRev = (global.inMemoryOrders || []).reduce((acc: number, o: any) => acc + (o.grandTotal || o.totalAmount || 0), 0);
-      totalRevenue = Math.round((memRev || 67765.53) * 100) / 100;
-      usersGrowth = 12.5;
-      vendorsGrowth = 10.0;
-      productsGrowth = 15.2;
-      ordersGrowth = 8.4;
-      revenueGrowth = 14.1;
+      totalRevenue = Math.round(memRev * 100) / 100;
+      usersGrowth = 0;
+      vendorsGrowth = 0;
+      productsGrowth = 0;
+      ordersGrowth = 0;
+      revenueGrowth = 0;
     }
   }
 

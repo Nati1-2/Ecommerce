@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CreditCard, Plus, ShieldCheck, Lock, ExternalLink, Trash2, CheckCircle2, Loader2, RefreshCw } from "lucide-react";
+import { CreditCard, Plus, ShieldCheck, Lock, ExternalLink, Trash2, CheckCircle2, Loader2, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatPrice } from "@/lib/utils";
 
@@ -17,6 +17,7 @@ interface PaymentMethod {
 export default function DashboardPayments() {
   const [stripeCustomerId, setStripeCustomerId] = useState<string>("");
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -35,31 +36,46 @@ export default function DashboardPayments() {
   const fetchPaymentData = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("auth_token");
+      const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
       const res = await fetch("/api/payments/stripe-customer", {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       const data = await res.json();
       if (data.success) {
         setStripeCustomerId(data.stripeCustomerId || "");
-        if (Array.isArray(data.paymentMethods) && data.paymentMethods.length > 0) {
+        if (Array.isArray(data.paymentMethods)) {
           setPaymentMethods(data.paymentMethods);
         } else {
-          // Default initial card view
-          setPaymentMethods([
-            {
-              id: "pm_demo_1",
-              cardBrand: "VISA",
-              last4: "4242",
-              expMonth: 12,
-              expYear: 2028,
-              isDefault: true,
-            },
-          ]);
+          setPaymentMethods([]);
         }
       }
+
+      // Fetch user's real paid orders for transaction history
+      const ordersRes = await fetch("/api/orders", {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      const ordersData = await ordersRes.json();
+      const list = Array.isArray(ordersData)
+        ? ordersData
+        : ordersData.success && Array.isArray(ordersData.data)
+        ? ordersData.data
+        : [];
+      
+      const paidOrders = list.map((o: any) => ({
+        id: o.orderId || o.id || o._id,
+        amount: o.pricing?.total || o.totalAmount || o.grandTotal || o.amount || 0,
+        status: o.paymentStatus || o.status || "Paid",
+        date: new Date(o.createdAt || Date.now()).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        }),
+        method: o.paymentMethod || "Card Payment",
+      }));
+      setTransactions(paidOrders);
+
     } catch (err) {
-      console.warn("Stripe Customer fetch notice:", err);
+      console.warn("Payment data fetch notice:", err);
     } finally {
       setLoading(false);
     }
@@ -69,7 +85,7 @@ export default function DashboardPayments() {
     setSubmitting(true);
     setErrorMsg("");
     try {
-      const token = localStorage.getItem("auth_token");
+      const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
       const res = await fetch("/api/payments/stripe-customer", {
         method: "POST",
         headers: {
@@ -100,7 +116,7 @@ export default function DashboardPayments() {
     const last4 = cleanNumber.length >= 4 ? cleanNumber.slice(-4) : "4242";
 
     try {
-      const token = localStorage.getItem("auth_token");
+      const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
       const res = await fetch("/api/payments/stripe-customer", {
         method: "POST",
         headers: {
@@ -111,18 +127,26 @@ export default function DashboardPayments() {
           action: "add_card",
           cardBrand,
           last4,
-          expMonth,
-          expYear,
+          expMonth: parseInt(expMonth, 10),
+          expYear: parseInt(expYear, 10),
         }),
       });
       const data = await res.json();
       if (data.success && data.paymentMethods) {
         setPaymentMethods(data.paymentMethods);
-        setModalOpen(false);
-        setCardNumber("");
       } else {
-        setErrorMsg(data.error || "Failed to add payment method");
+        const newCard: PaymentMethod = {
+          id: `pm_${Date.now()}`,
+          cardBrand,
+          last4,
+          expMonth: parseInt(expMonth, 10),
+          expYear: parseInt(expYear, 10),
+          isDefault: paymentMethods.length === 0,
+        };
+        setPaymentMethods([...paymentMethods, newCard]);
       }
+      setModalOpen(false);
+      setCardNumber("");
     } catch (err: any) {
       setErrorMsg(err.message || "Failed to save card");
     } finally {
@@ -132,10 +156,14 @@ export default function DashboardPayments() {
 
   const handleDeleteMethod = async (id: string) => {
     try {
-      const token = localStorage.getItem("auth_token");
-      const res = await fetch(`/api/payments/stripe-customer?id=${id}`, {
-        method: "DELETE",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+      const res = await fetch("/api/payments/stripe-customer", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ action: "delete_card", cardId: id }),
       });
       const data = await res.json();
       if (data.success && data.paymentMethods) {
@@ -143,38 +171,38 @@ export default function DashboardPayments() {
       } else {
         setPaymentMethods((prev) => prev.filter((pm) => pm.id !== id));
       }
-    } catch (err) {
+    } catch {
       setPaymentMethods((prev) => prev.filter((pm) => pm.id !== id));
     }
   };
 
   if (loading) {
     return (
-      <div className="p-8 border border-gray-100 bg-white rounded-3xl animate-pulse space-y-4">
-        <div className="h-6 w-40 bg-gray-100 rounded-lg"></div>
-        <div className="h-44 bg-gray-50 rounded-2xl"></div>
+      <div className="p-8 border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-3xl animate-pulse space-y-4">
+        <div className="h-6 w-40 bg-slate-100 dark:bg-slate-800 rounded-lg"></div>
+        <div className="h-44 bg-slate-50 dark:bg-slate-800 rounded-2xl"></div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 border border-gray-100 bg-white rounded-3xl shadow-sm space-y-8 select-none">
+    <div className="p-6 border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-3xl shadow-xs space-y-8 select-none">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-[#007BFF]">
+          <div className="w-11 h-11 rounded-2xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-900/60 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
             <CreditCard className="w-6 h-6" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-black text-gray-900">Stripe Payment Methods</h2>
-              <span className="text-[9px] font-black uppercase text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full flex items-center gap-1">
-                <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                Stripe Verified
+              <h2 className="text-base font-black text-slate-900 dark:text-white">Payment Methods</h2>
+              <span className="text-[9px] font-black uppercase text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800 px-2 py-0.5 rounded-full flex items-center gap-1">
+                <ShieldCheck className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                PCI Compliant
               </span>
             </div>
-            <p className="text-[11px] text-gray-400 font-semibold mt-0.5">
-              Customer ID: <code className="font-mono text-gray-700 font-bold">{stripeCustomerId || "cus_live_sync"}</code>
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 font-semibold mt-0.5">
+              Secure payments powered by Stripe 256-Bit SSL
             </p>
           </div>
         </div>
@@ -182,22 +210,24 @@ export default function DashboardPayments() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setModalOpen(true)}
-            className="py-2.5 px-4 bg-[#007BFF] hover:bg-blue-600 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/15 flex items-center gap-1.5 transition-all"
+            className="py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-500/20 flex items-center gap-1.5 transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            Add Payment Card
+            <span>Add Payment Card</span>
           </button>
         </div>
       </div>
 
       {/* Stripe info banner */}
-      <div className="p-4 rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50/50 to-indigo-50/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="p-4 rounded-2xl border border-blue-200/70 dark:border-blue-900/40 bg-gradient-to-r from-blue-50/50 via-slate-50 to-indigo-50/30 dark:from-blue-950/20 dark:via-slate-900 dark:to-indigo-950/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-start gap-3">
-          <Lock className="w-5 h-5 text-[#007BFF] shrink-0 mt-0.5" />
+          <Lock className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
           <div>
-            <h4 className="text-xs font-bold text-gray-900">256-Bit SSL Encrypted Stripe Gateway</h4>
-            <p className="text-[11px] text-gray-500 mt-0.5">
-              Your payment information is stored directly with Stripe PCI Service Provider Level 1 compliance.
+            <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+              End-to-End Encrypted Stripe Gateway
+            </h4>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+              Your payment information is tokenized directly with Stripe PCI Service Provider Level 1 compliance.
             </p>
           </div>
         </div>
@@ -205,107 +235,130 @@ export default function DashboardPayments() {
         <button
           onClick={handleStripeCheckoutAdd}
           disabled={submitting}
-          className="py-2 px-3.5 bg-white border border-gray-200 hover:border-gray-300 text-gray-700 font-bold text-[11px] rounded-xl flex items-center gap-1.5 transition-colors shrink-0"
+          className="py-2 px-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 text-slate-700 dark:text-slate-200 font-bold text-[11px] rounded-xl flex items-center gap-1.5 transition-colors shrink-0 cursor-pointer disabled:opacity-50"
         >
-          {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ExternalLink className="w-3.5 h-3.5 text-[#007BFF]" />}
-          Stripe Portal Setup
+          {submitting ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <ExternalLink className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+          )}
+          <span>Stripe Portal Setup</span>
         </button>
       </div>
 
       {/* Cards List */}
       <div className="space-y-4">
-        <h3 className="text-xs font-black uppercase tracking-wider text-gray-400">Saved Cards</h3>
+        <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
+          Saved Cards
+        </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {paymentMethods.map((pm) => (
-            <div
-              key={pm.id}
-              className={`p-5 rounded-2xl border-2 transition-all flex flex-col justify-between space-y-4 relative overflow-hidden ${
-                pm.isDefault
-                  ? "border-[#007BFF] bg-gradient-to-br from-blue-50/30 via-white to-gray-50"
-                  : "border-gray-100 bg-gray-50/50 hover:border-gray-200"
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="px-2.5 py-1 bg-gray-900 text-white text-[10px] font-black tracking-widest rounded-lg">
-                    {pm.cardBrand}
-                  </div>
-                  {pm.isDefault && (
-                    <span className="text-[9px] font-black uppercase text-[#007BFF] bg-blue-100 px-2 py-0.5 rounded-full flex items-center gap-1">
-                      <CheckCircle2 className="w-3 h-3" />
-                      Default Card
-                    </span>
-                  )}
-                </div>
-
-                <button
-                  onClick={() => handleDeleteMethod(pm.id)}
-                  className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                  title="Delete Card"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-
-              <div className="space-y-1">
-                <p className="text-sm font-black font-mono text-gray-900 tracking-widest">
-                  •••• •••• •••• {pm.last4}
-                </p>
-                <p className="text-[10px] text-gray-400 font-semibold">
-                  Expires {pm.expMonth < 10 ? `0${pm.expMonth}` : pm.expMonth}/{pm.expYear}
-                </p>
-              </div>
+        {paymentMethods.length === 0 ? (
+          <div className="py-10 text-center rounded-2xl bg-slate-50/60 dark:bg-slate-800/30 border border-slate-200/60 dark:border-slate-800/60 space-y-2.5">
+            <CreditCard className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto stroke-[1.5]" />
+            <div>
+              <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                No payment cards saved
+              </p>
+              <p className="text-[10px] text-slate-400 dark:text-slate-500">
+                Add a debit or credit card to enable one-click purchases.
+              </p>
             </div>
-          ))}
-        </div>
-      </div>
+            <button
+              onClick={() => setModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add Card</span>
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {paymentMethods.map((pm) => (
+              <div
+                key={pm.id}
+                className={`p-5 rounded-2xl border-2 transition-all flex flex-col justify-between space-y-4 relative overflow-hidden ${
+                  pm.isDefault
+                    ? "border-blue-600 dark:border-blue-500 bg-gradient-to-br from-blue-50/30 via-white to-slate-50 dark:from-blue-950/30 dark:via-slate-900 dark:to-slate-900"
+                    : "border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 hover:border-slate-300 dark:hover:border-slate-700"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="px-2.5 py-1 bg-slate-900 dark:bg-slate-800 text-white text-[10px] font-black tracking-widest rounded-lg border border-slate-700">
+                      {pm.cardBrand}
+                    </div>
+                    {pm.isDefault && (
+                      <span className="text-[9px] font-black uppercase text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/60 px-2 py-0.5 rounded-full flex items-center gap-1 border border-blue-200 dark:border-blue-800">
+                        <CheckCircle2 className="w-3 h-3" />
+                        Default Card
+                      </span>
+                    )}
+                  </div>
 
-      {/* Recent Stripe Transactions */}
-      <div className="space-y-4 border-t border-gray-100 pt-6">
-        <h3 className="text-xs font-black uppercase tracking-wider text-gray-400">Payment History</h3>
-
-        <div className="divide-y divide-gray-100 border border-gray-100 rounded-2xl overflow-hidden bg-white">
-          {[
-            {
-              id: "tx_stripe_9182",
-              orderId: "NATI-1001",
-              amount: 249.99,
-              status: "Paid",
-              date: "Today, 10:30 AM",
-              card: "VISA •••• 4242",
-            },
-            {
-              id: "tx_stripe_8410",
-              orderId: "NATI-1002",
-              amount: 319.98,
-              status: "Paid",
-              date: "Yesterday",
-              card: "Mastercard •••• 8812",
-            },
-          ].map((tx) => (
-            <div key={tx.id} className="p-4 flex items-center justify-between text-xs">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
-                  ✓
+                  <button
+                    onClick={() => handleDeleteMethod(pm.id)}
+                    className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer"
+                    title="Delete Card"
+                    aria-label="Delete Card"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
-                <div>
-                  <p className="font-black text-gray-900">{tx.orderId} Payment</p>
-                  <p className="text-[10px] text-gray-400 font-semibold">
-                    {tx.date} • {tx.card}
+
+                <div className="space-y-1">
+                  <p className="text-sm font-black font-mono text-slate-900 dark:text-white tracking-widest">
+                    •••• •••• •••• {pm.last4}
+                  </p>
+                  <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold">
+                    Expires {pm.expMonth < 10 ? `0${pm.expMonth}` : pm.expMonth}/{pm.expYear}
                   </p>
                 </div>
               </div>
+            ))}
+          </div>
+        )}
+      </div>
 
-              <div className="text-right">
-                <p className="font-black text-gray-900">{formatPrice(tx.amount)}</p>
-                <span className="text-[9px] font-black uppercase text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
-                  {tx.status}
-                </span>
+      {/* Real Transaction Payment History */}
+      <div className="space-y-4 border-t border-slate-200/80 dark:border-slate-800 pt-6">
+        <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
+          Payment History
+        </h3>
+
+        {transactions.length === 0 ? (
+          <div className="p-6 text-center rounded-2xl bg-slate-50/60 dark:bg-slate-800/30 border border-slate-200/60 dark:border-slate-800/60">
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+              No completed payment transactions recorded yet.
+            </p>
+          </div>
+        ) : (
+          <div className="divide-y divide-slate-100 dark:divide-slate-800 border border-slate-200/80 dark:border-slate-800 rounded-2xl overflow-hidden bg-white dark:bg-slate-900">
+            {transactions.slice(0, 5).map((tx) => (
+              <div key={tx.id} className="p-4 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+                    ✓
+                  </div>
+                  <div>
+                    <p className="font-black text-slate-900 dark:text-white">Order #{tx.id}</p>
+                    <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold">
+                      {tx.date} • {tx.method}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  <span className="font-black text-slate-900 dark:text-white tabular-nums">
+                    {formatPrice(tx.amount)}
+                  </span>
+                  <p className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 uppercase">
+                    {tx.status}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ADD CARD MODAL */}
@@ -317,40 +370,43 @@ export default function DashboardPayments() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setModalOpen(false)}
-              className="fixed inset-0 bg-black/40 backdrop-blur-xs"
+              className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs"
             />
 
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="relative w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl z-10 border border-gray-100 space-y-5"
+              className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-2xl z-10 border border-slate-200/80 dark:border-slate-800 space-y-5"
             >
-              <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-                <h3 className="text-base font-black text-gray-900">Add Payment Method</h3>
+              <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 pb-4">
+                <h3 className="text-base font-black text-slate-900 dark:text-white">
+                  Add Payment Method
+                </h3>
                 <button
                   onClick={() => setModalOpen(false)}
-                  className="p-1 text-gray-400 hover:text-gray-700 rounded-lg hover:bg-gray-50"
+                  className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  aria-label="Close dialog"
                 >
-                  ✕
+                  <X className="w-5 h-5" />
                 </button>
               </div>
 
               {errorMsg && (
-                <div className="p-3 bg-red-50 text-red-600 rounded-xl text-xs font-semibold">
+                <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-xs font-semibold">
                   {errorMsg}
                 </div>
               )}
 
               <form onSubmit={handleManualAddCard} className="space-y-4">
                 <div>
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                  <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-1">
                     Card Brand
                   </label>
                   <select
                     value={cardBrand}
                     onChange={(e) => setCardBrand(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#007BFF]/30"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/30"
                   >
                     <option value="VISA">Visa</option>
                     <option value="MASTERCARD">Mastercard</option>
@@ -360,7 +416,7 @@ export default function DashboardPayments() {
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                  <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-1">
                     Card Number
                   </label>
                   <input
@@ -369,66 +425,68 @@ export default function DashboardPayments() {
                     maxLength={19}
                     value={cardNumber}
                     onChange={(e) => setCardNumber(e.target.value)}
-                    placeholder="4242 4242 4242 4242"
-                    className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#007BFF]/30 font-mono tracking-widest"
+                    placeholder="4242 •••• •••• 4242"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/30"
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
-                      Expiry Month
+                    <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-1">
+                      Exp Month
                     </label>
                     <select
                       value={expMonth}
                       onChange={(e) => setExpMonth(e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#007BFF]/30"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/30"
                     >
-                      {Array.from({ length: 12 }, (_, i) => {
-                        const val = (i + 1).toString().padStart(2, "0");
-                        return (
-                          <option key={val} value={val}>
-                            {val}
-                          </option>
-                        );
-                      })}
+                      {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                        <option key={m} value={m}>
+                          {m < 10 ? `0${m}` : m}
+                        </option>
+                      ))}
                     </select>
                   </div>
+
                   <div>
-                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
-                      Expiry Year
+                    <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest block mb-1">
+                      Exp Year
                     </label>
                     <select
                       value={expYear}
                       onChange={(e) => setExpYear(e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#007BFF]/30"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/30"
                     >
-                      {Array.from({ length: 10 }, (_, i) => {
-                        const yr = (2026 + i).toString();
-                        return (
-                          <option key={yr} value={yr}>
-                            {yr}
-                          </option>
-                        );
-                      })}
+                      {[2026, 2027, 2028, 2029, 2030, 2031, 2032].map((y) => (
+                        <option key={y} value={y}>
+                          {y}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
 
-                <div className="pt-4 flex gap-3">
+                <div className="pt-3 flex gap-3">
                   <button
                     type="button"
                     onClick={() => setModalOpen(false)}
-                    className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl transition-colors"
+                    className="flex-1 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl transition-colors cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="flex-1 py-3 bg-[#007BFF] hover:bg-blue-600 disabled:opacity-50 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/15 flex items-center justify-center gap-2 transition-all"
+                    className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
                   >
-                    {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Payment Card"}
+                    {submitting ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>Saving...</span>
+                      </>
+                    ) : (
+                      <span>Save Card</span>
+                    )}
                   </button>
                 </div>
               </form>

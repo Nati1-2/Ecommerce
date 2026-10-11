@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
           sku: p.sku,
           category: p.category,
           price: p.price,
-          msrp: p.discountPrice || Math.round(p.price * 1.2),
+          msrp: p.discountPrice || p.price,
           stock: p.stock ?? 0,
           sales: p.salesCount || 0,
           revenue: p.revenueGenerated || 0,
@@ -53,45 +53,24 @@ export async function GET(req: NextRequest) {
         id: p.id || p._id,
         name: p.name,
         image: p.images?.[0] || "",
-        vendorId: p.vendorId,
-        vendorName: "Apex Tech Wearables Store",
-        sku: p.sku,
-        category: p.category,
-        price: p.price,
-        msrp: p.discountPrice || p.price,
+        vendorId: p.vendorId || "",
+        vendorName: "Merchant",
+        sku: p.sku || "",
+        category: p.category || "General",
+        price: p.price || 0,
+        msrp: p.discountPrice || p.price || 0,
         stock: p.stock ?? 0,
         sales: p.salesCount || 0,
         revenue: p.revenueGenerated || 0,
-        views: p.salesCount * 5 || 240,
-        status: "Approved",
-        createdAt: "2026-01-15",
+        views: (p as any).views || 0,
+        status: p.status || "Approved",
+        createdAt: new Date().toISOString().split("T")[0],
         description: p.description || "",
       }));
     }
   } catch (err: any) {
     console.warn("Admin Products DB notice:", err?.message || err);
-    if (global.inMemoryProducts && global.inMemoryProducts.length > 0) {
-      products = global.inMemoryProducts.map((p: any) => ({
-        id: p.id || p._id,
-        name: p.name,
-        image: p.images?.[0] || "",
-        vendorId: p.vendorId,
-        vendorName: "Apex Tech Wearables Store",
-        sku: p.sku,
-        category: p.category,
-        price: p.price,
-        msrp: p.discountPrice || p.price,
-        stock: p.stock ?? 0,
-        sales: p.salesCount || 0,
-        revenue: p.revenueGenerated || 0,
-        views: p.salesCount * 5 || 240,
-        status: "Approved",
-        createdAt: "2026-01-15",
-        description: p.description || "",
-      }));
-    } else {
-      products = [];
-    }
+    products = [];
   }
 
   return NextResponse.json({ success: true, products: products || [] });
