@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTheme } from "next-themes";
 import Hero from "@/components/home/Hero";
 import { CategorySection } from "@/components/home/CategorySection";
 import { BrandSection } from "@/components/home/BrandSection";
@@ -25,12 +26,20 @@ import {
 import { useAuthStore } from "@/store/auth";
 
 export default function HomePage() {
+  const { setTheme, theme } = useTheme();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>(mockProducts);
   const [flashSaleProducts, setFlashSaleProducts] = useState<Product[]>(mockFlashSaleProducts);
   const [newArrivals, setNewArrivals] = useState<Product[]>(mockNewArrivals);
   const [bestSellers, setBestSellers] = useState<Product[]>(mockBestSellers);
   const [recommendations, setRecommendations] = useState<Product[]>(mockRecommendations);
+
+  useEffect(() => {
+    // Strictly enforce light mode on home page
+    if (theme !== "light") {
+      setTheme("light");
+    }
+  }, [theme, setTheme]);
 
   useEffect(() => {
     async function loadBackendProducts() {
@@ -51,7 +60,7 @@ export default function HomePage() {
   }, []);
 
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen bg-white text-slate-900">
       {/* 1. Hero */}
       <Hero />
 

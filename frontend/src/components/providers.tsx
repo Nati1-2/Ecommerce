@@ -20,7 +20,7 @@ export function Providers({ children }: { children: ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <NextThemesProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+      <NextThemesProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
         <VisitorTracker />
         {children}
       </NextThemesProvider>

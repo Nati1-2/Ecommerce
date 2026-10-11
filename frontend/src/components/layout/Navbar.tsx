@@ -14,7 +14,6 @@ import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import SearchBar from "@/components/Search/SearchBar";
 import NavbarNotifications from "@/components/layout/NavbarNotifications";
-import ThemeToggle from "@/components/ThemeToggle";
 import { useNotificationStore } from "@/store/notificationStore";
 import { useAuthStore } from "@/store/auth";
 
@@ -187,11 +186,6 @@ export default function Navbar() {
               <Search className="w-5 h-5" />
             </button>
 
-            {/* Color Mode Toggle */}
-            <div className="hidden sm:flex">
-              <ThemeToggle />
-            </div>
-
             {/* Real Interactive Notifications Popover */}
             <NavbarNotifications
               open={notifOpen}
@@ -353,9 +347,6 @@ export default function Navbar() {
               </nav>
 
               <div className="p-4 border-t border-slate-100 dark:border-slate-800 space-y-2">
-                <div className="pb-2 flex justify-center">
-                  <ThemeToggle variant="pill" />
-                </div>
                 {mounted && isAuthenticated ? (
                   <>
                     <Link
