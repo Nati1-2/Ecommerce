@@ -91,14 +91,16 @@ export default function SearchBar() {
   };
 
   return (
-    <div className="relative w-full max-w-2xl mx-auto" ref={wrapperRef}>
+    <div className="relative w-full" ref={wrapperRef}>
       <div 
-        className={`relative flex items-center w-full transition-all duration-300 ${
-          isOpen ? "bg-white shadow-lg ring-2 ring-blue-500 rounded-t-2xl" : "bg-gray-100/80 hover:bg-gray-100 rounded-full"
+        className={`relative flex items-center w-full transition-all duration-300 border ${
+          isOpen
+            ? "bg-white dark:bg-slate-900 shadow-xl ring-2 ring-blue-500/40 border-blue-500 rounded-t-2xl"
+            : "bg-slate-100/90 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 border-slate-200/80 dark:border-slate-700/80 rounded-full"
         }`}
       >
         <div className="pl-4 pr-3 flex items-center justify-center pointer-events-none">
-          <Search className={`w-5 h-5 transition-colors ${isOpen ? "text-blue-500" : "text-gray-400"}`} />
+          <Search className={`w-4 h-4 transition-colors ${isOpen ? "text-blue-500" : "text-slate-400 dark:text-slate-500"}`} />
         </div>
         
         <input
@@ -111,7 +113,7 @@ export default function SearchBar() {
           onFocus={() => setIsOpen(true)}
           onKeyDown={onKeyDown}
           placeholder="Search products, brands, categories..."
-          className="w-full py-3.5 bg-transparent border-none focus:outline-none focus:ring-0 text-sm font-medium text-gray-900 placeholder:text-gray-400 placeholder:font-normal"
+          className="w-full py-2.5 sm:py-3 bg-transparent border-none focus:outline-hidden focus:ring-0 text-xs sm:text-sm font-medium text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 placeholder:font-normal"
         />
 
         {localQuery && (
@@ -120,9 +122,9 @@ export default function SearchBar() {
               setLocalQuery("");
               setSuggestions(null);
             }}
-            className="pr-4 pl-2 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
+            className="pr-4 pl-2 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         )}
       </div>
