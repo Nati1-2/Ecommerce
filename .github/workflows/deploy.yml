@@ -22,7 +22,7 @@ jobs:
 
       - name: 📦 Install Dependencies
         working-directory: ./frontend
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: 🔍 TypeScript Verification
         working-directory: ./frontend
@@ -36,11 +36,14 @@ jobs:
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
           NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
           STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+          NEXT_TELEMETRY_DISABLED: 1
         run: npm run build
 
       - name: 🚀 Deploy to Vercel Production
         uses: amondnet/vercel-action@v25
-        if: ${{ secrets.VERCEL_TOKEN != '' }}
+        if: env.VERCEL_TOKEN != ''
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
@@ -49,15 +52,17 @@ jobs:
           working-directory: ./frontend
 
       - name: 🏥 Post-Deployment Health Check
+        env:
+          PRODUCTION_URL: ${{ secrets.PRODUCTION_URL }}
         run: |
           echo "Verifying application deployment and health status..."
-          curl -s -f ${{ secrets.PRODUCTION_URL || 'https://natistore.vercel.app' }}/api/health || echo "Health check ping complete"
+          TARGET_URL="${PRODUCTION_URL:-https://natistore.vercel.app}"
+          curl -s -f "$TARGET_URL/api/health" || echo "Health check ping complete"
 
       - name: 📢 Deployment Status Notification
         if: always()
         run: |
           echo "### 🚀 Production Deployment Report" >> $GITHUB_STEP_SUMMARY
-          echo "- **Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Branch**: \`main\`" >> $GITHUB_STEP_SUMMARY
           echo "- **Commit**: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
           echo "- **Target**: Production Environment" >> $GITHUB_STEP_SUMMARY

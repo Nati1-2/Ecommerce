@@ -14,7 +14,6 @@ const nextConfig: NextConfig = {
       process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ||
       "pk_test_51ThDDICdX0hvCWhczONjNi3TCevUCN7vYmjW5h5KaNeNiyjAAkIG3KL1ZkqSOauu8wIRirZmCuETnr6Xw65tK34T00DDtz8A5O",
   },
-  outputFileTracingRoot: path.resolve(__dirname, "../"),
 
   // ── Performance & Optimizations ────────────────────────────
   productionBrowserSourceMaps: false,
