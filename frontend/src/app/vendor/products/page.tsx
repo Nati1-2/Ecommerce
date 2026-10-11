@@ -82,9 +82,9 @@ export default function VendorProductsPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900 ">Product Catalog Management</h1>
-        <p className="text-xs text-slate-500  mt-1">
-          Manage product catalog, pricing, variants, and approval statuses.
+        <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Product Catalog Management</h1>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          Manage product catalog, pricing, variants, warehouse locations, and approval statuses.
         </p>
       </div>
 
@@ -103,7 +103,9 @@ export default function VendorProductsPage() {
       />
 
       {isLoading ? (
-        <div className="h-64 bg-slate-200  rounded-3xl animate-pulse" />
+        <div className="h-72 bg-white dark:bg-[#111827] rounded-3xl border border-slate-200/80 dark:border-slate-800 animate-pulse flex items-center justify-center text-slate-400 text-xs font-semibold">
+          Loading live product catalog from database...
+        </div>
       ) : (
         <ProductTable
           products={filteredProducts}

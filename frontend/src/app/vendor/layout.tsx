@@ -12,7 +12,7 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
   const { toast, clearToast } = useVendorStore();
 
   return (
-    <div className="min-h-screen bg-white  flex text-slate-900  font-sans antialiased">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0B0F19] flex text-slate-900 dark:text-slate-100 font-sans antialiased">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <VendorSidebar />
@@ -43,7 +43,7 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
       </AnimatePresence>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 bg-[#F8FAFC] dark:bg-[#0B0F19]">
         <VendorHeader onOpenMobileMenu={() => setIsMobileMenuOpen(true)} />
         <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
           {children}

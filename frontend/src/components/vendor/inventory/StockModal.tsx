@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { InventoryItem } from "@/types/vendor";
-import { X, Boxes, Save, RefreshCw } from "lucide-react";
+import { X, Boxes, Save } from "lucide-react";
 
 interface Props {
   item: InventoryItem | null;
@@ -21,66 +21,74 @@ export default function StockModal({ item, onClose, onSave }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
-      <div className="bg-white  rounded-3xl max-w-md w-full p-6 border border-slate-200  shadow-2xl relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-white dark:bg-[#111827] rounded-3xl max-w-md w-full p-6 border border-slate-200/80 dark:border-slate-800 shadow-2xl relative">
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 p-1.5 rounded-full text-slate-400 hover:text-slate-600  hover:bg-slate-100  transition-colors"
+          className="absolute top-5 right-5 p-1.5 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
         >
           <X className="w-4 h-4" />
         </button>
 
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-blue-50  text-blue-600  rounded-2xl shrink-0">
+          <div className="p-3 bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 rounded-2xl shrink-0">
             <Boxes className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-slate-900 ">Adjust Stock Level</h3>
-            <p className="text-xs text-slate-500 font-mono">SKU: {item.sku}</p>
+            <h3 className="text-base font-black text-slate-900 dark:text-white tracking-tight">
+              Adjust Stock Level
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">SKU: {item.sku}</p>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-6">
-          <div className="flex items-center gap-3 p-3 bg-slate-50  rounded-2xl">
-            <img src={item.productImage} alt="" className="w-12 h-12 rounded-xl object-cover" />
+          <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+            <img
+              src={item.productImage}
+              alt=""
+              className="w-12 h-12 rounded-xl object-cover bg-slate-100 dark:bg-slate-700"
+            />
             <div className="min-w-0">
-              <p className="text-xs font-bold text-slate-900  truncate">{item.productName}</p>
-              <p className="text-[11px] text-slate-400">Warehouse: {item.warehouse}</p>
+              <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{item.productName}</p>
+              <p className="text-[11px] text-slate-400 dark:text-slate-500">Warehouse: {item.warehouse}</p>
             </div>
           </div>
 
           <div>
-            <label className="text-xs font-bold text-slate-700 ">New Available Quantity</label>
-            <div className="flex items-center gap-3 mt-1">
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+              New Available Quantity
+            </label>
+            <div className="flex items-center gap-3 mt-1.5">
               <input
                 type="number"
                 min={0}
                 required
                 value={stock}
                 onChange={(e) => setStock(Number(e.target.value))}
-                className="w-full px-4 py-2.5 text-sm font-bold bg-slate-50  text-slate-900  rounded-xl border border-slate-200  focus:ring-2 focus:ring-blue-600 outline-none"
+                className="w-full px-4 py-2.5 text-sm font-bold bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200/80 dark:border-slate-700 focus:ring-2 focus:ring-blue-600 outline-none tabular-nums"
               />
               <button
                 type="button"
-                onClick={() => setStock(s => s + 50)}
-                className="px-3 py-2 bg-slate-100  text-slate-700  text-xs font-bold rounded-xl shrink-0 hover:bg-slate-200"
+                onClick={() => setStock((s) => s + 50)}
+                className="px-3.5 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl shrink-0 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200/60 dark:border-slate-700 transition-colors"
               >
                 +50
               </button>
             </div>
           </div>
 
-          <div className="pt-4 flex justify-end gap-3 border-t border-slate-100 ">
+          <div className="pt-4 flex justify-end gap-3 border-t border-slate-100 dark:border-slate-800">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-semibold text-slate-600  hover:bg-slate-100  rounded-xl"
+              className="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-500/25 flex items-center gap-1.5"
+              className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-500/25 flex items-center gap-1.5 active:scale-95 transition-all"
             >
               <Save className="w-4 h-4" />
               <span>Update Stock</span>

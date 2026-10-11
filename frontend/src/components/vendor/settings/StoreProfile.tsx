@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { VendorStoreSettings } from "@/types/vendor";
-import { Store, Building2, MapPin, Mail, Phone, Save } from "lucide-react";
+import { Save, Store, ShieldCheck } from "lucide-react";
 
 interface Props {
   settings: VendorStoreSettings;
@@ -16,10 +16,11 @@ export default function StoreProfile({ settings, onSave, isSaving }: Props) {
   const [banner, setBanner] = useState(settings.banner);
   const [description, setDescription] = useState(settings.description);
   const [email, setEmail] = useState(settings.email);
-  const [phone, setPhone] = useState(settings.phone);
   const [legalName, setLegalName] = useState(settings.companyDetails.legalName);
   const [taxId, setTaxId] = useState(settings.companyDetails.taxId);
-  const [address, setAddress] = useState(settings.companyDetails.address);
+  const [registrationNumber, setRegistrationNumber] = useState(
+    settings.companyDetails.registrationNumber || ""
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,32 +30,36 @@ export default function StoreProfile({ settings, onSave, isSaving }: Props) {
       banner,
       description,
       email,
-      phone,
       companyDetails: {
         legalName,
         taxId,
-        registrationNumber: settings.companyDetails.registrationNumber,
-        address,
+        registrationNumber,
+        address: settings.companyDetails.address || "",
       },
     });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white  p-6 rounded-3xl border border-slate-200  shadow-sm space-y-6">
-      <div className="flex items-center justify-between border-b border-slate-100  pb-4">
+    <form
+      onSubmit={handleSubmit}
+      className="bg-white dark:bg-[#111827] p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-6"
+    >
+      <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
         <div>
-          <h3 className="text-lg font-bold text-slate-900 ">Store Branding & Business Details</h3>
-          <p className="text-xs text-slate-500  mt-0.5">
-            Public store profile, logo, banner, and legal entity info.
+          <h3 className="text-base font-black text-slate-900 dark:text-white tracking-tight">
+            Store Branding & Legal Profile
+          </h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            Public storefront identity, branding assets, support contacts, and business registration.
           </p>
         </div>
         <button
           type="submit"
           disabled={isSaving}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-500/25 flex items-center gap-1.5 disabled:opacity-50"
+          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-500/25 flex items-center gap-1.5 disabled:opacity-50 active:scale-95 transition-all"
         >
           <Save className="w-4 h-4" />
-          <span>{isSaving ? "Saving..." : "Save Changes"}</span>
+          <span>{isSaving ? "Saving..." : "Save Settings"}</span>
         </button>
       </div>
 
@@ -62,102 +67,108 @@ export default function StoreProfile({ settings, onSave, isSaving }: Props) {
         {/* Store Name & Branding */}
         <div className="space-y-4">
           <div>
-            <label className="text-xs font-bold text-slate-700 ">Public Storefront Name</label>
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+              Public Storefront Name
+            </label>
             <input
               type="text"
               required
               value={storeName}
               onChange={(e) => setStoreName(e.target.value)}
-              className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50  text-slate-900  rounded-xl border border-slate-200  outline-none focus:ring-2 focus:ring-blue-600"
+              className="w-full mt-1.5 px-4 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200/80 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-600 transition-all font-semibold"
             />
           </div>
 
           <div>
-            <label className="text-xs font-bold text-slate-700 ">Store Logo Image URL</label>
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+              Store Logo Image URL
+            </label>
             <input
               type="url"
               required
               value={logo}
               onChange={(e) => setLogo(e.target.value)}
-              className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50  text-slate-900  rounded-xl border border-slate-200  outline-none focus:ring-2 focus:ring-blue-600"
+              className="w-full mt-1.5 px-4 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200/80 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-600 transition-all font-mono"
             />
           </div>
 
           <div>
-            <label className="text-xs font-bold text-slate-700 ">Banner Image URL</label>
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+              Banner Background URL
+            </label>
             <input
               type="url"
               required
               value={banner}
               onChange={(e) => setBanner(e.target.value)}
-              className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50  text-slate-900  rounded-xl border border-slate-200  outline-none focus:ring-2 focus:ring-blue-600"
+              className="w-full mt-1.5 px-4 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200/80 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-600 transition-all font-mono"
             />
           </div>
 
           <div>
-            <label className="text-xs font-bold text-slate-700 ">Store Description</label>
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+              Store Biography & Mission
+            </label>
             <textarea
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50  text-slate-900  rounded-xl border border-slate-200  outline-none focus:ring-2 focus:ring-blue-600"
+              className="w-full mt-1.5 px-4 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200/80 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-600 transition-all leading-relaxed"
             />
           </div>
         </div>
 
-        {/* Legal & Contact Details */}
+        {/* Legal & Registration Details (No phone, No address) */}
         <div className="space-y-4">
           <div>
-            <label className="text-xs font-bold text-slate-700 ">Legal Company Name</label>
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+              Legal Business Entity Name
+            </label>
             <input
               type="text"
               required
               value={legalName}
               onChange={(e) => setLegalName(e.target.value)}
-              className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50  text-slate-900  rounded-xl border border-slate-200  outline-none focus:ring-2 focus:ring-blue-600"
+              className="w-full mt-1.5 px-4 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200/80 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-600 transition-all font-semibold"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-bold text-slate-700 ">Tax ID / EIN</label>
-              <input
-                type="text"
-                required
-                value={taxId}
-                onChange={(e) => setTaxId(e.target.value)}
-                className="w-full mt-1 px-4 py-2.5 text-xs font-mono bg-slate-50  text-slate-900  rounded-xl border border-slate-200  outline-none focus:ring-2 focus:ring-blue-600"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-bold text-slate-700 ">Seller Phone</label>
-              <input
-                type="text"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50  text-slate-900  rounded-xl border border-slate-200  outline-none focus:ring-2 focus:ring-blue-600"
-              />
-            </div>
+          <div>
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+              Tax ID / EIN Number
+            </label>
+            <input
+              type="text"
+              required
+              value={taxId}
+              onChange={(e) => setTaxId(e.target.value)}
+              className="w-full mt-1.5 px-4 py-2.5 text-xs font-mono bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200/80 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-600 transition-all"
+            />
           </div>
 
           <div>
-            <label className="text-xs font-bold text-slate-700 ">Seller Support Email</label>
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+              Merchant Registration ID
+            </label>
+            <input
+              type="text"
+              value={registrationNumber}
+              onChange={(e) => setRegistrationNumber(e.target.value)}
+              placeholder="e.g. REG-CORP-9801"
+              className="w-full mt-1.5 px-4 py-2.5 text-xs font-mono bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200/80 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-600 transition-all"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+              Customer Support Contact Email
+            </label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50  text-slate-900  rounded-xl border border-slate-200  outline-none focus:ring-2 focus:ring-blue-600"
-            />
-          </div>
-
-          <div>
-            <label className="text-xs font-bold text-slate-700 ">Business Address</label>
-            <textarea
-              rows={2}
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50  text-slate-900  rounded-xl border border-slate-200  outline-none focus:ring-2 focus:ring-blue-600"
+              className="w-full mt-1.5 px-4 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200/80 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-600 transition-all font-semibold"
             />
           </div>
         </div>

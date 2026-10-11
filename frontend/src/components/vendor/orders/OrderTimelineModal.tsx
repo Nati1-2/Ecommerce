@@ -28,50 +28,58 @@ export default function OrderTimelineModal({
 
   const getStepIndex = (status: string) => {
     switch (status) {
-      case "Pending": return 0;
-      case "Confirmed": return 1;
-      case "Processing": return 2;
-      case "Shipped": return 3;
-      case "Delivered": return 4;
-      default: return 0;
+      case "Pending":
+        return 0;
+      case "Confirmed":
+        return 1;
+      case "Processing":
+        return 2;
+      case "Shipped":
+        return 3;
+      case "Delivered":
+        return 4;
+      default:
+        return 0;
     }
   };
 
   const currentIndex = getStepIndex(order.status);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
-      <div className="bg-white  rounded-3xl max-w-2xl w-full p-6 sm:p-8 border border-slate-200  shadow-2xl relative max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-white dark:bg-[#111827] rounded-3xl max-w-2xl w-full p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800 shadow-2xl relative max-h-[90vh] overflow-y-auto">
         <button
           onClick={onClose}
-          className="absolute top-6 right-6 p-2 rounded-full text-slate-400 hover:text-slate-600  hover:bg-slate-100  transition-colors"
+          className="absolute top-6 right-6 p-2 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Title */}
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-blue-50  text-blue-600  rounded-2xl">
+          <div className="p-3 bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 rounded-2xl">
             <FileText className="w-6 h-6" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-slate-900 ">Order Details & Tracking</h2>
-            <p className="text-xs font-mono text-slate-500">{order.orderNumber}</p>
+            <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
+              Order Fulfillment & Tracking
+            </h2>
+            <p className="text-xs font-mono text-slate-500 dark:text-slate-400">{order.orderNumber}</p>
           </div>
         </div>
 
         {/* Customer & Shipping Summary */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 p-4 bg-slate-50  rounded-2xl text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 text-xs">
           <div>
             <p className="font-bold text-slate-400 uppercase text-[10px]">Customer Info</p>
-            <p className="font-bold text-slate-900  mt-1">{order.customerName}</p>
-            <p className="text-slate-500">{order.customerEmail}</p>
+            <p className="font-bold text-slate-900 dark:text-white mt-1">{order.customerName}</p>
+            <p className="text-slate-500 dark:text-slate-400">{order.customerEmail}</p>
           </div>
           <div>
-            <p className="font-bold text-slate-400 uppercase text-[10px]">Fulfillment Address</p>
-            <p className="text-slate-700  mt-1">{order.shippingAddress}</p>
+            <p className="font-bold text-slate-400 uppercase text-[10px]">Fulfillment Destination</p>
+            <p className="text-slate-700 dark:text-slate-300 mt-1">{order.shippingAddress}</p>
             {order.trackingNumber && (
-              <p className="text-blue-600  font-mono mt-1">
+              <p className="text-blue-600 dark:text-blue-400 font-mono mt-1 font-semibold">
                 Tracking: {order.trackingNumber} ({order.carrier})
               </p>
             )}
@@ -80,17 +88,28 @@ export default function OrderTimelineModal({
 
         {/* Items List */}
         <div className="mt-6 space-y-3">
-          <p className="text-xs font-bold text-slate-700 ">Order Items ({order.items.length})</p>
+          <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
+            Order Items ({order.items.length})
+          </p>
           {order.items.map((item) => (
-            <div key={item.id} className="flex items-center justify-between p-3 bg-slate-50  rounded-xl">
+            <div
+              key={item.id}
+              className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800"
+            >
               <div className="flex items-center gap-3">
-                <img src={item.productImage} alt="" className="w-10 h-10 rounded-lg object-cover" />
+                <img
+                  src={item.productImage}
+                  alt=""
+                  className="w-10 h-10 rounded-lg object-cover bg-slate-100 dark:bg-slate-700"
+                />
                 <div>
-                  <p className="text-xs font-bold text-slate-900 ">{item.productName}</p>
-                  <p className="text-[11px] text-slate-500">Qty: {item.quantity} × ${item.unitPrice.toFixed(2)}</p>
+                  <p className="text-xs font-bold text-slate-900 dark:text-white">{item.productName}</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    Qty: {item.quantity} × ${item.unitPrice.toFixed(2)}
+                  </p>
                 </div>
               </div>
-              <p className="text-xs font-extrabold text-slate-900 ">
+              <p className="text-xs font-black text-slate-900 dark:text-white tabular-nums">
                 ${(item.quantity * item.unitPrice).toFixed(2)}
               </p>
             </div>
@@ -99,13 +118,15 @@ export default function OrderTimelineModal({
 
         {/* Visual Timeline */}
         <div className="mt-8 space-y-4">
-          <p className="text-xs font-bold text-slate-700 ">Fulfillment Progression</p>
+          <p className="text-xs font-bold text-slate-700 dark:text-slate-300">Fulfillment Progression</p>
 
-          <div className="relative flex items-center justify-between">
-            <div className="absolute top-1/2 left-0 right-0 h-1 bg-slate-200  -translate-y-1/2 z-0" />
+          <div className="relative flex items-center justify-between px-2">
+            <div className="absolute top-4 left-6 right-6 h-1 bg-slate-200 dark:bg-slate-700 z-0" />
             <div
-              className="absolute top-1/2 left-0 h-1 bg-blue-600 -translate-y-1/2 z-0 transition-all duration-500"
-              style={{ width: `${(currentIndex / (steps.length - 1)) * 100}%` }}
+              className="absolute top-4 left-6 h-1 bg-blue-600 z-0 transition-all duration-500"
+              style={{
+                width: `calc(${(currentIndex / (steps.length - 1)) * 100}% - 24px)`,
+              }}
             />
 
             {steps.map((step, idx) => {
@@ -117,13 +138,17 @@ export default function OrderTimelineModal({
                   <div
                     className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${
                       isCompleted
-                        ? "bg-blue-600 text-white shadow-md shadow-blue-500/30 ring-4 ring-white "
-                        : "bg-slate-200  text-slate-400"
+                        ? "bg-blue-600 text-white shadow-md shadow-blue-500/30 ring-4 ring-white dark:ring-[#111827]"
+                        : "bg-slate-200 dark:bg-slate-800 text-slate-400 ring-4 ring-white dark:ring-[#111827]"
                     }`}
                   >
                     <StepIcon className="w-4 h-4" />
                   </div>
-                  <span className={`text-[11px] font-bold mt-2 ${isCompleted ? "text-slate-900 " : "text-slate-400"}`}>
+                  <span
+                    className={`text-[11px] font-bold mt-2 ${
+                      isCompleted ? "text-slate-900 dark:text-white" : "text-slate-400"
+                    }`}
+                  >
                     {step.title}
                   </span>
                 </div>
@@ -133,20 +158,20 @@ export default function OrderTimelineModal({
         </div>
 
         {/* Action Buttons */}
-        <div className="mt-8 pt-4 border-t border-slate-100  flex flex-wrap gap-3 justify-end">
+        <div className="mt-8 pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-wrap gap-3 justify-end">
           <button
             onClick={() => onPrintInvoice(order)}
-            className="px-4 py-2 bg-slate-100  hover:bg-slate-200 text-slate-700  text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5"
+            className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5"
           >
             <Printer className="w-4 h-4 text-slate-500" />
-            Print Invoice PDF
+            <span>Print Invoice PDF</span>
           </button>
           <button
             onClick={() => onPrintShippingLabel(order)}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md shadow-blue-500/25 flex items-center gap-1.5"
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md shadow-blue-500/25 flex items-center gap-1.5 active:scale-95 transition-all"
           >
             <Truck className="w-4 h-4" />
-            Generate Shipping Label
+            <span>Shipping Label</span>
           </button>
         </div>
       </div>

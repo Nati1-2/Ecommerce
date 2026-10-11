@@ -4,7 +4,7 @@ import { useState } from "react";
 import { VendorProduct, ProductVariant } from "@/types/vendor";
 import ImageUploader from "./ImageUploader";
 import VariantManager from "./VariantManager";
-import { Save, Eye, ArrowLeft, CheckCircle2, AlertTriangle, Layers } from "lucide-react";
+import { Save, Eye, ArrowLeft, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 
 interface Props {
@@ -14,26 +14,39 @@ interface Props {
   onPreview: (data: VendorProduct) => void;
 }
 
-export default function ProductForm({ initialData, onSubmit, isSubmitting = false, onPreview }: Props) {
+export default function ProductForm({
+  initialData,
+  onSubmit,
+  isSubmitting = false,
+  onPreview,
+}: Props) {
   const [name, setName] = useState(initialData?.name || "");
   const [sku, setSku] = useState(initialData?.sku || "");
   const [brand, setBrand] = useState(initialData?.brand || "Apex Tech");
   const [category, setCategory] = useState(initialData?.category || "Laptops & Computers");
   const [description, setDescription] = useState(initialData?.description || "");
-  const [price, setPrice] = useState(initialData?.price || 199.00);
+  const [price, setPrice] = useState(initialData?.price || 199.0);
   const [discountPrice, setDiscountPrice] = useState(initialData?.discountPrice || undefined);
   const [stock, setStock] = useState(initialData?.stock || 25);
-  const [warehouseLocation, setWarehouseLocation] = useState(initialData?.warehouseLocation || "USA-WEST-01");
-  const [lowStockThreshold, setLowStockThreshold] = useState(initialData?.lowStockThreshold || 5);
+  const [warehouseLocation, setWarehouseLocation] = useState(
+    initialData?.warehouseLocation || "USA-WEST-01"
+  );
+  const [lowStockThreshold, setLowStockThreshold] = useState(
+    initialData?.lowStockThreshold || 5
+  );
   const [images, setImages] = useState<string[]>(
-    initialData?.images || ["https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=600&q=80"]
+    initialData?.images || [
+      "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=600&q=80",
+    ]
   );
   const [variants, setVariants] = useState<ProductVariant[]>(initialData?.variants || []);
   const [weightKg, setWeightKg] = useState(initialData?.weightKg || 1.2);
   const [length, setLength] = useState(initialData?.dimensionsCm?.length || 30);
   const [width, setWidth] = useState(initialData?.dimensionsCm?.width || 20);
   const [height, setHeight] = useState(initialData?.dimensionsCm?.height || 5);
-  const [deliveryTimeDays, setDeliveryTimeDays] = useState(initialData?.deliveryTimeDays || "2-3 Business Days");
+  const [deliveryTimeDays, setDeliveryTimeDays] = useState(
+    initialData?.deliveryTimeDays || "2-3 Business Days"
+  );
   const [seoTitle, setSeoTitle] = useState(initialData?.seoTitle || "");
   const [metaDescription, setMetaDescription] = useState(initialData?.metaDescription || "");
 
@@ -88,31 +101,31 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting = fals
   };
 
   return (
-    <form onSubmit={handleFormSubmit} className="space-y-8 max-w-5xl mx-auto">
+    <form onSubmit={handleFormSubmit} className="space-y-8 max-w-5xl mx-auto pb-12">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Link
             href="/vendor/products"
-            className="p-2 rounded-xl text-slate-400 hover:text-slate-900  hover:bg-slate-100  transition-colors"
+            className="p-2 rounded-xl text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 ">
+            <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
               {initialData ? `Edit Product: ${initialData.name}` : "Add New Product"}
             </h1>
-            <p className="text-xs text-slate-500  mt-0.5">
-              Fill in product attributes, pricing, media and variants.
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              Fill in product attributes, pricing, variants, warehouse stock and delivery details.
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <button
             type="button"
             onClick={() => onPreview(currentProductMock)}
-            className="px-4 py-2 bg-slate-100  hover:bg-slate-200  text-slate-700  text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5"
+            className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5"
           >
             <Eye className="w-4 h-4 text-blue-500" />
             <span>Storefront Preview</span>
@@ -121,20 +134,20 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting = fals
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-colors shadow-md shadow-blue-500/25 flex items-center gap-1.5 disabled:opacity-50"
+            className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-blue-500/25 flex items-center gap-1.5 disabled:opacity-50 active:scale-95"
           >
             <Save className="w-4 h-4" />
-            <span>{isSubmitting ? "Saving..." : initialData ? "Update Product" : "Submit for Approval"}</span>
+            <span>{isSubmitting ? "Saving..." : initialData ? "Save Changes" : "Submit Product"}</span>
           </button>
         </div>
       </div>
 
-      {/* Approval Status Banner */}
-      <div className="p-4 bg-blue-50  border border-blue-200  rounded-2xl flex items-center justify-between text-xs">
-        <div className="flex items-center gap-2 text-blue-800 ">
+      {/* Verification Banner */}
+      <div className="p-4 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60 rounded-2xl flex items-center justify-between text-xs">
+        <div className="flex items-center gap-2 text-blue-800 dark:text-blue-300">
           <CheckCircle2 className="w-4 h-4 text-blue-500 shrink-0" />
           <span>
-            <strong>Approval Workflow:</strong> Products submitted are automatically verified by Admin Services before listing publicly on marketplace.
+            <strong>Store Catalog Pipeline:</strong> Newly added products are saved directly into the live MongoDB catalog and synced to your merchant storefront.
           </span>
         </div>
       </div>
@@ -144,54 +157,54 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting = fals
         {/* Left Column: Core info & media (2 cols) */}
         <div className="lg:col-span-2 space-y-8">
           {/* Basic Info */}
-          <div className="bg-white  p-6 rounded-3xl border border-slate-200  shadow-sm space-y-4">
-            <h3 className="text-base font-bold text-slate-900  border-b border-slate-100  pb-3">
-              Basic Information
+          <div className="bg-white dark:bg-[#111827] p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 className="text-sm font-black text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3 tracking-tight">
+              Basic Product Details
             </h3>
 
             <div className="space-y-3">
               <div>
-                <label className="text-xs font-bold text-slate-700 ">Product Title *</label>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Product Title *</label>
                 <input
                   type="text"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. UltraBook Pro M3 Max 16-inch"
-                  className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50  text-slate-900  rounded-xl border border-slate-200  focus:ring-2 focus:ring-blue-600 outline-none"
+                  className="w-full mt-1.5 px-4 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200/80 dark:border-slate-700 focus:ring-2 focus:ring-blue-600 outline-none font-semibold"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-slate-700 ">SKU Code *</label>
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">SKU Code *</label>
                   <input
                     type="text"
                     required
                     value={sku}
                     onChange={(e) => setSku(e.target.value)}
                     placeholder="UBP-M3M-16"
-                    className="w-full mt-1 px-4 py-2.5 text-xs font-mono bg-slate-50  text-slate-900  rounded-xl border border-slate-200  focus:ring-2 focus:ring-blue-600 outline-none"
+                    className="w-full mt-1.5 px-4 py-2.5 text-xs font-mono bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200/80 dark:border-slate-700 focus:ring-2 focus:ring-blue-600 outline-none"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-slate-700 ">Brand Name</label>
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Brand Name</label>
                   <input
                     type="text"
                     value={brand}
                     onChange={(e) => setBrand(e.target.value)}
                     placeholder="Apex Tech"
-                    className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50  text-slate-900  rounded-xl border border-slate-200  focus:ring-2 focus:ring-blue-600 outline-none"
+                    className="w-full mt-1.5 px-4 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200/80 dark:border-slate-700 focus:ring-2 focus:ring-blue-600 outline-none font-semibold"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 ">Category</label>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Category Vertical</label>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50  text-slate-900  rounded-xl border border-slate-200  focus:ring-2 focus:ring-blue-600 outline-none font-medium"
+                  className="w-full mt-1.5 px-4 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200/80 dark:border-slate-700 focus:ring-2 focus:ring-blue-600 outline-none font-medium cursor-pointer"
                 >
                   <option value="Laptops & Computers">Laptops & Computers</option>
                   <option value="Audio">Audio</option>
@@ -202,25 +215,25 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting = fals
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 ">Description</label>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Description</label>
                 <textarea
-                  rows={5}
+                  rows={4}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Detailed product specification and features..."
-                  className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50  text-slate-900  rounded-xl border border-slate-200  focus:ring-2 focus:ring-blue-600 outline-none"
+                  className="w-full mt-1.5 px-4 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200/80 dark:border-slate-700 focus:ring-2 focus:ring-blue-600 outline-none leading-relaxed"
                 />
               </div>
             </div>
           </div>
 
           {/* Media Uploader */}
-          <div className="bg-white  p-6 rounded-3xl border border-slate-200  shadow-sm">
+          <div className="bg-white dark:bg-[#111827] p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
             <ImageUploader images={images} onChange={setImages} />
           </div>
 
           {/* Variants */}
-          <div className="bg-white  p-6 rounded-3xl border border-slate-200  shadow-sm">
+          <div className="bg-white dark:bg-[#111827] p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
             <VariantManager variants={variants} onChange={setVariants} basePrice={Number(price)} />
           </div>
         </div>
@@ -228,53 +241,53 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting = fals
         {/* Right Column: Pricing, Inventory, Shipping & SEO */}
         <div className="space-y-8">
           {/* Pricing & Stock */}
-          <div className="bg-white  p-6 rounded-3xl border border-slate-200  shadow-sm space-y-4">
-            <h3 className="text-base font-bold text-slate-900  border-b border-slate-100  pb-3">
-              Pricing & Stock
+          <div className="bg-white dark:bg-[#111827] p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 className="text-sm font-black text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3 tracking-tight">
+              Pricing & Inventory
             </h3>
 
             <div className="space-y-3">
               <div>
-                <label className="text-xs font-bold text-slate-700 ">Base Price ($) *</label>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Regular Price ($) *</label>
                 <input
                   type="number"
                   step="0.01"
                   required
                   value={price}
                   onChange={(e) => setPrice(Number(e.target.value))}
-                  className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50  text-slate-900  rounded-xl border border-slate-200  focus:ring-2 focus:ring-blue-600 outline-none font-bold"
+                  className="w-full mt-1.5 px-4 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200/80 dark:border-slate-700 focus:ring-2 focus:ring-blue-600 outline-none font-black tabular-nums"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 ">Discount Price ($)</label>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Discount Sale Price ($)</label>
                 <input
                   type="number"
                   step="0.01"
                   value={discountPrice || ""}
                   onChange={(e) => setDiscountPrice(e.target.value ? Number(e.target.value) : undefined)}
                   placeholder="Optional promotional price"
-                  className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50  text-slate-900  rounded-xl border border-slate-200  focus:ring-2 focus:ring-blue-600 outline-none"
+                  className="w-full mt-1.5 px-4 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200/80 dark:border-slate-700 focus:ring-2 focus:ring-blue-600 outline-none font-semibold tabular-nums"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 ">Initial Stock Units *</label>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Initial Stock Units *</label>
                 <input
                   type="number"
                   required
                   value={stock}
                   onChange={(e) => setStock(Number(e.target.value))}
-                  className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50  text-slate-900  rounded-xl border border-slate-200  focus:ring-2 focus:ring-blue-600 outline-none font-bold"
+                  className="w-full mt-1.5 px-4 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200/80 dark:border-slate-700 focus:ring-2 focus:ring-blue-600 outline-none font-black tabular-nums"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 ">Warehouse Hub</label>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Fulfillment Warehouse</label>
                 <select
                   value={warehouseLocation}
                   onChange={(e) => setWarehouseLocation(e.target.value)}
-                  className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50  text-slate-900  rounded-xl border border-slate-200  focus:ring-2 focus:ring-blue-600 outline-none font-medium"
+                  className="w-full mt-1.5 px-4 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200/80 dark:border-slate-700 focus:ring-2 focus:ring-blue-600 outline-none font-medium cursor-pointer"
                 >
                   <option value="USA-WEST-01">USA-WEST-01 (San Jose)</option>
                   <option value="USA-EAST-02">USA-EAST-02 (New York)</option>
@@ -283,73 +296,73 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting = fals
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 ">Low Stock Limit Warning</label>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Low Stock Alert Threshold</label>
                 <input
                   type="number"
                   value={lowStockThreshold}
                   onChange={(e) => setLowStockThreshold(Number(e.target.value))}
-                  className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50  text-slate-900  rounded-xl border border-slate-200  focus:ring-2 focus:ring-blue-600 outline-none"
+                  className="w-full mt-1.5 px-4 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200/80 dark:border-slate-700 focus:ring-2 focus:ring-blue-600 outline-none tabular-nums"
                 />
               </div>
             </div>
           </div>
 
           {/* Shipping Info */}
-          <div className="bg-white  p-6 rounded-3xl border border-slate-200  shadow-sm space-y-4">
-            <h3 className="text-base font-bold text-slate-900  border-b border-slate-100  pb-3">
-              Shipping & Logistics
+          <div className="bg-white dark:bg-[#111827] p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+            <h3 className="text-sm font-black text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3 tracking-tight">
+              Shipping & Dimensions
             </h3>
 
             <div className="space-y-3">
               <div>
-                <label className="text-xs font-bold text-slate-700 ">Weight (kg)</label>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Weight (kg)</label>
                 <input
                   type="number"
                   step="0.01"
                   value={weightKg}
                   onChange={(e) => setWeightKg(Number(e.target.value))}
-                  className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50  text-slate-900  rounded-xl border border-slate-200  focus:ring-2 focus:ring-blue-600 outline-none"
+                  className="w-full mt-1.5 px-4 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200/80 dark:border-slate-700 focus:ring-2 focus:ring-blue-600 outline-none tabular-nums"
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="text-[11px] font-bold text-slate-500">L (cm)</label>
+                  <label className="text-[11px] font-bold text-slate-400">L (cm)</label>
                   <input
                     type="number"
                     value={length}
                     onChange={(e) => setLength(Number(e.target.value))}
-                    className="w-full mt-1 px-2.5 py-2 text-xs bg-slate-50  text-slate-900  rounded-xl border border-slate-200  outline-none"
+                    className="w-full mt-1 px-2.5 py-2 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200/80 dark:border-slate-700 outline-none tabular-nums"
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-bold text-slate-500">W (cm)</label>
+                  <label className="text-[11px] font-bold text-slate-400">W (cm)</label>
                   <input
                     type="number"
                     value={width}
                     onChange={(e) => setWidth(Number(e.target.value))}
-                    className="w-full mt-1 px-2.5 py-2 text-xs bg-slate-50  text-slate-900  rounded-xl border border-slate-200  outline-none"
+                    className="w-full mt-1 px-2.5 py-2 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200/80 dark:border-slate-700 outline-none tabular-nums"
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-bold text-slate-500">H (cm)</label>
+                  <label className="text-[11px] font-bold text-slate-400">H (cm)</label>
                   <input
                     type="number"
                     value={height}
                     onChange={(e) => setHeight(Number(e.target.value))}
-                    className="w-full mt-1 px-2.5 py-2 text-xs bg-slate-50  text-slate-900  rounded-xl border border-slate-200  outline-none"
+                    className="w-full mt-1 px-2.5 py-2 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200/80 dark:border-slate-700 outline-none tabular-nums"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 ">Estimated Delivery</label>
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Estimated Delivery SLA</label>
                 <input
                   type="text"
                   value={deliveryTimeDays}
                   onChange={(e) => setDeliveryTimeDays(e.target.value)}
                   placeholder="e.g. 2-3 Business Days"
-                  className="w-full mt-1 px-4 py-2.5 text-xs bg-slate-50  text-slate-900  rounded-xl border border-slate-200  focus:ring-2 focus:ring-blue-600 outline-none"
+                  className="w-full mt-1.5 px-4 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl border border-slate-200/80 dark:border-slate-700 focus:ring-2 focus:ring-blue-600 outline-none"
                 />
               </div>
             </div>

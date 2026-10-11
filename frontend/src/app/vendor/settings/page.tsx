@@ -28,14 +28,20 @@ export default function VendorSettingsPage() {
   });
 
   if (isLoading || !settings) {
-    return <div className="h-96 bg-slate-200  rounded-3xl animate-pulse max-w-7xl mx-auto" />;
+    return (
+      <div className="h-96 bg-white dark:bg-[#111827] rounded-3xl border border-slate-200/80 dark:border-slate-800 animate-pulse max-w-7xl mx-auto flex items-center justify-center text-slate-400 text-xs font-semibold">
+        Fetching store configuration from live database...
+      </div>
+    );
   }
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-12">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900 ">Store Configurations & Settings</h1>
-        <p className="text-xs text-slate-500  mt-1">
+        <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+          Store Configurations & Merchant Preferences
+        </h1>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
           Customize store branding, legal entities, tax rates, return policies, and delivery rules.
         </p>
       </div>
