@@ -9,7 +9,16 @@ import {
 
 function getToken(): string {
   if (typeof window === "undefined") return "";
-  return localStorage.getItem("auth_token") || "";
+  const token = localStorage.getItem("auth_token");
+  if (token) return token;
+  try {
+    const authStore = localStorage.getItem("auth-storage");
+    if (authStore) {
+      const parsed = JSON.parse(authStore);
+      if (parsed?.state?.accessToken) return parsed.state.accessToken;
+    }
+  } catch {}
+  return "";
 }
 
 async function apiFetch<T>(url: string, options: RequestInit = {}): Promise<T> {

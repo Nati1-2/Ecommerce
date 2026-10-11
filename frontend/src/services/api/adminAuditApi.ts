@@ -8,7 +8,16 @@ import {
 
 function getToken(): string {
   if (typeof window === "undefined") return "";
-  return localStorage.getItem("auth_token") || "";
+  const token = localStorage.getItem("auth_token");
+  if (token) return token;
+  try {
+    const authStore = localStorage.getItem("auth-storage");
+    if (authStore) {
+      const parsed = JSON.parse(authStore);
+      if (parsed?.state?.accessToken) return parsed.state.accessToken;
+    }
+  } catch {}
+  return "";
 }
 
 async function apiFetch<T>(url: string, options: RequestInit = {}): Promise<T> {
@@ -30,39 +39,7 @@ async function apiFetch<T>(url: string, options: RequestInit = {}): Promise<T> {
   return res.json();
 }
 
-let mockLogsFallback: AuditLogModel[] = [
-  {
-    id: "evt_10928301",
-    user: "Alexander Vance",
-    userEmail: "a.vance@enterprise.com",
-    role: "Admin",
-    action: "VENDOR_COMMISSION_UPDATED",
-    resource: "Vendor: TechLabs Store (vnd_8901)",
-    severity: "High",
-    ip: "192.168.1.105",
-    location: "San Francisco, USA",
-    device: "MacBook Pro M3",
-    browser: "Chrome 126.0",
-    createdAt: "2026-08-07 01:42:10 UTC",
-    diff: [
-      { field: "commissionPercentage", oldValue: 5, newValue: 10, changedBy: "Alexander Vance" },
-    ],
-  },
-  {
-    id: "evt_10928302",
-    user: "Elena Rostova",
-    userEmail: "elena@luminavision.io",
-    role: "Vendor",
-    action: "PRODUCT_PUBLISHED",
-    resource: "Product: Apex Smart Watch Ultra",
-    severity: "Low",
-    ip: "82.102.21.44",
-    location: "Berlin, Germany",
-    device: "Windows 11 Workstation",
-    browser: "Firefox 127.0",
-    createdAt: "2026-08-07 01:35:22 UTC",
-  },
-];
+// Clean production API methods for audit logs
 
 export const adminAuditApi = {
   getStats: async (): Promise<AuditStatsData> => {

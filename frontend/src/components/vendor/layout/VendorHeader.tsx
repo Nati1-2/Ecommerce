@@ -17,6 +17,7 @@ import {
   Radio,
 } from "lucide-react";
 import Link from "next/link";
+import ThemeToggle from "@/components/ThemeToggle";
 
 interface HeaderProps {
   onOpenMobileMenu: () => void;
@@ -93,6 +94,9 @@ export default function VendorHeader({ onOpenMobileMenu }: HeaderProps) {
           <span>Storefront</span>
           <ExternalLink className="w-3 h-3 text-slate-400" />
         </Link>
+
+        {/* Theme Toggle (Light / Dark mode default Light) */}
+        <ThemeToggle />
 
         {/* Notifications Popover */}
         <div className="relative">

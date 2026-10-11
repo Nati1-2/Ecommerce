@@ -23,6 +23,7 @@ import {
   Sparkles,
   Zap,
 } from "lucide-react";
+import ThemeToggle from "@/components/ThemeToggle";
 
 interface SidebarProps {
   isMobile?: boolean;
@@ -203,7 +204,13 @@ export default function AdminSidebar({
       </nav>
 
       {/* Logout / User Info Footer */}
-      <div className="p-3.5 border-t border-slate-100 dark:border-slate-800/80 shrink-0">
+      <div className="p-3.5 border-t border-slate-100 dark:border-slate-800/80 shrink-0 space-y-2">
+        {(!isSidebarCollapsed || isMobile) && (
+          <div className="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800">
+            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">Appearance</span>
+            <ThemeToggle variant="pill" />
+          </div>
+        )}
         <button
           onClick={() => {
             localStorage.removeItem("auth_token");

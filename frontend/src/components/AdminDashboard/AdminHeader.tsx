@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import AdminNotifications from "./AdminNotifications";
+import ThemeToggle from "@/components/ThemeToggle";
 
 interface HeaderProps {
   onOpenMobileMenu: () => void;
@@ -95,6 +96,9 @@ export default function AdminHeader({ onOpenMobileMenu }: HeaderProps) {
           <span>Storefront</span>
           <ExternalLink className="w-3 h-3 text-slate-400" />
         </Link>
+
+        {/* Theme Toggle (Light / Dark mode) */}
+        <ThemeToggle />
 
         {/* Notifications Popover Trigger */}
         <div className="relative">

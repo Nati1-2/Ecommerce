@@ -48,9 +48,50 @@ export async function GET(req: NextRequest) {
         };
       })
     );
+    if (products.length === 0 && global.inMemoryProducts && global.inMemoryProducts.length > 0) {
+      products = global.inMemoryProducts.map((p: any) => ({
+        id: p.id || p._id,
+        name: p.name,
+        image: p.images?.[0] || "",
+        vendorId: p.vendorId,
+        vendorName: "Apex Tech Wearables Store",
+        sku: p.sku,
+        category: p.category,
+        price: p.price,
+        msrp: p.discountPrice || p.price,
+        stock: p.stock ?? 0,
+        sales: p.salesCount || 0,
+        revenue: p.revenueGenerated || 0,
+        views: p.salesCount * 5 || 240,
+        status: "Approved",
+        createdAt: "2026-01-15",
+        description: p.description || "",
+      }));
+    }
   } catch (err: any) {
     console.warn("Admin Products DB notice:", err?.message || err);
-    products = [];
+    if (global.inMemoryProducts && global.inMemoryProducts.length > 0) {
+      products = global.inMemoryProducts.map((p: any) => ({
+        id: p.id || p._id,
+        name: p.name,
+        image: p.images?.[0] || "",
+        vendorId: p.vendorId,
+        vendorName: "Apex Tech Wearables Store",
+        sku: p.sku,
+        category: p.category,
+        price: p.price,
+        msrp: p.discountPrice || p.price,
+        stock: p.stock ?? 0,
+        sales: p.salesCount || 0,
+        revenue: p.revenueGenerated || 0,
+        views: p.salesCount * 5 || 240,
+        status: "Approved",
+        createdAt: "2026-01-15",
+        description: p.description || "",
+      }));
+    } else {
+      products = [];
+    }
   }
 
   return NextResponse.json({ success: true, products: products || [] });

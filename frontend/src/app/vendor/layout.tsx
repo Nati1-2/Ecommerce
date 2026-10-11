@@ -34,7 +34,7 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 left-0 w-72 bg-slate-900 z-50 lg:hidden shadow-2xl"
+              className="fixed inset-y-0 left-0 w-72 bg-white dark:bg-slate-900 z-50 lg:hidden shadow-2xl border-r border-slate-200 dark:border-slate-800"
             >
               <VendorSidebar isMobile onCloseMobile={() => setIsMobileMenuOpen(false)} />
             </motion.div>
