@@ -64,14 +64,14 @@ export default function VisitorKPICards({ stats }: KPICardsProps) {
         return (
           <div
             key={idx}
-            className="p-5 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:shadow-md transition-shadow relative overflow-hidden flex flex-col justify-between"
+            className="p-5 bg-white rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow relative overflow-hidden flex flex-col justify-between"
           >
             <div className="flex items-start justify-between gap-3">
               <div>
-                <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase">
+                <span className="text-[11px] font-bold text-slate-400 tracking-wider uppercase">
                   {card.title}
                 </span>
-                <div className="text-2xl font-black text-slate-900 dark:text-white mt-1 truncate">
+                <div className="text-2xl font-black text-slate-900 mt-1 truncate">
                   {card.value}
                 </div>
               </div>
@@ -83,10 +83,10 @@ export default function VisitorKPICards({ stats }: KPICardsProps) {
               </div>
             </div>
 
-            <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
-              <span className="text-slate-500 dark:text-slate-400 font-medium truncate">{card.subtitle}</span>
+            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+              <span className="text-slate-500 font-medium truncate">{card.subtitle}</span>
               {card.badge && (
-                <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400">
+                <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   {card.badge}
                 </span>
@@ -94,7 +94,7 @@ export default function VisitorKPICards({ stats }: KPICardsProps) {
             </div>
 
             {card.isProgress && (
-              <div className="mt-2 w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+              <div className="mt-2 w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
                 <div
                   className="bg-amber-500 h-full rounded-full transition-all duration-500"
                   style={{ width: `${card.progressVal}%` }}

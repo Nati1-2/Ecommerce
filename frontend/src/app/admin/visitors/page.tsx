@@ -4,6 +4,7 @@ import { useState } from "react";
 import { AlertCircle, RefreshCw } from "lucide-react";
 import { useAdminVisitors } from "@/hooks/useAdminVisitorsQuery";
 import VisitorTrackerHeader from "@/components/AdminVisitors/VisitorTrackerHeader";
+import VisitorFilterBar from "@/components/AdminVisitors/VisitorFilterBar";
 import VisitorKPICards from "@/components/AdminVisitors/VisitorKPICards";
 import TrafficSourceDistribution from "@/components/AdminVisitors/TrafficSourceDistribution";
 import DeviceOSDistribution from "@/components/AdminVisitors/DeviceOSDistribution";
@@ -17,7 +18,11 @@ export default function AdminVisitorTrackerPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSource, setSelectedSource] = useState("all");
   const [selectedDevice, setSelectedDevice] = useState("all");
-  const [timeframe, setTimeframe] = useState<VisitorTimeframe>("all");
+  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [selectedCountry, setSelectedCountry] = useState("all");
+  const [timeframe, setTimeframe] = useState<VisitorTimeframe | string>("all");
+  const [startDate, setStartDate] = useState<string | undefined>(undefined);
+  const [endDate, setEndDate] = useState<string | undefined>(undefined);
   const [currentPage, setCurrentPage] = useState(1);
 
   // Poll every 10 seconds if auto-refresh is active
@@ -35,12 +40,47 @@ export default function AdminVisitorTrackerPage() {
       searchQuery,
       sourceType: selectedSource,
       deviceType: selectedDevice,
+      status: selectedStatus,
+      country: selectedCountry,
       timeframe,
+      startDate,
+      endDate,
       page: currentPage,
       limit: 25,
     },
     refetchInterval
   );
+
+  // Date range handler from Calendar Picker or header presets
+  const handleSelectDateRange = (
+    start: string | undefined,
+    end: string | undefined,
+    preset?: VisitorTimeframe
+  ) => {
+    setStartDate(start);
+    setEndDate(end);
+    if (preset) {
+      setTimeframe(preset);
+    } else if (start || end) {
+      setTimeframe("custom");
+    } else {
+      setTimeframe("all");
+    }
+    setCurrentPage(1);
+  };
+
+  // Reset all filters
+  const handleResetAllFilters = () => {
+    setSearchQuery("");
+    setSelectedSource("all");
+    setSelectedDevice("all");
+    setSelectedStatus("all");
+    setSelectedCountry("all");
+    setStartDate(undefined);
+    setEndDate(undefined);
+    setTimeframe("all");
+    setCurrentPage(1);
+  };
 
   if (isLoading) {
     return <VisitorTrackerSkeleton />;
@@ -85,7 +125,7 @@ export default function AdminVisitorTrackerPage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16">
-      {/* Page Header with Controls & Date Filter */}
+      {/* Page Header with Real-time DB Controls & Quick Calendar Trigger */}
       <VisitorTrackerHeader
         isAutoRefresh={isAutoRefresh}
         onToggleAutoRefresh={() => setIsAutoRefresh((prev) => !prev)}
@@ -95,15 +135,53 @@ export default function AdminVisitorTrackerPage() {
         liveCount={stats.liveActive}
         timeframe={timeframe}
         onTimeframeChange={(tf) => {
-          setTimeframe(tf);
+          handleSelectDateRange(undefined, undefined, tf);
+        }}
+        startDate={startDate}
+        endDate={endDate}
+        onSelectDateRange={handleSelectDateRange}
+      />
+
+      {/* Advanced Filter Bar: "+ Add Filter" & Interactive Date Calendar */}
+      <VisitorFilterBar
+        searchQuery={searchQuery}
+        onSearchChange={(q) => {
+          setSearchQuery(q);
           setCurrentPage(1);
         }}
+        selectedSource={selectedSource}
+        onSelectSource={(s) => {
+          setSelectedSource(s);
+          setCurrentPage(1);
+        }}
+        selectedDevice={selectedDevice}
+        onSelectDevice={(d) => {
+          setSelectedDevice(d);
+          setCurrentPage(1);
+        }}
+        selectedStatus={selectedStatus}
+        onSelectStatus={(status) => {
+          setSelectedStatus(status);
+          setCurrentPage(1);
+        }}
+        selectedCountry={selectedCountry}
+        onSelectCountry={(country) => {
+          setSelectedCountry(country);
+          setCurrentPage(1);
+        }}
+        startDate={startDate}
+        endDate={endDate}
+        timeframe={timeframe}
+        onSelectDateRange={handleSelectDateRange}
+        onResetAllFilters={handleResetAllFilters}
+        totalFilteredCount={totalCount}
+        availableCountries={stats.topCountries}
       />
 
       {/* Real-time KPI Metric Summary */}
       <VisitorKPICards stats={stats} />
 
-      {/* Traffic Acquisition Channel Breakdown (Search, Social, Direct, Referral) */}
+      {/* Traffic Acquisition Channel Breakdown */}
       <TrafficSourceDistribution
         stats={stats}
         selectedSource={selectedSource}
@@ -127,7 +205,7 @@ export default function AdminVisitorTrackerPage() {
       <GeoDistributionCard
         stats={stats}
         onFilterCountry={(country) => {
-          setSearchQuery(country);
+          setSelectedCountry(country);
           setCurrentPage(1);
         }}
       />
@@ -154,11 +232,23 @@ export default function AdminVisitorTrackerPage() {
           setSelectedDevice(d);
           setCurrentPage(1);
         }}
-        timeframe={timeframe}
-        onTimeframeChange={(tf) => {
-          setTimeframe(tf);
+        selectedStatus={selectedStatus}
+        onSelectStatus={(status) => {
+          setSelectedStatus(status);
           setCurrentPage(1);
         }}
+        selectedCountry={selectedCountry}
+        onSelectCountry={(country) => {
+          setSelectedCountry(country);
+          setCurrentPage(1);
+        }}
+        timeframe={timeframe}
+        onTimeframeChange={(tf) => {
+          handleSelectDateRange(undefined, undefined, tf);
+        }}
+        startDate={startDate}
+        endDate={endDate}
+        onResetFilters={handleResetAllFilters}
       />
     </div>
   );

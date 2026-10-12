@@ -1,18 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import VendorSidebar from "@/components/vendor/layout/VendorSidebar";
 import VendorHeader from "@/components/vendor/layout/VendorHeader";
 import { useVendorStore } from "@/store/vendorStore";
+import { useTheme } from "next-themes";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2, AlertCircle, Info, X } from "lucide-react";
 
 export default function VendorLayout({ children }: { children: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { toast, clearToast } = useVendorStore();
+  const { setTheme } = useTheme();
+
+  useEffect(() => {
+    setTheme("light");
+  }, [setTheme]);
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0B0F19] flex text-slate-900 dark:text-slate-100 font-sans antialiased">
+    <div className="min-h-screen bg-[#F8FAFC] flex text-slate-900 font-sans antialiased light">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <VendorSidebar />
@@ -34,7 +40,7 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 left-0 w-72 bg-white dark:bg-slate-900 z-50 lg:hidden shadow-2xl border-r border-slate-200 dark:border-slate-800"
+              className="fixed inset-y-0 left-0 w-72 bg-white z-50 lg:hidden shadow-2xl border-r border-slate-200"
             >
               <VendorSidebar isMobile onCloseMobile={() => setIsMobileMenuOpen(false)} />
             </motion.div>
@@ -43,7 +49,7 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
       </AnimatePresence>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 bg-[#F8FAFC] dark:bg-[#0B0F19]">
+      <div className="flex-1 flex flex-col min-w-0 bg-[#F8FAFC]">
         <VendorHeader onOpenMobileMenu={() => setIsMobileMenuOpen(true)} />
         <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
           {children}

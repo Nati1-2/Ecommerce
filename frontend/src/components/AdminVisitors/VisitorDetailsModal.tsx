@@ -2,16 +2,11 @@
 
 import {
   X,
-  Globe,
-  Monitor,
   Smartphone,
   Tablet,
-  MapPin,
-  Clock,
-  Compass,
+  Monitor,
   Copy,
   Check,
-  ExternalLink,
   ShieldCheck,
   Activity,
 } from "lucide-react";
@@ -52,7 +47,7 @@ export default function VisitorDetailsModal({ visitor, onClose }: DetailsModalPr
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4 overflow-y-auto">
-      <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div className="bg-white rounded-3xl max-w-lg w-full border border-slate-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         {/* Modal Header */}
         <div className="p-6 bg-gradient-to-r from-slate-900 to-indigo-950 text-white flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -80,62 +75,62 @@ export default function VisitorDetailsModal({ visitor, onClose }: DetailsModalPr
         {/* Modal Content */}
         <div className="p-6 space-y-5">
           {/* IP & Location Banner */}
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-between">
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center justify-between">
             <div className="space-y-0.5">
-              <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                 Network IP Address
               </span>
               <div className="flex items-center gap-2">
-                <span className="font-mono text-sm font-bold text-slate-900 dark:text-white">{visitor.ip}</span>
+                <span className="font-mono text-sm font-bold text-slate-900">{visitor.ip}</span>
                 <button
                   onClick={handleCopyIp}
-                  className="p-1 text-slate-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  className="p-1 text-slate-400 hover:text-blue-600 transition-colors"
                   title="Copy IP"
                 >
-                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                 </button>
               </div>
             </div>
 
             <div className="text-right space-y-0.5">
-              <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                 Geolocation
               </span>
-              <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
                 <span className="text-base">{visitor.location?.flag || "🌐"}</span>
-                <span>{visitor.location?.city}, {visitor.location?.country}</span>
+                <span>{visitor.location?.city ? `${visitor.location.city}, ` : ""}{visitor.location?.country}</span>
               </div>
             </div>
           </div>
 
           {/* Acquisition Source Details */}
           <div className="space-y-2">
-            <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
               Traffic Acquisition Link Source
             </span>
-            <div className="p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-850 space-y-2">
+            <div className="p-4 rounded-2xl border border-slate-200/80 bg-white space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Source Category:</span>
-                <span className="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400">
+                <span className="text-xs font-bold text-slate-700">Source Category:</span>
+                <span className="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700">
                   {visitor.source?.type}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Inbound Channel:</span>
-                <span className="text-xs font-bold text-slate-900 dark:text-white">{visitor.source?.name}</span>
+                <span className="text-xs font-bold text-slate-700">Inbound Channel:</span>
+                <span className="text-xs font-bold text-slate-900">{visitor.source?.name}</span>
               </div>
               {visitor.source?.referrer && (
-                <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold">Original Referrer URL:</span>
-                  <div className="text-[11px] font-mono text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-900 p-2 rounded-xl break-all">
+                <div className="pt-2 border-t border-slate-100 space-y-1">
+                  <span className="text-[10px] text-slate-400 font-semibold">Original Referrer URL:</span>
+                  <div className="text-[11px] font-mono text-slate-600 bg-slate-50 p-2 rounded-xl break-all">
                     {visitor.source.referrer}
                   </div>
                 </div>
               )}
               {visitor.source?.utmCampaign && (
                 <div className="flex items-center justify-between text-xs pt-1">
-                  <span className="text-slate-500 dark:text-slate-400 font-medium">UTM Campaign:</span>
-                  <span className="font-mono text-blue-600 dark:text-blue-400 font-bold">{visitor.source.utmCampaign}</span>
+                  <span className="text-slate-500 font-medium">UTM Campaign:</span>
+                  <span className="font-mono text-blue-600 font-bold">{visitor.source.utmCampaign}</span>
                 </div>
               )}
             </div>
@@ -143,55 +138,55 @@ export default function VisitorDetailsModal({ visitor, onClose }: DetailsModalPr
 
           {/* Hardware & Client Specifications */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-1">
-              <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-[11px] font-bold">
-                <DeviceIcon className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-1">
+              <div className="flex items-center gap-1.5 text-slate-500 text-[11px] font-bold">
+                <DeviceIcon className="w-3.5 h-3.5 text-blue-600" />
                 <span>Device & Brand</span>
               </div>
-              <div className="text-xs font-extrabold text-slate-900 dark:text-white">{visitor.deviceModel || visitor.deviceType}</div>
-              <div className="text-[10px] text-slate-400 dark:text-slate-500">{visitor.deviceType}</div>
+              <div className="text-xs font-extrabold text-slate-900">{visitor.deviceModel || visitor.deviceType}</div>
+              <div className="text-[10px] text-slate-400">{visitor.deviceType}</div>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-1">
-              <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-[11px] font-bold">
-                <ShieldCheck className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-1">
+              <div className="flex items-center gap-1.5 text-slate-500 text-[11px] font-bold">
+                <ShieldCheck className="w-3.5 h-3.5 text-purple-600" />
                 <span>Operating System</span>
               </div>
-              <div className="text-xs font-extrabold text-slate-900 dark:text-white">{visitor.os}</div>
-              <div className="text-[10px] text-slate-400 dark:text-slate-500">{visitor.browser}</div>
+              <div className="text-xs font-extrabold text-slate-900">{visitor.os}</div>
+              <div className="text-[10px] text-slate-400">{visitor.browser}</div>
             </div>
           </div>
 
           {/* Page & Session Duration */}
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-2">
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-slate-500 dark:text-slate-400">Current / Visited Page:</span>
-              <span className="font-mono font-bold text-blue-600 dark:text-blue-400 px-2 py-0.5 bg-blue-50 dark:bg-blue-950/40 rounded-lg">
+              <span className="font-semibold text-slate-500">Current / Visited Page:</span>
+              <span className="font-mono font-bold text-blue-600 px-2 py-0.5 bg-blue-50 rounded-lg">
                 {visitor.path}
               </span>
             </div>
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-slate-500 dark:text-slate-400">Timestamp:</span>
-              <span className="font-bold text-slate-800 dark:text-slate-200">{formattedTime}</span>
+              <span className="font-semibold text-slate-500">Timestamp:</span>
+              <span className="font-bold text-slate-800">{formattedTime}</span>
             </div>
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-slate-500 dark:text-slate-400">Session Duration:</span>
-              <span className="font-bold text-slate-800 dark:text-slate-200">{visitor.durationSeconds} seconds</span>
+              <span className="font-semibold text-slate-500">Session Duration:</span>
+              <span className="font-bold text-slate-800">{visitor.durationSeconds} seconds</span>
             </div>
             {visitor.screenResolution && (
               <div className="flex items-center justify-between text-xs">
-                <span className="font-semibold text-slate-500 dark:text-slate-400">Screen Resolution:</span>
-                <span className="font-mono text-slate-700 dark:text-slate-300">{visitor.screenResolution}</span>
+                <span className="font-semibold text-slate-500">Screen Resolution:</span>
+                <span className="font-mono text-slate-700">{visitor.screenResolution}</span>
               </div>
             )}
           </div>
         </div>
 
         {/* Modal Footer */}
-        <div className="p-4 bg-slate-50 dark:bg-slate-850 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+        <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
           <button
             onClick={onClose}
-            className="px-5 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-bold rounded-xl transition-colors"
+            className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition-colors"
           >
             Close Inspector
           </button>

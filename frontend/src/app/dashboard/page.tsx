@@ -25,12 +25,18 @@ import DashboardReviews from "@/components/Dashboard/DashboardReviews";
 import DashboardNotifications from "@/components/Dashboard/DashboardNotifications";
 import DashboardSettings from "@/components/Dashboard/DashboardSettings";
 
+import { useTheme } from "next-themes";
 import { motion, AnimatePresence } from "framer-motion";
 
 function DashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const tabQuery = searchParams.get("tab") as DashboardTab | null;
+  const { setTheme } = useTheme();
+
+  useEffect(() => {
+    setTheme("light");
+  }, [setTheme]);
 
   const { user: authUser, isAuthenticated, accessToken, logout, setAuth } = useAuthStore();
   const { updateProfile } = useDashboardStore();

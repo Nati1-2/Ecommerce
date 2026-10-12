@@ -36,6 +36,10 @@ export const adminVisitorsApi = {
     if (filters.page) params.set("page", filters.page.toString());
     if (filters.limit) params.set("limit", filters.limit.toString());
     if (filters.timeframe) params.set("timeframe", filters.timeframe);
+    if (filters.startDate) params.set("startDate", filters.startDate);
+    if (filters.endDate) params.set("endDate", filters.endDate);
+    if (filters.status && filters.status !== "all") params.set("status", filters.status);
+    if (filters.country && filters.country !== "all") params.set("country", filters.country);
 
     const queryString = params.toString() ? `?${params.toString()}` : "";
     return apiFetch<VisitorApiResponse>(`/api/admin/visitors${queryString}`);

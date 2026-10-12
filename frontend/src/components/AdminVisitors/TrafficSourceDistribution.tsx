@@ -93,17 +93,17 @@ export default function TrafficSourceDistribution({
   });
 
   return (
-    <div className="p-6 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs space-y-6">
+    <div className="p-6 bg-white rounded-3xl border border-slate-200/80 shadow-xs space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
         <div>
-          <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+          <h2 className="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
             Traffic Acquisition Sources
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
               Link & Origin Tracker
             </span>
           </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs text-slate-500">
             How visitors arrive at your storefront (Social links, Search algorithms, Direct bookmarks, or Referrals).
           </p>
         </div>
@@ -111,7 +111,7 @@ export default function TrafficSourceDistribution({
         {selectedSource !== "all" && (
           <button
             onClick={() => onSelectSource("all")}
-            className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 underline self-start sm:self-auto"
+            className="text-xs font-bold text-blue-600 hover:text-blue-700 underline self-start sm:self-auto"
           >
             Clear Filter (Show All)
           </button>
@@ -130,8 +130,8 @@ export default function TrafficSourceDistribution({
               onClick={() => onSelectSource(isSelected ? "all" : cat.type)}
               className={`p-4 rounded-2xl border text-left transition-all relative overflow-hidden flex flex-col justify-between ${
                 isSelected
-                  ? "border-blue-600 bg-blue-50/40 dark:bg-blue-950/40 shadow-md ring-2 ring-blue-500/20"
-                  : "border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50/60 dark:hover:bg-slate-850"
+                  ? "border-blue-600 bg-blue-50/40 shadow-md ring-2 ring-blue-500/20"
+                  : "border-slate-200/80 hover:border-slate-300 hover:bg-slate-50/60"
               }`}
             >
               <div className="flex items-center justify-between gap-2 mb-2">
@@ -144,12 +144,12 @@ export default function TrafficSourceDistribution({
               </div>
 
               <div>
-                <div className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{cat.label}</div>
-                <div className="text-lg font-black text-slate-900 dark:text-white mt-0.5">{cat.count.toLocaleString()} visits</div>
+                <div className="text-xs font-bold text-slate-800 truncate">{cat.label}</div>
+                <div className="text-lg font-black text-slate-900 mt-0.5">{cat.count.toLocaleString()} visits</div>
               </div>
 
               {/* Mini progress bar */}
-              <div className="mt-3 w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+              <div className="mt-3 w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-500 ${cat.barColor}`}
                   style={{ width: `${Math.min(100, cat.percentage)}%` }}
@@ -161,8 +161,8 @@ export default function TrafficSourceDistribution({
       </div>
 
       {/* Top Channel Pills */}
-      <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-        <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+      <div className="space-y-2 pt-2 border-t border-slate-100">
+        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
           Top Inbound Acquisition Channels
         </span>
         <div className="flex flex-wrap gap-2">
@@ -170,10 +170,10 @@ export default function TrafficSourceDistribution({
             <button
               key={i}
               onClick={() => onSelectSource(channel.type)}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-colors"
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-semibold text-slate-700 transition-colors"
             >
               <span className="font-bold">{channel.name}</span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+              <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-white text-slate-500 border border-slate-200">
                 {channel.count} ({channel.percentage}%)
               </span>
             </button>

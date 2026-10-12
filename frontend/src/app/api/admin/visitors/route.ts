@@ -544,28 +544,54 @@ export async function GET(req: NextRequest) {
   const search = (searchParams.get("search") || "").trim().toLowerCase();
   const sourceType = searchParams.get("source") || "all";
   const deviceType = searchParams.get("device") || "all";
+  const statusParam = searchParams.get("status") || "all";
+  const countryParam = searchParams.get("country") || "all";
   const timeframe = (searchParams.get("timeframe") || "all").trim().toLowerCase();
+  const startDateParam = searchParams.get("startDate");
+  const endDateParam = searchParams.get("endDate");
   const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
   const limit = Math.max(5, Math.min(100, parseInt(searchParams.get("limit") || "25", 10)));
 
   // 1. Calculate Date Boundary
   const now = Date.now();
   let startDate: Date | null = null;
+  let endDate: Date | null = null;
 
-  if (timeframe === "daily" || timeframe === "today" || timeframe === "24h") {
-    startDate = new Date(now - 24 * 60 * 60 * 1000);
-  } else if (timeframe === "weekly" || timeframe === "7d") {
-    startDate = new Date(now - 7 * 24 * 60 * 60 * 1000);
-  } else if (timeframe === "monthly" || timeframe === "30d") {
-    startDate = new Date(now - 30 * 24 * 60 * 60 * 1000);
-  } else if (timeframe === "yearly" || timeframe === "1y" || timeframe === "year") {
-    startDate = new Date(now - 365 * 24 * 60 * 60 * 1000);
+  if (startDateParam) {
+    const s = new Date(startDateParam);
+    if (!isNaN(s.getTime())) {
+      s.setHours(0, 0, 0, 0);
+      startDate = s;
+    }
+  }
+
+  if (endDateParam) {
+    const e = new Date(endDateParam);
+    if (!isNaN(e.getTime())) {
+      e.setHours(23, 59, 59, 999);
+      endDate = e;
+    }
+  }
+
+  // Fallback to timeframe preset if no custom dates were given
+  if (!startDate && !endDate) {
+    if (timeframe === "daily" || timeframe === "today" || timeframe === "24h") {
+      startDate = new Date(now - 24 * 60 * 60 * 1000);
+    } else if (timeframe === "weekly" || timeframe === "7d") {
+      startDate = new Date(now - 7 * 24 * 60 * 60 * 1000);
+    } else if (timeframe === "monthly" || timeframe === "30d") {
+      startDate = new Date(now - 30 * 24 * 60 * 60 * 1000);
+    } else if (timeframe === "yearly" || timeframe === "1y" || timeframe === "year") {
+      startDate = new Date(now - 365 * 24 * 60 * 60 * 1000);
+    }
   }
 
   // 2. Build MongoDB Query Objects
   const timeframeMongoQuery: any = {};
-  if (startDate) {
-    timeframeMongoQuery.visitedAt = { $gte: startDate };
+  if (startDate || endDate) {
+    timeframeMongoQuery.visitedAt = {};
+    if (startDate) timeframeMongoQuery.visitedAt.$gte = startDate;
+    if (endDate) timeframeMongoQuery.visitedAt.$lte = endDate;
   }
 
   const tableMongoQuery: any = { ...timeframeMongoQuery };
@@ -579,6 +605,18 @@ export async function GET(req: NextRequest) {
   if (deviceType !== "all") {
     tableMongoQuery.deviceType = {
       $regex: new RegExp(`^${escapeRegex(deviceType)}$`, "i"),
+    };
+  }
+
+  if (statusParam !== "all") {
+    tableMongoQuery.status = {
+      $regex: new RegExp(`^${escapeRegex(statusParam)}$`, "i"),
+    };
+  }
+
+  if (countryParam !== "all") {
+    tableMongoQuery["location.country"] = {
+      $regex: new RegExp(`^${escapeRegex(countryParam)}$`, "i"),
     };
   }
 
@@ -657,6 +695,8 @@ export async function GET(req: NextRequest) {
       page,
       totalPages,
       timeframe,
+      startDate: startDateParam || undefined,
+      endDate: endDateParam || undefined,
       dbConnected: true,
     });
   } catch (err: any) {
@@ -682,15 +722,19 @@ export async function GET(req: NextRequest) {
 
   let memoryLogs = [...global.inMemoryVisitorLogs];
 
-  // Filter memory logs by timeframe
-  if (startDate) {
-    const startMs = startDate.getTime();
-    memoryLogs = memoryLogs.filter((l) => new Date(l.visitedAt).getTime() >= startMs);
+  // Filter memory logs by custom date range or timeframe
+  if (startDate || endDate) {
+    memoryLogs = memoryLogs.filter((l) => {
+      const logTime = new Date(l.visitedAt).getTime();
+      if (startDate && logTime < startDate.getTime()) return false;
+      if (endDate && logTime > endDate.getTime()) return false;
+      return true;
+    });
   }
 
   const memoryStats = computeStatsFromLogs(memoryLogs);
 
-  // Apply source, device, and search filter in memory
+  // Apply source, device, status, country, and search filter in memory
   let filteredMemoryLogs = memoryLogs;
 
   if (sourceType !== "all") {
@@ -702,6 +746,18 @@ export async function GET(req: NextRequest) {
   if (deviceType !== "all") {
     filteredMemoryLogs = filteredMemoryLogs.filter(
       (l) => (l.deviceType || "").toLowerCase() === deviceType.toLowerCase()
+    );
+  }
+
+  if (statusParam !== "all") {
+    filteredMemoryLogs = filteredMemoryLogs.filter(
+      (l) => (l.status || "").toLowerCase() === statusParam.toLowerCase()
+    );
+  }
+
+  if (countryParam !== "all") {
+    filteredMemoryLogs = filteredMemoryLogs.filter(
+      (l) => (l.location?.country || "").toLowerCase() === countryParam.toLowerCase()
     );
   }
 
@@ -731,6 +787,8 @@ export async function GET(req: NextRequest) {
     page,
     totalPages: memTotalPages,
     timeframe,
+    startDate: startDateParam || undefined,
+    endDate: endDateParam || undefined,
     dbConnected,
   });
 }

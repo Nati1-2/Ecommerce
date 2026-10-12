@@ -31,8 +31,15 @@ interface TableProps {
   onSelectSource: (s: string) => void;
   selectedDevice: string;
   onSelectDevice: (d: string) => void;
-  timeframe?: VisitorTimeframe;
+  selectedStatus?: string;
+  onSelectStatus?: (status: string) => void;
+  selectedCountry?: string;
+  onSelectCountry?: (country: string) => void;
+  timeframe?: VisitorTimeframe | string;
   onTimeframeChange?: (t: VisitorTimeframe) => void;
+  startDate?: string;
+  endDate?: string;
+  onResetFilters?: () => void;
 }
 
 export default function VisitorTable({
@@ -47,8 +54,15 @@ export default function VisitorTable({
   onSelectSource,
   selectedDevice,
   onSelectDevice,
+  selectedStatus = "all",
+  onSelectStatus,
+  selectedCountry = "all",
+  onSelectCountry,
   timeframe,
   onTimeframeChange,
+  startDate,
+  endDate,
+  onResetFilters,
 }: TableProps) {
   const [selectedVisitor, setSelectedVisitor] = useState<VisitorLogItem | null>(null);
   const [copiedIp, setCopiedIp] = useState<string | null>(null);
@@ -72,7 +86,7 @@ export default function VisitorTable({
     }
   };
 
-  const getSourceBadge = (type: TrafficSourceType, name: string) => {
+  const getSourceBadge = (type: TrafficSourceType, _name: string) => {
     switch (type) {
       case "Search Engine":
         return {
@@ -120,8 +134,19 @@ export default function VisitorTable({
     { label: "Campaigns", value: "Campaign / Ad" },
   ];
 
+  const hasActiveFilters = Boolean(
+    searchQuery ||
+    selectedSource !== "all" ||
+    selectedDevice !== "all" ||
+    selectedStatus !== "all" ||
+    selectedCountry !== "all" ||
+    startDate ||
+    endDate ||
+    (timeframe && timeframe !== "all")
+  );
+
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs overflow-hidden space-y-4 p-6">
+    <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden space-y-4 p-6">
       {/* Table Toolbar */}
       <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
         {/* Source Filter Tabs */}
@@ -132,8 +157,8 @@ export default function VisitorTable({
               onClick={() => onSelectSource(tab.value)}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
                 selectedSource.toLowerCase() === tab.value.toLowerCase()
-                  ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-xs"
-                  : "bg-slate-100/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200/70 dark:hover:bg-slate-700/60"
+                  ? "bg-slate-900 text-white shadow-xs"
+                  : "bg-slate-100/80 text-slate-600 hover:bg-slate-200/70"
               }`}
             >
               {tab.label}
@@ -141,55 +166,55 @@ export default function VisitorTable({
           ))}
         </div>
 
-        {/* Search & Device Filter */}
+        {/* Search & Quick Dropdowns */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Search Input */}
           <div className="relative flex-1 sm:w-56">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
               placeholder="Search IP, location, path..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium"
+              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium"
             />
           </div>
-
-          {/* Timeframe Select */}
-          {onTimeframeChange && (
-            <select
-              value={timeframe || "all"}
-              onChange={(e) => onTimeframeChange(e.target.value as VisitorTimeframe)}
-              className="px-3 py-1.5 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-250 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
-              title="Filter by Timeframe"
-            >
-              <option value="all">All Time</option>
-              <option value="daily">Daily (24h)</option>
-              <option value="weekly">Weekly (7d)</option>
-              <option value="monthly">Monthly (30d)</option>
-              <option value="yearly">Yearly (1y)</option>
-            </select>
-          )}
 
           {/* Device Type Select */}
           <select
             value={selectedDevice}
             onChange={(e) => onSelectDevice(e.target.value)}
-            className="px-3 py-1.5 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-250 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+            className="px-3 py-1.5 text-xs font-bold rounded-xl border border-slate-200 bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+            title="Filter by Device"
           >
             <option value="all">All Devices</option>
             <option value="Desktop">Desktop (PC)</option>
             <option value="Mobile">Mobile</option>
             <option value="Tablet">Tablet</option>
           </select>
+
+          {/* Session Status Select */}
+          {onSelectStatus && (
+            <select
+              value={selectedStatus}
+              onChange={(e) => onSelectStatus(e.target.value)}
+              className="px-3 py-1.5 text-xs font-bold rounded-xl border border-slate-200 bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+              title="Filter by Session Status"
+            >
+              <option value="all">All Statuses</option>
+              <option value="online">Online (Live)</option>
+              <option value="idle">Idle</option>
+              <option value="exited">Exited</option>
+            </select>
+          )}
         </div>
       </div>
 
       {/* Table Data */}
-      <div className="overflow-x-auto rounded-2xl border border-slate-100 dark:border-slate-800">
+      <div className="overflow-x-auto rounded-2xl border border-slate-100">
         <table className="w-full text-left border-collapse text-xs">
           <thead>
-            <tr className="bg-slate-50/80 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 font-extrabold uppercase tracking-wider text-[10px]">
+            <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-400 font-extrabold uppercase tracking-wider text-[10px]">
               <th className="py-3 px-4">Visitor & IP</th>
               <th className="py-3 px-4">Device & OS</th>
               <th className="py-3 px-4">Acquisition Link Source</th>
@@ -198,27 +223,34 @@ export default function VisitorTable({
               <th className="py-3 px-4 text-right">Inspect</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+          <tbody className="divide-y divide-slate-100">
             {visitors.length === 0 ? (
               <tr>
-                <td colSpan={6} className="py-12 text-center text-slate-500 dark:text-slate-400">
+                <td colSpan={6} className="py-12 text-center text-slate-500">
                   <div className="max-w-xs mx-auto space-y-2">
-                    <div className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center mx-auto">
+                    <div className="w-10 h-10 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
                       <Search className="w-5 h-5" />
                     </div>
-                    <div className="text-sm font-bold text-slate-800 dark:text-slate-200">No matching visitors found</div>
-                    <p className="text-xs text-slate-400 dark:text-slate-500">
-                      Try clearing filters or search terms to display more session data.
+                    <div className="text-sm font-bold text-slate-800">No matching visitors found</div>
+                    <p className="text-xs text-slate-400">
+                      Try clearing filters or calendar date range to display more session data.
                     </p>
-                    {(searchQuery || selectedSource !== "all" || selectedDevice !== "all" || (timeframe && timeframe !== "all")) && (
+                    {hasActiveFilters && (
                       <button
+                        type="button"
                         onClick={() => {
-                          onSearchChange("");
-                          onSelectSource("all");
-                          onSelectDevice("all");
-                          if (onTimeframeChange) onTimeframeChange("all");
+                          if (onResetFilters) {
+                            onResetFilters();
+                          } else {
+                            onSearchChange("");
+                            onSelectSource("all");
+                            onSelectDevice("all");
+                            if (onSelectStatus) onSelectStatus("all");
+                            if (onSelectCountry) onSelectCountry("all");
+                            if (onTimeframeChange) onTimeframeChange("all");
+                          }
                         }}
-                        className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline"
+                        className="text-xs font-bold text-blue-600 hover:underline"
                       >
                         Reset all filters
                       </button>
@@ -235,7 +267,7 @@ export default function VisitorTable({
                   <tr
                     key={v.id}
                     onClick={() => setSelectedVisitor(v)}
-                    className="hover:bg-blue-50/40 dark:hover:bg-slate-800/40 transition-colors cursor-pointer group"
+                    className="hover:bg-blue-50/40 transition-colors cursor-pointer group"
                   >
                     {/* Visitor & IP */}
                     <td className="py-3.5 px-4">
@@ -245,20 +277,21 @@ export default function VisitorTable({
                         </span>
                         <div>
                           <div className="flex items-center gap-1.5">
-                            <span className="font-mono font-bold text-slate-900 dark:text-white">{v.ip}</span>
+                            <span className="font-mono font-bold text-slate-900">{v.ip}</span>
                             <button
+                              type="button"
                               onClick={(e) => handleCopy(v.ip, e)}
-                              className="opacity-0 group-hover:opacity-100 text-slate-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 transition-opacity"
+                              className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-blue-600 transition-opacity"
                               title="Copy IP"
                             >
                               {copiedIp === v.ip ? (
-                                <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                                <Check className="w-3 h-3 text-emerald-600" />
                               ) : (
                                 <Copy className="w-3 h-3" />
                               )}
                             </button>
                           </div>
-                          <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                          <div className="text-[11px] text-slate-500 font-medium">
                             {v.location?.city ? `${v.location.city}, ` : ""}
                             {v.location?.country || "Unknown Country"}
                           </div>
@@ -269,15 +302,15 @@ export default function VisitorTable({
                     {/* Device & OS */}
                     <td className="py-3.5 px-4">
                       <div className="space-y-1">
-                        <div className="flex items-center gap-1.5 font-bold text-slate-800 dark:text-slate-200">
+                        <div className="flex items-center gap-1.5 font-bold text-slate-800">
                           {getDeviceIcon(v.deviceType)}
                           <span className="truncate max-w-[140px]">{v.deviceModel || v.deviceType}</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold">
+                          <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 font-semibold">
                             {v.os}
                           </span>
-                          <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-medium">
+                          <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-500 font-medium">
                             {v.browser}
                           </span>
                         </div>
@@ -293,11 +326,11 @@ export default function VisitorTable({
                           {sourceBadge.icon}
                           <span>{v.source?.type}</span>
                         </span>
-                        <div className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1 truncate max-w-[180px]">
+                        <div className="text-xs font-bold text-slate-800 flex items-center gap-1 truncate max-w-[180px]">
                           <span>{v.source?.name}</span>
                           {v.source?.referrer && v.source.referrer !== "direct" && (
                             <span
-                              className="text-slate-400 dark:text-slate-500 text-[10px] truncate max-w-[120px]"
+                              className="text-slate-400 text-[10px] truncate max-w-[120px]"
                               title={v.source.referrer}
                             >
                               • {v.source.referrer.replace(/^https?:\/\//, "")}
@@ -309,7 +342,7 @@ export default function VisitorTable({
 
                     {/* Page Visited */}
                     <td className="py-3.5 px-4">
-                      <span className="font-mono text-[11px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2 py-1 rounded-lg truncate max-w-[160px] inline-block">
+                      <span className="font-mono text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg truncate max-w-[160px] inline-block">
                         {v.path}
                       </span>
                     </td>
@@ -317,15 +350,15 @@ export default function VisitorTable({
                     {/* Time & Status */}
                     <td className="py-3.5 px-4">
                       <div className="space-y-0.5">
-                        <div className="flex items-center gap-1.5 font-bold text-slate-800 dark:text-slate-200">
+                        <div className="flex items-center gap-1.5 font-bold text-slate-800">
                           <span
                             className={`w-2 h-2 rounded-full ${
-                              isOnline ? "bg-emerald-500 animate-pulse" : "bg-slate-300 dark:bg-slate-600"
+                              isOnline ? "bg-emerald-500 animate-pulse" : "bg-slate-300"
                             }`}
                           />
                           <span>{formatRelativeTime(v.visitedAt)}</span>
                         </div>
-                        <div className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">
+                        <div className="text-[10px] text-slate-400 font-mono">
                           {new Date(v.visitedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
                         </div>
                       </div>
@@ -334,11 +367,12 @@ export default function VisitorTable({
                     {/* Action */}
                     <td className="py-3.5 px-4 text-right">
                       <button
+                        type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedVisitor(v);
                         }}
-                        className="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white text-slate-600 dark:text-slate-300 text-xs font-bold transition-colors inline-flex items-center gap-1"
+                        className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-blue-600 hover:text-white text-slate-600 text-xs font-bold transition-colors inline-flex items-center gap-1"
                       >
                         <Eye className="w-3.5 h-3.5" />
                         <span>Inspect</span>
@@ -353,27 +387,29 @@ export default function VisitorTable({
       </div>
 
       {/* Pagination Controls */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 text-xs text-slate-500 dark:text-slate-400">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 text-xs text-slate-500">
         <div>
-          Showing <span className="font-bold text-slate-900 dark:text-white">{visitors.length}</span> of{" "}
-          <span className="font-bold text-slate-900 dark:text-white">{totalCount}</span> sessions
+          Showing <span className="font-bold text-slate-900">{visitors.length}</span> of{" "}
+          <span className="font-bold text-slate-900">{totalCount}</span> sessions
         </div>
 
         <div className="flex items-center gap-2">
           <button
+            type="button"
             onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage <= 1}
-            className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-transparent"
+            className="p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
-          <span className="font-bold text-slate-800 dark:text-slate-200">
+          <span className="font-bold text-slate-800">
             Page {currentPage} of {totalPages}
           </span>
           <button
+            type="button"
             onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage >= totalPages}
-            className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-transparent"
+            className="p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent"
           >
             <ChevronRight className="w-4 h-4" />
           </button>

@@ -1,17 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AdminSidebar from "@/components/AdminDashboard/AdminSidebar";
 import AdminHeader from "@/components/AdminDashboard/AdminHeader";
 import AnnouncementModal from "@/components/AdminDashboard/AnnouncementModal";
 import { useAdminDashboardStore } from "@/store/adminDashboardStore";
 import { useBroadcastAnnouncement, usePlatformStats, useMarketplaceHealth } from "@/hooks/useAdminQuery";
 import { useAdminRealtime } from "@/hooks/useAdminRealtime";
+import { useTheme } from "next-themes";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2, AlertCircle, Info, X } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { setTheme } = useTheme();
+
+  // Force light mode in admin dashboard
+  useEffect(() => {
+    setTheme("light");
+  }, [setTheme]);
+
   const { toast, clearToast, isAnnouncementModalOpen, setIsAnnouncementModalOpen } =
     useAdminDashboardStore();
 
@@ -26,7 +34,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pendingVendorsCount = health?.pendingVendors ? `${health.pendingVendors} pending` : undefined;
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#090D16] text-slate-900 dark:text-slate-100 font-sans antialiased flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans antialiased flex flex-col lg:flex-row light">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block shrink-0">
         <AdminSidebar usersBadge={usersCount} vendorsBadge={pendingVendorsCount} />
@@ -48,7 +56,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 220 }}
-              className="fixed inset-y-0 left-0 w-72 bg-white dark:bg-slate-950 z-50 lg:hidden shadow-2xl border-r border-slate-200 dark:border-slate-800"
+              className="fixed inset-y-0 left-0 w-72 bg-white z-50 lg:hidden shadow-2xl border-r border-slate-200"
             >
               <AdminSidebar
                 isMobile

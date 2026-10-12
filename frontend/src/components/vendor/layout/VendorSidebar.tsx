@@ -23,7 +23,6 @@ import {
   BadgeCheck,
   ExternalLink,
 } from "lucide-react";
-import ThemeToggle from "@/components/ThemeToggle";
 
 interface SidebarProps {
   isMobile?: boolean;
@@ -191,13 +190,7 @@ export default function VendorSidebar({ isMobile = false, onCloseMobile }: Sideb
       </nav>
 
       {/* Public Storefront Link & Logout */}
-      <div className="p-3 border-t border-slate-100 dark:border-slate-800/80 shrink-0 space-y-1.5">
-        {(!isSidebarCollapsed || isMobile) && (
-          <div className="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60">
-            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">Mode</span>
-            <ThemeToggle variant="pill" />
-          </div>
-        )}
+      <div className="p-3 border-t border-slate-100 shrink-0 space-y-1.5">
         <Link
           href="/products"
           target="_blank"
