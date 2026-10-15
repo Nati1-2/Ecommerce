@@ -10,12 +10,17 @@ interface ThemeToggleProps {
 }
 
 export default function ThemeToggle({ className = "", variant = "icon" }: ThemeToggleProps) {
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme, forcedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // When forcedTheme is active (e.g. dashboards forced to light mode), hide the toggle
+  if (forcedTheme) {
+    return null;
+  }
 
   if (!mounted) {
     return (

@@ -10,6 +10,7 @@ import { useAdminRealtime } from "@/hooks/useAdminRealtime";
 import { useTheme } from "next-themes";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2, AlertCircle, Info, X } from "lucide-react";
+import ForceLightMode from "@/components/shared/ForceLightMode";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -17,6 +18,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   // Force light mode in admin dashboard
   useEffect(() => {
+    try {
+      document.documentElement.classList.remove("dark");
+      document.documentElement.classList.add("light");
+      document.documentElement.style.colorScheme = "light";
+    } catch {
+      // ignore
+    }
     setTheme("light");
   }, [setTheme]);
 
@@ -34,7 +42,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pendingVendorsCount = health?.pendingVendors ? `${health.pendingVendors} pending` : undefined;
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans antialiased flex flex-col lg:flex-row light">
+    <div
+      className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans antialiased flex flex-col lg:flex-row light"
+      data-dashboard-theme="light"
+    >
+      <ForceLightMode />
       {/* Desktop Sidebar */}
       <div className="hidden lg:block shrink-0">
         <AdminSidebar usersBadge={usersCount} vendorsBadge={pendingVendorsCount} />

@@ -61,6 +61,13 @@ export default function AppearanceSettings() {
           );
         })}
       </div>
+
+      <div className="mt-8 p-4 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 max-w-4xl flex items-center gap-3">
+        <span className="w-2 h-2 rounded-full bg-blue-600 shrink-0" />
+        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+          <strong>Note:</strong> Admin, Vendor, and Customer dashboards are strictly optimized and rendered in <strong>Light Mode only</strong> for data visualization clarity and audit compliance.
+        </p>
+      </div>
     </div>
   );
 }

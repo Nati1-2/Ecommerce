@@ -35,6 +35,13 @@ function DashboardContent() {
   const { setTheme } = useTheme();
 
   useEffect(() => {
+    try {
+      document.documentElement.classList.remove("dark");
+      document.documentElement.classList.add("light");
+      document.documentElement.style.colorScheme = "light";
+    } catch {
+      // ignore
+    }
     setTheme("light");
   }, [setTheme]);
 

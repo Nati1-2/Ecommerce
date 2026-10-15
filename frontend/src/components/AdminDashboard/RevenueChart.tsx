@@ -11,7 +11,6 @@ import {
   Tooltip,
   CartesianGrid,
 } from "recharts";
-import { useTheme } from "next-themes";
 import { TrendingUp, DollarSign, ArrowUpRight } from "lucide-react";
 
 interface Props {
@@ -27,8 +26,6 @@ function formatCurrency(amount: number): string {
 
 export default function RevenueChart({ data, totalUsers }: Props) {
   const { activeTimeframe, setActiveTimeframe } = useAdminDashboardStore();
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
 
   const chartData = Array.isArray(data) ? data : [];
   const totalPeriodRevenue = chartData.reduce((acc, d) => acc + (d?.revenue || 0), 0);
@@ -129,15 +126,13 @@ export default function RevenueChart({ data, totalUsers }: Props) {
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: isDark ? "#0F172A" : "#FFFFFF",
-                borderColor: isDark ? "#1E293B" : "#E2E8F0",
+                backgroundColor: "#FFFFFF",
+                borderColor: "#E2E8F0",
                 borderRadius: "16px",
-                color: isDark ? "#FFFFFF" : "#0F172A",
+                color: "#0F172A",
                 fontSize: "12px",
                 fontWeight: "bold",
-                boxShadow: isDark
-                  ? "0 10px 25px -5px rgba(0, 0, 0, 0.4)"
-                  : "0 10px 25px -5px rgba(0, 0, 0, 0.08)",
+                boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.08)",
               }}
               formatter={(val: any) => [`$${Number(val).toLocaleString()}`, "Amount"]}
             />

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import ForceLightMode from "@/components/shared/ForceLightMode";
 
 export const metadata: Metadata = {
   title: "My Account | Nati Store",
@@ -11,5 +12,13 @@ export default function AccountLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return (
+    <div
+      className="min-h-screen bg-[#F8FAFC] text-slate-900 light"
+      data-dashboard-theme="light"
+    >
+      <ForceLightMode />
+      {children}
+    </div>
+  );
 }

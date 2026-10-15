@@ -7,6 +7,7 @@ import { useVendorStore } from "@/store/vendorStore";
 import { useTheme } from "next-themes";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2, AlertCircle, Info, X } from "lucide-react";
+import ForceLightMode from "@/components/shared/ForceLightMode";
 
 export default function VendorLayout({ children }: { children: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -14,11 +15,22 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
   const { setTheme } = useTheme();
 
   useEffect(() => {
+    try {
+      document.documentElement.classList.remove("dark");
+      document.documentElement.classList.add("light");
+      document.documentElement.style.colorScheme = "light";
+    } catch {
+      // ignore
+    }
     setTheme("light");
   }, [setTheme]);
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex text-slate-900 font-sans antialiased light">
+    <div
+      className="min-h-screen bg-[#F8FAFC] flex text-slate-900 font-sans antialiased light"
+      data-dashboard-theme="light"
+    >
+      <ForceLightMode />
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <VendorSidebar />

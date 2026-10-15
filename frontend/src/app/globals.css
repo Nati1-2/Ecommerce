@@ -96,3 +96,46 @@
     transform: translateY(0);
   }
 }
+
+/* Enforce light mode strictly across all dashboards */
+[data-dashboard-theme="light"] {
+  color-scheme: light !important;
+}
+
+html.dark [data-dashboard-theme="light"] {
+  color-scheme: light !important;
+}
+
+html.dark [data-dashboard-theme="light"] .dark\:bg-slate-900,
+html.dark [data-dashboard-theme="light"] .dark\:bg-\[\#111827\],
+html.dark [data-dashboard-theme="light"] .dark\:bg-slate-800,
+html.dark [data-dashboard-theme="light"] .dark\:bg-slate-850,
+html.dark [data-dashboard-theme="light"] .dark\:bg-slate-800\/60,
+html.dark [data-dashboard-theme="light"] .dark\:bg-slate-800\/40,
+html.dark [data-dashboard-theme="light"] .dark\:bg-slate-800\/50,
+html.dark [data-dashboard-theme="light"] .dark\:bg-slate-800\/80 {
+  background-color: #FFFFFF !important;
+}
+
+html.dark [data-dashboard-theme="light"] .dark\:text-white {
+  color: #0F172A !important;
+}
+
+html.dark [data-dashboard-theme="light"] .dark\:text-slate-100,
+html.dark [data-dashboard-theme="light"] .dark\:text-slate-200,
+html.dark [data-dashboard-theme="light"] .dark\:text-slate-300 {
+  color: #1E293B !important;
+}
+
+html.dark [data-dashboard-theme="light"] .dark\:text-slate-400,
+html.dark [data-dashboard-theme="light"] .dark\:text-slate-500 {
+  color: #64748B !important;
+}
+
+html.dark [data-dashboard-theme="light"] .dark\:border-slate-800,
+html.dark [data-dashboard-theme="light"] .dark\:border-slate-700,
+html.dark [data-dashboard-theme="light"] .dark\:border-slate-700\/80,
+html.dark [data-dashboard-theme="light"] .dark\:border-slate-800\/80 {
+  border-color: #E2E8F0 !important;
+}
+

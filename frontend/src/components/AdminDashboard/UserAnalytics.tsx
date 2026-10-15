@@ -10,7 +10,6 @@ import {
   Tooltip,
   CartesianGrid,
 } from "recharts";
-import { useTheme } from "next-themes";
 import { Users, UserPlus, UserCheck } from "lucide-react";
 
 interface Props {
@@ -18,8 +17,6 @@ interface Props {
 }
 
 export default function UserAnalytics({ data }: Props) {
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
   const chartData = Array.isArray(data) ? data : [];
   const latest = chartData[chartData.length - 1] || { newUsers: 0, activeUsers: 0, returningUsers: 0 };
 
@@ -67,15 +64,13 @@ export default function UserAnalytics({ data }: Props) {
             <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
             <Tooltip
               contentStyle={{
-                backgroundColor: isDark ? "#0F172A" : "#FFFFFF",
-                borderColor: isDark ? "#1E293B" : "#E2E8F0",
+                backgroundColor: "#FFFFFF",
+                borderColor: "#E2E8F0",
                 borderRadius: "16px",
-                color: isDark ? "#FFFFFF" : "#0F172A",
+                color: "#0F172A",
                 fontSize: "12px",
                 fontWeight: "bold",
-                boxShadow: isDark
-                  ? "0 10px 25px -5px rgba(0, 0, 0, 0.4)"
-                  : "0 10px 25px -5px rgba(0, 0, 0, 0.08)",
+                boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.08)",
               }}
             />
             <Line
