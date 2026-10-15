@@ -117,9 +117,9 @@ export function ProductCard({ product, index, viewMode, onQuickView }: ProductCa
             {/* Price */}
             <div>
               <div className="flex items-baseline gap-2">
-                <span className="text-xl font-black text-gray-900">${formatPrice(product.price)}</span>
+                <span className="text-xl font-black text-gray-900">{formatPrice(product.price)}</span>
                 {product.originalPrice > product.price && (
-                  <span className="text-sm text-gray-400 line-through font-medium">${formatPrice(product.originalPrice)}</span>
+                  <span className="text-sm text-gray-400 line-through font-medium">{formatPrice(product.originalPrice)}</span>
                 )}
               </div>
               <p className="text-[10px] text-gray-400 font-bold mt-0.5">
@@ -260,9 +260,9 @@ export function ProductCard({ product, index, viewMode, onQuickView }: ProductCa
       {/* Pricing and Action Footer */}
       <div className="p-4 pt-0 border-t border-gray-100 mt-auto">
         <div className="flex items-baseline gap-2 pt-3">
-          <span className="text-lg font-black text-gray-900">${formatPrice(product.price)}</span>
+          <span className="text-lg font-black text-gray-900">{formatPrice(product.price)}</span>
           {product.originalPrice > product.price && (
-            <span className="text-xs text-gray-400 line-through font-medium">${formatPrice(product.originalPrice)}</span>
+            <span className="text-xs text-gray-400 line-through font-medium">{formatPrice(product.originalPrice)}</span>
           )}
         </div>
 

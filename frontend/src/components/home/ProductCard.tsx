@@ -147,10 +147,10 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
 
         <div className="flex flex-wrap items-center justify-between gap-1.5 pt-2 border-t border-gray-100 mt-auto">
           <div className="flex items-baseline gap-1 flex-wrap">
-            <span className="text-sm sm:text-base font-black text-gray-900">${formatPrice(product.price)}</span>
+            <span className="text-sm sm:text-base font-black text-gray-900">{formatPrice(product.price)}</span>
             {product.originalPrice && product.originalPrice > product.price && (
               <span className="text-[10px] sm:text-xs text-gray-400 line-through font-medium">
-                ${formatPrice(product.originalPrice)}
+                {formatPrice(product.originalPrice)}
               </span>
             )}
           </div>
