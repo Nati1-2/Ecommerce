@@ -53,27 +53,27 @@ export default function OrderChart() {
   const totalPeriodOrders = historicalData.reduce((acc, d) => acc + d.orders, 0);
 
   return (
-    <div className="p-6 border border-slate-200/80 dark:border-slate-800 rounded-3xl bg-white dark:bg-slate-900 shadow-xs space-y-5 select-none relative overflow-hidden">
+    <div className="p-4 sm:p-6 border border-slate-200/80 rounded-2xl sm:rounded-3xl bg-white shadow-xs space-y-4 sm:space-y-5 select-none relative overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="space-y-0.5">
-          <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
-            <BarChart3 className="w-4.5 h-4.5 text-blue-600 dark:text-blue-400" />
+          <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
+            <BarChart3 className="w-4.5 h-4.5 text-blue-600" />
             Order Analytics
           </h3>
-          <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold leading-none">
+          <p className="text-[10px] text-slate-400 font-semibold leading-none">
             Purchase frequency (last 7 months)
           </p>
         </div>
 
         {totalPeriodOrders > 0 ? (
           <span
-            className={`text-[10px] font-black px-2.5 py-0.5 rounded-full flex items-center gap-1 shrink-0 border ${
+            className={`text-[10px] sm:text-[11px] font-black px-2.5 py-0.5 rounded-full flex items-center gap-1 shrink-0 border ${
               trendPercent > 0
-                ? "text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800"
+                ? "text-emerald-700 bg-emerald-50 border-emerald-200/80"
                 : trendPercent < 0
-                ? "text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800"
-                : "text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                ? "text-rose-700 bg-rose-50 border-rose-200/80"
+                : "text-slate-600 bg-slate-100 border-slate-200"
             }`}
           >
             {trendPercent > 0 ? (
@@ -86,25 +86,25 @@ export default function OrderChart() {
             {trendPercent > 0 ? `+${trendPercent}%` : `${trendPercent}%`} vs last mo
           </span>
         ) : (
-          <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-full border border-slate-200 dark:border-slate-700">
+          <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">
             0 orders recorded
           </span>
         )}
       </div>
 
       {/* Interactive Bar Chart */}
-      <div className="relative pt-4 pb-2">
+      <div className="relative pt-4 pb-1">
         <div className="flex justify-between items-end h-32 relative">
           {/* Grid lines background */}
           <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-40">
-            <div className="border-t border-dashed border-slate-200 dark:border-slate-800 w-full" />
-            <div className="border-t border-dashed border-slate-200 dark:border-slate-800 w-full" />
-            <div className="border-t border-dashed border-slate-200 dark:border-slate-800 w-full" />
-            <div className="border-t border-dashed border-slate-200 dark:border-slate-800 w-full" />
+            <div className="border-t border-dashed border-slate-200 w-full" />
+            <div className="border-t border-dashed border-slate-200 w-full" />
+            <div className="border-t border-dashed border-slate-200 w-full" />
+            <div className="border-t border-dashed border-slate-200 w-full" />
           </div>
 
           {historicalData.map((data, idx) => {
-            const barHeightPercent = (data.orders / maxOrders) * 100;
+            const barHeightPercent = Math.max((data.orders / maxOrders) * 100, 4);
             const isHovered = hoveredIdx === idx;
 
             return (
@@ -119,32 +119,32 @@ export default function OrderChart() {
                   <motion.div
                     initial={{ opacity: 0, y: -4, scale: 0.95 }}
                     animate={{ opacity: 1, y: -8, scale: 1 }}
-                    className="absolute -top-12 bg-slate-900 dark:bg-slate-800 text-white font-black text-[10px] px-2.5 py-1.5 rounded-xl shadow-lg z-20 flex flex-col items-center pointer-events-none shrink-0 border border-slate-700 whitespace-nowrap"
+                    className="absolute -top-12 bg-slate-900 text-white font-black text-[10px] px-2.5 py-1.5 rounded-xl shadow-xl z-20 flex flex-col items-center pointer-events-none shrink-0 border border-slate-800 whitespace-nowrap"
                   >
                     <span>{data.orders} {data.orders === 1 ? "Order" : "Orders"}</span>
                     <span className="text-[8px] text-slate-400 font-bold mt-0.5">{data.month}</span>
-                    <div className="w-1.5 h-1.5 bg-slate-900 dark:bg-slate-800 rotate-45 absolute -bottom-0.75 left-1/2 -translate-x-1/2" />
+                    <div className="w-1.5 h-1.5 bg-slate-900 rotate-45 absolute -bottom-0.75 left-1/2 -translate-x-1/2" />
                   </motion.div>
                 )}
 
-                {/* Animated Bar Column */}
-                <div className="w-7 sm:w-8.5 bg-slate-100 dark:bg-slate-800/60 rounded-t-xl overflow-hidden h-28 flex items-end">
+                {/* Animated Pill Bar Column */}
+                <div className="w-5 sm:w-8.5 bg-slate-100/90 rounded-2xl overflow-hidden h-28 flex items-end p-0.5 transition-all group-hover:bg-slate-200/70">
                   <motion.div
                     initial={{ height: 0 }}
-                    animate={{ height: `${barHeightPercent}%` }}
+                    animate={{ height: `${data.orders === 0 ? 0 : barHeightPercent}%` }}
                     transition={{ duration: 0.6, delay: idx * 0.04 }}
-                    className={`w-full rounded-t-lg transition-all duration-200 ${
+                    className={`w-full rounded-xl transition-all duration-200 ${
                       data.orders === 0
                         ? "bg-transparent"
                         : isHovered
-                        ? "bg-blue-600 dark:bg-blue-500 shadow-lg shadow-blue-500/20"
-                        : "bg-blue-400/60 dark:bg-blue-500/40 group-hover:bg-blue-500/80"
+                        ? "bg-gradient-to-t from-blue-700 via-blue-600 to-indigo-600 shadow-md shadow-blue-500/30"
+                        : "bg-gradient-to-t from-blue-600 via-blue-500 to-indigo-500 shadow-xs shadow-blue-500/20"
                     }`}
                   />
                 </div>
 
                 {/* X axis labels */}
-                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold mt-2">
+                <span className="text-[10px] sm:text-xs text-slate-400 font-bold mt-2 group-hover:text-slate-700 transition-colors">
                   {data.month}
                 </span>
               </div>

@@ -115,31 +115,66 @@ export default function DashboardSidebar({
 
   return (
     <>
-      {/* Mobile Toggle Button Header */}
-      <div className="w-full flex md:hidden items-center justify-between gap-3 p-3 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-xs mb-4">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/60 flex items-center justify-center shrink-0">
-            <CurrentIcon className="w-4.5 h-4.5" />
+      {/* Mobile Navigation Header & Horizontal Tabs */}
+      <div className="w-full md:hidden mb-4 space-y-2 select-none">
+        <div className="flex items-center justify-between gap-3 p-2.5 sm:p-3 bg-white border border-slate-200/80 rounded-2xl shadow-xs">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center shrink-0">
+              <CurrentIcon className="w-4 h-4" />
+            </div>
+            <div className="min-w-0">
+              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block leading-none">
+                Dashboard
+              </span>
+              <span className="text-xs font-black text-slate-900 truncate block mt-0.5">
+                {currentItem.label}
+              </span>
+            </div>
           </div>
-          <div className="min-w-0">
-            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block leading-tight">
-              Dashboard
-            </span>
-            <span className="text-xs font-black text-slate-900 dark:text-white truncate block mt-0.5">
-              {currentItem.label}
-            </span>
-          </div>
+
+          <button
+            onClick={() => setMobileOpen(true)}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold shrink-0 transition-colors cursor-pointer"
+            title="Open all tabs"
+            aria-label="Open dashboard tabs menu"
+          >
+            <Menu className="w-3.5 h-3.5 text-slate-700" />
+            <span>All Tabs</span>
+          </button>
         </div>
 
-        <button
-          onClick={() => setMobileOpen(true)}
-          className="flex items-center gap-1.5 px-3 py-2 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold shrink-0 transition-colors cursor-pointer"
-          title="Open dashboard menu"
-          aria-label="Open dashboard navigation menu"
-        >
-          <Menu className="w-4 h-4 text-slate-700 dark:text-slate-200" />
-          <span>Menu</span>
-        </button>
+        {/* Quick Horizontal Scrollable Tabs */}
+        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide py-0.5 px-0.5">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const isSelected =
+              activeTab === item.id || (item.id === "overview" && activeTab === "profile");
+
+            return (
+              <button
+                key={item.id}
+                onClick={() => {
+                  if (item.id === "security") {
+                    router.push("/account?tab=security");
+                  } else if (item.id === "overview") {
+                    setActiveTab("overview");
+                  } else {
+                    setActiveTab(item.id as DashboardTab);
+                  }
+                }}
+                className={cn(
+                  "shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer",
+                  isSelected
+                    ? "bg-blue-600 text-white shadow-sm shadow-blue-500/20"
+                    : "bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50"
+                )}
+              >
+                <Icon className="w-3.5 h-3.5 shrink-0" />
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Desktop static sidebar */}

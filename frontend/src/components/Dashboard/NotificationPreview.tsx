@@ -34,7 +34,7 @@ export default function NotificationPreview() {
   };
 
   return (
-    <div className="p-6 border border-slate-200/80 dark:border-slate-800 rounded-3xl bg-white dark:bg-slate-900 shadow-xs space-y-4 select-none">
+    <div className="p-4 sm:p-6 border border-slate-200/80 dark:border-slate-800 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 shadow-xs space-y-4 select-none">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
           <Bell className="w-4.5 h-4.5 text-slate-400 dark:text-slate-500" />
@@ -86,7 +86,7 @@ export default function NotificationPreview() {
                 {/* Remove button */}
                 <button
                   onClick={() => removeNotification(noti.id)}
-                  className="opacity-0 group-hover:opacity-100 p-1 bg-slate-100 dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/50 text-slate-400 hover:text-rose-500 rounded-lg transition-all cursor-pointer"
+                  className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 p-1 bg-slate-100 dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/50 text-slate-400 hover:text-rose-500 rounded-lg transition-all cursor-pointer"
                   aria-label="Dismiss notification"
                 >
                   <X className="w-3.5 h-3.5" />

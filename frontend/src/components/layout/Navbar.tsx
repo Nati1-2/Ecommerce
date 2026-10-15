@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect, useRef, Suspense } from "react";
 import {
-  ShoppingBag, Search, Heart, User, Menu, X, ChevronDown,
+  ShoppingBag, Search, Heart, User, Menu, X, ChevronDown, ChevronRight, Package, ShieldCheck,
   Laptop, Shirt, Home, Gamepad2, Sparkles, Dumbbell, LogIn, LogOut, Bell, LayoutGrid, LayoutDashboard,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -298,89 +298,204 @@ export default function Navbar() {
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
-              transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed top-0 left-0 bottom-0 w-[85vw] max-w-[320px] bg-white dark:bg-slate-900 z-50 shadow-2xl flex flex-col md:hidden border-r border-slate-200/80 dark:border-slate-800"
+              transition={{ type: "spring", damping: 28, stiffness: 280 }}
+              className="fixed top-0 left-0 bottom-0 w-[88vw] max-w-[340px] bg-white z-50 shadow-2xl flex flex-col md:hidden border-r border-slate-200/80"
             >
-              <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800">
-                <span className="text-xl font-black text-slate-900 dark:text-white">
-                  Nati<span className="text-blue-600 dark:text-blue-500">.</span>
-                </span>
-                <button onClick={() => setMobileOpen(false)} className="p-1 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white">
-                  <X className="w-5 h-5" />
+              {/* Drawer Top Header */}
+              <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-100 shrink-0">
+                <Link
+                  href="/"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-1.5 focus:outline-none"
+                >
+                  <span className="text-xl font-black tracking-tight text-slate-900">
+                    Nati<span className="text-blue-600">.</span>
+                  </span>
+                  <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200/60 ml-1">
+                    Store
+                  </span>
+                </Link>
+                <button
+                  onClick={() => setMobileOpen(false)}
+                  className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors focus:outline-none"
+                  aria-label="Close navigation menu"
+                >
+                  <X className="w-4.5 h-4.5" />
                 </button>
               </div>
 
-              <nav className="flex-1 overflow-y-auto p-4">
-                <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3 px-2">Categories</p>
-                {categories.map((cat) => (
-                  <Link
-                    key={cat.name}
-                    href={cat.href}
-                    className="flex items-center gap-3 px-3 py-3 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    <cat.icon className="w-5 h-5" />
-                    <span className="font-medium">{cat.name}</span>
-                  </Link>
-                ))}
+              {/* User Profile Card (if authenticated) or Sign-In Prompt (if guest) */}
+              <div className="shrink-0">
+                {mounted && isAuthenticated ? (
+                  <div className="p-4 bg-slate-50/80 border-b border-slate-100 flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-black text-sm flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
+                      {user?.avatar ? (
+                        <img src={user.avatar} alt={user.name || "User"} className="w-full h-full object-cover" />
+                      ) : (
+                        <span>{(user?.name || user?.email || "U").charAt(0).toUpperCase()}</span>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <h4 className="text-xs font-black text-slate-900 truncate">
+                          {user?.name || user?.email?.split("@")[0] || "Customer"}
+                        </h4>
+                        <span className="text-[9px] font-black px-1.5 py-0.2 rounded-full bg-amber-50 text-amber-700 border border-amber-200 shrink-0">
+                          {user?.role === "ADMIN" ? "Admin" : user?.role === "VENDOR" ? "Vendor" : "Member"}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-400 font-medium truncate mt-0.5">
+                        {user?.email || "customer@example.com"}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-4 bg-gradient-to-br from-blue-50/80 to-slate-50 border-b border-slate-100">
+                    <p className="text-xs font-black text-slate-900">Welcome to Nati.</p>
+                    <p className="text-[11px] text-slate-500 mt-0.5">Shop 50,000+ premium products with fast delivery.</p>
+                    <Link
+                      href="/login"
+                      onClick={() => setMobileOpen(false)}
+                      className="mt-3 flex items-center justify-center gap-2 w-full py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold shadow-sm shadow-blue-500/20 hover:bg-blue-700 transition-colors"
+                    >
+                      <LogIn className="w-3.5 h-3.5" />
+                      <span>Sign In / Register</span>
+                    </Link>
+                  </div>
+                )}
+              </div>
 
-                <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800 space-y-2">
-                  <Link href="/notifications" className="flex items-center gap-3 px-3 py-3 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-950/40" onClick={() => setMobileOpen(false)}>
-                    <Bell className="w-5 h-5" />
-                    <span className="font-medium">Notifications</span>
-                    {mounted && unreadNotifCount > 0 && <span className="ml-auto bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-xs font-bold px-2 py-0.5 rounded-full">{unreadNotifCount}</span>}
+              {/* Scrollable Navigation Body */}
+              <nav className="flex-1 overflow-y-auto space-y-4 py-3">
+                {/* Quick Shortcuts Grid */}
+                <div className="grid grid-cols-3 gap-2 px-4">
+                  <Link
+                    href="/dashboard?tab=orders"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-slate-50/90 border border-slate-100 text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-all text-center group"
+                  >
+                    <Package className="w-4 h-4 text-blue-600 mb-1" />
+                    <span className="text-[10px] font-bold">Orders</span>
                   </Link>
-                  <Link href="/dashboard" className="flex items-center gap-3 px-3 py-3 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-950/40" onClick={() => setMobileOpen(false)}>
-                    <LayoutDashboard className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                    <span className="font-medium">User Dashboard</span>
+                  <Link
+                    href="/wishlist"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-slate-50/90 border border-slate-100 text-slate-700 hover:bg-rose-50 hover:text-rose-600 transition-all text-center relative group"
+                  >
+                    <Heart className="w-4 h-4 text-rose-500 mb-1" />
+                    {mounted && wishlistCount > 0 && (
+                      <span className="absolute top-1 right-2 min-w-4 h-4 px-1 bg-rose-500 text-white text-[9px] font-black rounded-full flex items-center justify-center">
+                        {wishlistCount}
+                      </span>
+                    )}
+                    <span className="text-[10px] font-bold">Wishlist</span>
                   </Link>
-                  <Link href="/account" className="flex items-center gap-3 px-3 py-3 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-950/40" onClick={() => setMobileOpen(false)}>
-                    <User className="w-5 h-5" />
-                    <span className="font-medium">Profile & Security</span>
+                  <Link
+                    href="/notifications"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-slate-50/90 border border-slate-100 text-slate-700 hover:bg-amber-50 hover:text-amber-600 transition-all text-center relative group"
+                  >
+                    <Bell className="w-4 h-4 text-amber-500 mb-1" />
+                    {mounted && unreadNotifCount > 0 && (
+                      <span className="absolute top-1 right-2 min-w-4 h-4 px-1 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center">
+                        {unreadNotifCount}
+                      </span>
+                    )}
+                    <span className="text-[10px] font-bold">Alerts</span>
                   </Link>
-                  <Link href="/wishlist" className="flex items-center gap-3 px-3 py-3 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-950/40" onClick={() => setMobileOpen(false)}>
-                    <Heart className="w-5 h-5" />
-                    <span className="font-medium">Wishlist</span>
-                    {mounted && wishlistCount > 0 && <span className="ml-auto bg-rose-100 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 text-xs font-bold px-2 py-0.5 rounded-full">{wishlistCount}</span>}
-                  </Link>
+                </div>
+
+                {/* Categories Section */}
+                <div className="px-4">
+                  <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-2 px-1">
+                    Shop Categories
+                  </p>
+                  <div className="space-y-1">
+                    {categories.map((cat) => {
+                      const Icon = cat.icon;
+                      return (
+                        <Link
+                          key={cat.name}
+                          href={cat.href}
+                          onClick={() => setMobileOpen(false)}
+                          className="flex items-center justify-between p-2 rounded-2xl hover:bg-slate-50 text-slate-700 hover:text-blue-600 transition-all group"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+                              <Icon className="w-4 h-4" />
+                            </div>
+                            <span className="text-xs font-bold text-slate-800 group-hover:text-blue-600 transition-colors">
+                              {cat.name}
+                            </span>
+                          </div>
+                          <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-blue-500 group-hover:translate-x-0.5 transition-all" />
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Account & Control Hub */}
+                <div className="px-4 pt-2 border-t border-slate-100">
+                  <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-2 px-1">
+                    Account & Preferences
+                  </p>
+                  <div className="space-y-1">
+                    <Link
+                      href={user?.role === "ADMIN" ? "/admin/dashboard" : user?.role === "VENDOR" ? "/vendor/dashboard" : "/dashboard"}
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center justify-between p-2 rounded-2xl hover:bg-slate-50 text-slate-700 hover:text-blue-600 transition-all group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
+                          <LayoutDashboard className="w-4 h-4" />
+                        </div>
+                        <span className="text-xs font-bold text-slate-800 group-hover:text-blue-600 transition-colors">
+                          {user?.role === "ADMIN" ? "Admin Control Panel" : user?.role === "VENDOR" ? "Vendor Hub" : "Account Dashboard"}
+                        </span>
+                      </div>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-blue-500 transition-colors" />
+                    </Link>
+                    <Link
+                      href="/account"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center justify-between p-2 rounded-2xl hover:bg-slate-50 text-slate-700 hover:text-blue-600 transition-all group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 group-hover:bg-blue-50 group-hover:text-blue-600">
+                          <ShieldCheck className="w-4 h-4" />
+                        </div>
+                        <span className="text-xs font-bold text-slate-800 group-hover:text-blue-600 transition-colors">
+                          Profile & Security
+                        </span>
+                      </div>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-blue-500 transition-colors" />
+                    </Link>
+                  </div>
                 </div>
               </nav>
 
-              <div className="p-4 border-t border-slate-100 dark:border-slate-800 space-y-2">
+              {/* Drawer Bottom Action */}
+              <div className="p-4 border-t border-slate-100 shrink-0">
                 {mounted && isAuthenticated ? (
-                  <>
-                    <Link
-                      href={user?.role === "ADMIN" ? "/admin/dashboard" : user?.role === "VENDOR" ? "/vendor/dashboard" : "/dashboard"}
-                      className="flex items-center justify-center gap-2 w-full py-3 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-colors shadow-sm"
-                      onClick={() => setMobileOpen(false)}
-                    >
-                      <LayoutDashboard className="w-4 h-4" />
-                      Go to Dashboard
-                    </Link>
-                    <button
-                      onClick={() => {
-                        useAuthStore.getState().logout();
-                        if (typeof window !== "undefined") {
-                          localStorage.removeItem("auth_token");
-                          window.location.href = "/login";
-                        }
-                        setMobileOpen(false);
-                      }}
-                      className="flex items-center justify-center gap-2 w-full py-2.5 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl font-bold transition-colors cursor-pointer"
-                    >
-                      <LogOut className="w-3.5 h-3.5" />
-                      Sign Out
-                    </button>
-                  </>
-                ) : (
-                  <Link
-                    href="/login"
-                    className="flex items-center justify-center gap-2 w-full py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
-                    onClick={() => setMobileOpen(false)}
+                  <button
+                    onClick={() => {
+                      useAuthStore.getState().logout();
+                      if (typeof window !== "undefined") {
+                        localStorage.removeItem("auth_token");
+                        window.location.href = "/login";
+                      }
+                      setMobileOpen(false);
+                    }}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-rose-50 hover:bg-rose-100 border border-rose-200/80 text-rose-600 rounded-xl text-xs font-bold transition-all cursor-pointer"
                   >
-                    <LogIn className="w-4 h-4" />
-                    Sign In / Register
-                  </Link>
+                    <LogOut className="w-4 h-4" />
+                    <span>Sign Out</span>
+                  </button>
+                ) : (
+                  <div className="text-center text-[11px] text-slate-400 font-medium">
+                    Nati E-Commerce Platform © 2026
+                  </div>
                 )}
               </div>
             </motion.div>

@@ -68,7 +68,7 @@ export default function RecentlyViewed() {
   };
 
   return (
-    <div className="p-6 border border-slate-200/80 dark:border-slate-800 rounded-3xl bg-white dark:bg-slate-900 shadow-xs space-y-4 select-none">
+    <div className="p-4 sm:p-6 border border-slate-200/80 dark:border-slate-800 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 shadow-xs space-y-4 select-none">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
           <Eye className="w-4.5 h-4.5 text-blue-600 dark:text-blue-400" />

@@ -35,7 +35,7 @@ export default function StatsCard() {
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 select-none">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 select-none">
       {stats.map((item, idx) => {
         const Icon = item.icon;
 
@@ -45,19 +45,19 @@ export default function StatsCard() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, delay: idx * 0.05 }}
-            className="p-5 border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-3xl shadow-xs flex items-center gap-4 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all"
+            className="p-3.5 sm:p-5 border border-slate-200/80 bg-white rounded-2xl sm:rounded-3xl shadow-xs flex flex-col min-[420px]:flex-row items-start min-[420px]:items-center gap-2.5 sm:gap-3.5 hover:shadow-md hover:border-slate-300 transition-all"
           >
-            {/* Round Icon */}
-            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border ${item.color}`}>
-              <Icon className="w-5 h-5" />
+            {/* Icon */}
+            <div className={`w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 border ${item.color}`}>
+              <Icon className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
             </div>
 
-            {/* Content math counts */}
-            <div className="min-w-0">
-              <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider truncate">
+            {/* Content count & label */}
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] sm:text-[11px] text-slate-500 font-bold uppercase tracking-wider leading-snug line-clamp-2">
                 {item.label}
               </p>
-              <h4 className="text-xl font-black text-slate-900 dark:text-white mt-0.5 tracking-tight tabular-nums">
+              <h4 className="text-lg sm:text-2xl font-black text-slate-900 mt-0.5 tracking-tight tabular-nums">
                 {item.value.toLocaleString()}
               </h4>
             </div>

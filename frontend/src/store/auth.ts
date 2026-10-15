@@ -10,6 +10,7 @@ export interface User {
   firstName?: string;
   lastName?: string;
   phone?: string;
+  avatar?: string;
   role: "CUSTOMER" | "ADMIN" | "VENDOR";
 }
 

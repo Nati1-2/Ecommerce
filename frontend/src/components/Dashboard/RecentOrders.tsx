@@ -136,7 +136,7 @@ export default function RecentOrders({ onViewAll }: { onViewAll?: () => void }) 
   };
 
   return (
-    <div className="p-6 border border-slate-200/80 dark:border-slate-800 rounded-3xl bg-white dark:bg-slate-900 shadow-xs space-y-4 select-none">
+    <div className="p-4 sm:p-6 border border-slate-200/80 dark:border-slate-800 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 shadow-xs space-y-4 select-none">
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
           <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
@@ -291,7 +291,7 @@ export default function RecentOrders({ onViewAll }: { onViewAll?: () => void }) 
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="relative w-full max-w-xl bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-2xl z-10 border border-slate-200/80 dark:border-slate-800 space-y-6 max-h-[90vh] overflow-y-auto"
+              className="relative w-full max-w-xl bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl z-10 border border-slate-200/80 dark:border-slate-800 space-y-4 sm:space-y-6 max-h-[90vh] overflow-y-auto"
             >
               <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 pb-4">
                 <div>

@@ -196,8 +196,8 @@ function DashboardContent() {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-3 min-[400px]:px-4 sm:px-6 py-6 sm:py-8">
-      <div className="flex flex-col md:flex-row gap-8 items-start">
+    <div className="w-full max-w-7xl mx-auto px-3 min-[400px]:px-4 sm:px-6 py-4 sm:py-8">
+      <div className="flex flex-col md:flex-row gap-5 md:gap-8 items-start">
         {/* Sidebar navigation */}
         <DashboardSidebar
           activeTab={activeTab}
@@ -219,18 +219,18 @@ function DashboardContent() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
-                className="space-y-8"
+                className="space-y-5 sm:space-y-6 lg:space-y-8"
               >
                 <DashboardHeader onEditProfile={() => router.push("/account?tab=personal")} />
                 <StatsCard />
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                  <div className="lg:col-span-2 space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-8 items-start">
+                  <div className="lg:col-span-2 space-y-5 sm:space-y-6">
                     <OrderChart />
                     <RecentOrders onViewAll={() => setActiveTab("orders")} />
                   </div>
 
-                  <div className="space-y-6">
+                  <div className="space-y-5 sm:space-y-6">
                     <SecurityCard onManage={() => router.push("/account?tab=security")} />
                     <AddressPreview onManage={() => setActiveTab("addresses")} />
                     <NotificationPreview />
@@ -238,7 +238,7 @@ function DashboardContent() {
                   </div>
                 </div>
 
-                <div className="border-t border-gray-100 pt-8">
+                <div className="border-t border-slate-100 dark:border-slate-800 pt-6 sm:pt-8">
                   <RecommendationCarousel />
                 </div>
               </motion.div>
