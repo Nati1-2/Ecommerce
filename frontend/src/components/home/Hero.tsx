@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, ShieldCheck, Truck, Star, Zap, ShoppingBag, Check } from "lucide-react";
 import { useCartStore } from "@/store/cart";
+import { SAFE_FALLBACK_SVG } from "@/lib/api";
 
 export default function Hero() {
   const [addedToCart, setAddedToCart] = useState(false);
@@ -154,7 +155,11 @@ export default function Hero() {
                     <img
                       src="/iphone17.png"
                       alt="Featured Product — iPhone 17 Pro"
-                      className="w-full h-[280px] sm:h-[320px] object-contain object-center p-6 bg-white hover:scale-105 transition-transform duration-500 cursor-pointer"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = SAFE_FALLBACK_SVG;
+                      }}
+                      className="w-full h-[280px] sm:h-[320px] object-contain object-center p-6 bg-white hover:scale-105 transition-transform duration-500 cursor-pointer pointer-events-none"
                     />
                   </Link>
 

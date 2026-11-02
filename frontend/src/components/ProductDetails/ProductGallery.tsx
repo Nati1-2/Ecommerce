@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Maximize2, ChevronLeft, ChevronRight, X, ZoomIn, ZoomOut } from "lucide-react";
+import { Maximize2, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { DEFAULT_FALLBACK_IMAGE } from "@/lib/api";
 
 interface ProductGalleryProps {
@@ -14,9 +14,9 @@ interface ProductGalleryProps {
 export default function ProductGallery({ images, name, mainImage }: ProductGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [zoom, setZoom] = useState(false);
-  const [coords, setCoords] = useState({ x: 0, y: 0 });
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [brokenImages, setBrokenImages] = useState<Record<number, boolean>>({});
+  const zoomRef = useRef<HTMLDivElement>(null);
 
   // 1. Sanitize & normalize image list
   const rawList = Array.isArray(images) && images.length > 0 ? images : mainImage ? [mainImage] : [];
@@ -38,11 +38,13 @@ export default function ProductGallery({ images, name, mainImage }: ProductGalle
     ? DEFAULT_FALLBACK_IMAGE
     : productImages[activeIndex] || DEFAULT_FALLBACK_IMAGE;
 
+  // Direct DOM style update for mousemove zoom — prevents triggering 60-120 React re-renders/sec
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!zoomRef.current) return;
     const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
     const x = Math.max(0, Math.min(100, ((e.clientX - left) / width) * 100));
     const y = Math.max(0, Math.min(100, ((e.clientY - top) / height) * 100));
-    setCoords({ x, y });
+    zoomRef.current.style.backgroundPosition = `${x}% ${y}%`;
   };
 
   const handlePrev = (e?: React.MouseEvent) => {
@@ -55,8 +57,12 @@ export default function ProductGallery({ images, name, mainImage }: ProductGalle
     setActiveIndex((prev) => (prev === productImages.length - 1 ? 0 : prev + 1));
   };
 
+  // Safe handler that guards against infinite state loops
   const handleImageError = (index: number) => {
-    setBrokenImages((prev) => ({ ...prev, [index]: true }));
+    setBrokenImages((prev) => {
+      if (prev[index]) return prev;
+      return { ...prev, [index]: true };
+    });
   };
 
   return (
@@ -78,29 +84,28 @@ export default function ProductGallery({ images, name, mainImage }: ProductGalle
           }
         }}
       >
-        <AnimatePresence mode="wait">
-          <motion.img
-            key={activeIndex}
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            src={currentImage}
-            alt={`${name} - View ${activeIndex + 1}`}
-            onError={() => handleImageError(activeIndex)}
-            className="max-h-full max-w-full object-contain rounded-2xl drop-shadow-md select-none pointer-events-none"
-          />
-        </AnimatePresence>
+        <img
+          key={activeIndex}
+          src={currentImage}
+          alt={`${name} - View ${activeIndex + 1}`}
+          onError={(e) => {
+            const target = e.currentTarget;
+            target.onerror = null;
+            target.src = DEFAULT_FALLBACK_IMAGE;
+            handleImageError(activeIndex);
+          }}
+          className="max-h-full max-w-full object-contain rounded-2xl drop-shadow-md select-none pointer-events-none transition-opacity duration-200"
+        />
 
-        {/* Magnifier glass hover effect (Desktop) */}
+        {/* Magnifier glass hover effect (Desktop) — Uses ref to eliminate UI flickering */}
         {zoom && (
           <div
-            className="absolute inset-0 bg-no-repeat pointer-events-none hidden md:block"
+            ref={zoomRef}
+            className="absolute inset-0 bg-no-repeat pointer-events-none hidden md:block transition-opacity duration-150"
             style={{
               backgroundImage: `url(${currentImage})`,
-              backgroundPosition: `${coords.x}% ${coords.y}%`,
+              backgroundPosition: "center center",
               backgroundSize: "220%",
-              backgroundColor: "#F5F7FA",
             }}
           />
         )}
@@ -112,7 +117,7 @@ export default function ProductGallery({ images, name, mainImage }: ProductGalle
               type="button"
               onClick={handlePrev}
               aria-label="Previous image"
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white text-gray-700 hover:text-black shadow-md flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 cursor-pointer z-10 hover:scale-105"
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/95 hover:bg-white text-gray-700 hover:text-black shadow-md flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 cursor-pointer z-10 hover:scale-105"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
@@ -120,7 +125,7 @@ export default function ProductGallery({ images, name, mainImage }: ProductGalle
               type="button"
               onClick={handleNext}
               aria-label="Next image"
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white text-gray-700 hover:text-black shadow-md flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 cursor-pointer z-10 hover:scale-105"
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/95 hover:bg-white text-gray-700 hover:text-black shadow-md flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 cursor-pointer z-10 hover:scale-105"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
@@ -172,7 +177,12 @@ export default function ProductGallery({ images, name, mainImage }: ProductGalle
                 <img
                   src={thumbSrc}
                   alt={`${name} thumbnail ${idx + 1}`}
-                  onError={() => handleImageError(idx)}
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    target.onerror = null;
+                    target.src = DEFAULT_FALLBACK_IMAGE;
+                    handleImageError(idx);
+                  }}
                   className="max-h-full max-w-full object-contain rounded-lg pointer-events-none"
                 />
               </button>
@@ -241,7 +251,12 @@ export default function ProductGallery({ images, name, mainImage }: ProductGalle
               <img
                 src={currentImage}
                 alt={name}
-                onError={() => handleImageError(activeIndex)}
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  target.onerror = null;
+                  target.src = DEFAULT_FALLBACK_IMAGE;
+                  handleImageError(activeIndex);
+                }}
                 className="max-h-[75vh] max-w-full object-contain rounded-2xl drop-shadow-2xl"
               />
               <p className="text-white/80 font-bold text-sm sm:text-base mt-4 text-center line-clamp-1">
@@ -265,6 +280,12 @@ export default function ProductGallery({ images, name, mainImage }: ProductGalle
                       <img
                         src={brokenImages[idx] ? DEFAULT_FALLBACK_IMAGE : img}
                         alt={`thumb-${idx}`}
+                        onError={(e) => {
+                          const target = e.currentTarget;
+                          target.onerror = null;
+                          target.src = DEFAULT_FALLBACK_IMAGE;
+                          handleImageError(idx);
+                        }}
                         className="w-full h-full object-contain"
                       />
                     </button>

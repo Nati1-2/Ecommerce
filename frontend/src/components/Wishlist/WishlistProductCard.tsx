@@ -8,6 +8,7 @@ import PriceAlert from "./PriceAlert";
 import StockAlert from "./StockAlert";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { SAFE_FALLBACK_SVG, DEFAULT_FALLBACK_IMAGE } from "@/lib/api";
 
 interface WishlistProductCardProps {
   product: WishlistItem;
@@ -46,13 +47,13 @@ export default function WishlistProductCard({
       <div className="relative aspect-square w-full rounded-xl bg-gray-50 flex items-center justify-center overflow-hidden border border-gray-100/30">
         <Link href={`/products/${product.productId}`} className="w-full h-full flex items-center justify-center">
           <img
-            src={product.image || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80"}
+            src={product.image || DEFAULT_FALLBACK_IMAGE}
             alt={product.name}
             onError={(e) => {
-              (e.currentTarget as HTMLImageElement).src =
-                "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80";
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = SAFE_FALLBACK_SVG;
             }}
-            className="max-w-[85%] max-h-[85%] object-contain group-hover:scale-105 transition-transform duration-300"
+            className="max-w-[85%] max-h-[85%] object-contain group-hover:scale-105 transition-transform duration-300 pointer-events-none"
           />
         </Link>
 

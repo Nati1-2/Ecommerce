@@ -36,28 +36,45 @@ export default function HomePage() {
   const [recommendations, setRecommendations] = useState<Product[]>(mockRecommendations);
 
   useEffect(() => {
-    // Strictly enforce light mode on home page
-    if (theme !== "light") {
+    // Strictly enforce light mode on home page once mounted
+    if (theme && theme !== "light") {
       setTheme("light");
     }
-  }, [theme, setTheme]);
+  }, []); // Run once on mount to avoid theme toggling loops
 
   useEffect(() => {
+    let isMounted = true;
+
     async function loadBackendProducts() {
       try {
         const data = await fetchProducts({ limit: 20 });
+        if (!isMounted) return;
+
         if (data && data.products && data.products.length > 0) {
-          setFeaturedProducts(data.products);
-          setFlashSaleProducts(data.products.slice(0, 4));
-          setNewArrivals(data.products.slice(0, 8));
-          setBestSellers(data.products.slice(0, 8));
-          setRecommendations(data.products.slice(0, 8));
+          // Avoid re-rendering initial mock products to prevent UI animation flickering
+          const isSameMockData =
+            data.products.length === mockProducts.length &&
+            data.products[0]?.id === mockProducts[0]?.id &&
+            data.products[1]?.id === mockProducts[1]?.id;
+
+          if (!isSameMockData) {
+            setFeaturedProducts(data.products);
+            setFlashSaleProducts(data.products.slice(0, 4));
+            setNewArrivals(data.products.slice(0, 8));
+            setBestSellers(data.products.slice(0, 8));
+            setRecommendations(data.products.slice(0, 8));
+          }
         }
       } catch (err) {
         console.warn("Home page backend fetch error:", err);
       }
     }
+
     loadBackendProducts();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return (

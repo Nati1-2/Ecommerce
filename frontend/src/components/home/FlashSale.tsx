@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Zap, ShoppingBag, Star } from "lucide-react";
 import { Product } from "@/types";
 import { useCartStore } from "@/store/cart";
 import { formatPrice } from "@/lib/utils";
+import { SAFE_FALLBACK_SVG, DEFAULT_FALLBACK_IMAGE } from "@/lib/api";
 
 interface CountdownProps {
   endTime: Date;
@@ -58,7 +59,7 @@ interface FlashSaleCardProps {
 function FlashSaleCard({ product, index, soldPercent }: FlashSaleCardProps) {
   const [added, setAdded] = useState(false);
   const [imgSrc, setImgSrc] = useState(
-    product.image || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80"
+    product.image || DEFAULT_FALLBACK_IMAGE
   );
   const addItem = useCartStore((s) => s.addItem);
 
@@ -80,10 +81,12 @@ function FlashSaleCard({ product, index, soldPercent }: FlashSaleCardProps) {
         <img
           src={imgSrc}
           alt={product.name}
-          onError={() =>
-            setImgSrc("https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80")
-          }
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = SAFE_FALLBACK_SVG;
+            setImgSrc(SAFE_FALLBACK_SVG);
+          }}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none"
         />
         <div className="absolute top-3 left-3 bg-red-500 text-white text-xs font-black px-3 py-1.5 rounded-xl shadow-md">
           -{product.discount}%
@@ -138,7 +141,10 @@ interface FlashSaleProps {
 }
 
 export function FlashSale({ products }: FlashSaleProps) {
-  const endTime = new Date(Date.now() + 6 * 3600 * 1000 + 34 * 60 * 1000);
+  const endTime = useMemo(
+    () => new Date(Date.now() + 6 * 3600 * 1000 + 34 * 60 * 1000),
+    []
+  );
 
   return (
     <section className="py-16 bg-white border-y border-gray-100">

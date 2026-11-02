@@ -57,8 +57,10 @@ const getAuthHeaders = (): Record<string, string> => {
   return {};
 };
 
-export const DEFAULT_FALLBACK_IMAGE =
-  "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80";
+export const SAFE_FALLBACK_SVG =
+  "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='600' viewBox='0 0 600 600' fill='%23F8FAFC'><rect width='600' height='600' fill='%23F8FAFC'/><circle cx='300' cy='250' r='55' fill='%23E2E8F0'/><path d='M180 430l85-95 65 75 50-55 80 75H180z' fill='%23CBD5E1'/><text x='300' y='475' font-family='system-ui,sans-serif' font-size='18' font-weight='bold' fill='%2394A3B8' text-anchor='middle'>Image Unavailable</text></svg>";
+
+export const DEFAULT_FALLBACK_IMAGE = SAFE_FALLBACK_SVG;
 
 /**
  * Normalizes raw product records from MongoDB, microservices, or mocks

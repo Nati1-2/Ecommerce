@@ -8,6 +8,7 @@ import { Product } from "@/types";
 import { useCartStore } from "@/store/cart";
 import { useWishlistStore } from "@/store/wishlist";
 import { cn, formatPrice, formatDiscount } from "@/lib/utils";
+import { SAFE_FALLBACK_SVG, DEFAULT_FALLBACK_IMAGE } from "@/lib/api";
 
 interface ProductCardProps {
   product: Product;
@@ -63,14 +64,18 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
           <img
             src={
               imageError
-                ? "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&q=80"
+                ? SAFE_FALLBACK_SVG
                 : product.image ||
                   product.images?.[0] ||
-                  "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&q=80"
+                  DEFAULT_FALLBACK_IMAGE
             }
             alt={product.name}
-            onError={() => setImageError(true)}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = SAFE_FALLBACK_SVG;
+              if (!imageError) setImageError(true);
+            }}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 pointer-events-none"
           />
         </Link>
 

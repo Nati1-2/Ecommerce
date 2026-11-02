@@ -10,6 +10,7 @@ import { useWishlistStore } from "@/store/wishlist";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn, formatPrice, formatDiscount } from "@/lib/utils";
+import { SAFE_FALLBACK_SVG, DEFAULT_FALLBACK_IMAGE } from "@/lib/api";
 
 interface ProductCardProps {
   product: Product;
@@ -17,8 +18,6 @@ interface ProductCardProps {
   viewMode: "grid" | "list";
   onQuickView: (product: Product) => void;
 }
-
-const DEFAULT_FALLBACK_IMAGE = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80";
 
 export function ProductCard({ product, index, viewMode, onQuickView }: ProductCardProps) {
   const [mounted, setMounted] = useState(false);
@@ -92,8 +91,12 @@ export function ProductCard({ product, index, viewMode, onQuickView }: ProductCa
           <img
             src={imgSrc}
             alt={product.name}
-            onError={() => setImgSrc(DEFAULT_FALLBACK_IMAGE)}
-            className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-105"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = SAFE_FALLBACK_SVG;
+              setImgSrc(SAFE_FALLBACK_SVG);
+            }}
+            className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-105 pointer-events-none"
           />
           {product.badge && (
             <span className="z-10 absolute top-3 left-3 bg-[#111827] text-white text-[10px] font-black px-2.5 py-1 rounded-lg shadow-sm">
@@ -207,8 +210,12 @@ export function ProductCard({ product, index, viewMode, onQuickView }: ProductCa
             <img
               src={imgSrc}
               alt={product.name}
-              onError={() => setImgSrc(DEFAULT_FALLBACK_IMAGE)}
-              className="w-full h-full object-contain p-5 transition-transform duration-500 group-hover:scale-105"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = SAFE_FALLBACK_SVG;
+                setImgSrc(SAFE_FALLBACK_SVG);
+              }}
+              className="w-full h-full object-contain p-5 transition-transform duration-500 group-hover:scale-105 pointer-events-none"
             />
           </Link>
 

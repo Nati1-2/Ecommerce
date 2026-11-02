@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useWishlistStore } from "@/store/wishlist";
 import { useCartStore } from "@/store/cart";
-import { useState } from "react";
+import { SAFE_FALLBACK_SVG, DEFAULT_FALLBACK_IMAGE } from "@/lib/api";
 
 interface SearchProductCardProps {
   product: ProductResult;
@@ -19,12 +19,11 @@ export default function SearchProductCard({ product, viewMode }: SearchProductCa
   const addItem = useCartStore((s) => s.addItem);
   const setCartDrawerOpen = useCartStore((s) => s.setCartDrawerOpen);
 
-  const [isHovered, setIsHovered] = useState(false);
   const stock = product.stock ?? (product.inStock ? 10 : 0);
   const mainImage =
     (typeof product.image === "string" && product.image.length > 1 ? product.image : "") ||
     (Array.isArray(product.images) && product.images[0] ? product.images[0] : "") ||
-    "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80";
+    DEFAULT_FALLBACK_IMAGE;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -61,10 +60,10 @@ export default function SearchProductCard({ product, viewMode }: SearchProductCa
             src={mainImage}
             alt={product.name}
             onError={(e) => {
-              (e.currentTarget as HTMLImageElement).src =
-                "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80";
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = SAFE_FALLBACK_SVG;
             }}
-            className="w-full h-full object-contain p-4 mix-blend-multiply"
+            className="w-full h-full object-contain p-4 mix-blend-multiply pointer-events-none"
           />
           {product.discount > 0 && (
             <div className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-md">
@@ -125,20 +124,16 @@ export default function SearchProductCard({ product, viewMode }: SearchProductCa
     <Link 
       href={`/products/${product.id}`} 
       className="group flex flex-col bg-white border border-gray-100 rounded-3xl overflow-hidden hover:shadow-xl hover:shadow-blue-500/5 hover:-translate-y-1 transition-all duration-300"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
       <div className="relative aspect-square bg-[#F5F7FA] overflow-hidden flex items-center justify-center p-6">
         <img
           src={mainImage}
           alt={product.name}
           onError={(e) => {
-            (e.currentTarget as HTMLImageElement).src =
-              "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80";
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = SAFE_FALLBACK_SVG;
           }}
-          className={`w-full h-full object-contain p-6 mix-blend-multiply transition-transform duration-500 ${
-            isHovered ? "scale-110" : "scale-100"
-          }`}
+          className="w-full h-full object-contain p-6 mix-blend-multiply transition-transform duration-500 group-hover:scale-110 pointer-events-none"
         />
 
         {/* Badges */}
@@ -164,7 +159,7 @@ export default function SearchProductCard({ product, viewMode }: SearchProductCa
         </button>
 
         {/* Quick Add overlay */}
-        <div className={`absolute bottom-4 left-4 right-4 transition-all duration-300 ${isHovered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
+        <div className="absolute bottom-4 left-4 right-4 transition-all duration-300 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0">
           <button
             onClick={handleAddToCart}
             disabled={stock === 0}
