@@ -57,10 +57,13 @@ interface FlashSaleCardProps {
 
 function FlashSaleCard({ product, index, soldPercent }: FlashSaleCardProps) {
   const [added, setAdded] = useState(false);
+  const [imgSrc, setImgSrc] = useState(
+    product.image || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80"
+  );
   const addItem = useCartStore((s) => s.addItem);
 
   const handleAdd = () => {
-    addItem({ productId: product.id, name: product.name, price: product.price, quantity: 1, image: product.image });
+    addItem({ productId: product.id, name: product.name, price: product.price, quantity: 1, image: imgSrc });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
@@ -75,8 +78,11 @@ function FlashSaleCard({ product, index, soldPercent }: FlashSaleCardProps) {
     >
       <Link href={`/products/${product.id}`} className="block relative aspect-square bg-[#F5F7FA] overflow-hidden">
         <img
-          src={product.image}
+          src={imgSrc}
           alt={product.name}
+          onError={() =>
+            setImgSrc("https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80")
+          }
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
         <div className="absolute top-3 left-3 bg-red-500 text-white text-xs font-black px-3 py-1.5 rounded-xl shadow-md">

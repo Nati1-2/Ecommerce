@@ -11,6 +11,7 @@ import { Product } from "@/types";
 import { useCartStore } from "@/store/cart";
 import { useRealtimeStock } from "@/hooks/useRealtimeStock";
 import { RatingStars } from "@/components/shared/RatingStars";
+import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 
 // Product Detail Subcomponents
 import ProductGallery from "@/components/ProductDetails/ProductGallery";
@@ -184,7 +185,13 @@ function ProductDetailsContent({ id }: { id: string }) {
       <div className="max-w-7xl mx-auto px-3 min-[400px]:px-4 sm:px-6 py-6 sm:py-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
           {/* Left Column: Image Gallery */}
-          <ProductGallery images={product.images} name={product.name} />
+          <ErrorBoundary name="Product Gallery">
+            <ProductGallery
+              images={product.images}
+              name={product.name}
+              mainImage={product.image}
+            />
+          </ErrorBoundary>
 
           {/* Right Column: Specifications & Actions */}
           <div className="space-y-6">

@@ -44,15 +44,21 @@ export default function WishlistProductCard({
       
       {/* Product Image and badges */}
       <div className="relative aspect-square w-full rounded-xl bg-gray-50 flex items-center justify-center overflow-hidden border border-gray-100/30">
-        <img
-          src={product.image}
-          alt={product.name}
-          className="max-w-[85%] max-h-[85%] object-contain group-hover:scale-105 transition-transform duration-300"
-        />
+        <Link href={`/products/${product.productId}`} className="w-full h-full flex items-center justify-center">
+          <img
+            src={product.image || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80"}
+            alt={product.name}
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).src =
+                "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80";
+            }}
+            className="max-w-[85%] max-h-[85%] object-contain group-hover:scale-105 transition-transform duration-300"
+          />
+        </Link>
 
         {/* Discount badge */}
         {discountPercent > 0 && (
-          <span className="absolute top-2.5 left-2.5 text-[8px] font-black text-white bg-red-500 px-2 py-0.5 rounded-full uppercase tracking-wider">
+          <span className="absolute top-2.5 left-2.5 text-[8px] font-black text-white bg-red-500 px-2 py-0.5 rounded-full uppercase tracking-wider pointer-events-none">
             {discountPercent}% Off
           </span>
         )}
@@ -60,7 +66,7 @@ export default function WishlistProductCard({
         {/* Remove heart */}
         <button
           onClick={() => removeItem(product.productId)}
-          className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full flex items-center justify-center shadow-sm border border-gray-100 bg-white hover:scale-105 text-red-500 transition-all"
+          className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full flex items-center justify-center shadow-sm border border-gray-100 bg-white hover:scale-105 text-red-500 transition-all cursor-pointer z-10"
         >
           <Heart className="w-3.5 h-3.5 fill-red-500" />
         </button>
@@ -71,8 +77,11 @@ export default function WishlistProductCard({
         <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest block">
           {product.brand}
         </span>
-        <h4 className="text-xs font-black text-gray-900 line-clamp-2 leading-snug">
-          {product.name}
+        <Link href={`/products/${product.productId}`}>
+          <h4 className="text-xs font-black text-gray-900 line-clamp-2 leading-snug hover:text-[#007BFF] transition-colors">
+            {product.name}
+          </h4>
+        </Link>
         </h4>
 
         {/* Rating stars */}

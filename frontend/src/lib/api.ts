@@ -57,43 +57,215 @@ const getAuthHeaders = (): Record<string, string> => {
   return {};
 };
 
+export const DEFAULT_FALLBACK_IMAGE =
+  "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80";
+
+/**
+ * Normalizes raw product records from MongoDB, microservices, or mocks
+ * into a consistent, strongly-typed Product object.
+ * Guarantees valid `id`, `image` string, and `images` string array.
+ */
+export function normalizeProduct(raw: any): Product {
+  if (!raw) {
+    return {
+      id: "unknown",
+      name: "Product",
+      slug: "product",
+      price: 0,
+      originalPrice: 0,
+      discount: 0,
+      rating: 4.5,
+      reviewCount: 0,
+      image: DEFAULT_FALLBACK_IMAGE,
+      images: [DEFAULT_FALLBACK_IMAGE],
+      category: "General",
+      brand: "Brand",
+      inStock: true,
+      description: "",
+      stock: 0,
+    };
+  }
+
+  const id = String(raw.id || raw._id || raw.productId || "");
+
+  // 1. Process images array (supporting strings, objects with .url, or raw string)
+  let rawImages: any[] = [];
+  if (Array.isArray(raw.images) && raw.images.length > 0) {
+    rawImages = raw.images;
+  } else if (raw.image) {
+    rawImages = [raw.image];
+  } else if (raw.imageUrl) {
+    rawImages = [raw.imageUrl];
+  }
+
+  const sanitizedImages: string[] = rawImages
+    .map((img: any) => {
+      if (typeof img === "string" && img.trim().length > 0) return img.trim();
+      if (img && typeof img === "object") {
+        if (typeof img.url === "string" && img.url.trim().length > 0) return img.url.trim();
+        if (typeof img.src === "string" && img.src.trim().length > 0) return img.src.trim();
+      }
+      return "";
+    })
+    .filter((url) => Boolean(url) && url !== "[object Object]");
+
+  // 2. Determine primary image
+  const rawSingle =
+    typeof raw.image === "string" && raw.image.trim().length > 0 && raw.image !== "[object Object]"
+      ? raw.image.trim()
+      : typeof raw.imageUrl === "string" && raw.imageUrl.trim().length > 0 && raw.imageUrl !== "[object Object]"
+      ? raw.imageUrl.trim()
+      : null;
+
+  const mainImage = rawSingle || sanitizedImages[0] || DEFAULT_FALLBACK_IMAGE;
+
+  if (sanitizedImages.length === 0) {
+    sanitizedImages.push(mainImage);
+  }
+
+  // 3. Process numerical prices & discount
+  const price = typeof raw.price === "number" ? raw.price : Number(raw.price) || 0;
+  const originalPrice =
+    typeof raw.originalPrice === "number"
+      ? raw.originalPrice
+      : typeof raw.compareAtPrice === "number"
+      ? raw.compareAtPrice
+      : typeof raw.discountPrice === "number" && raw.discountPrice > price
+      ? raw.discountPrice
+      : price;
+
+  const discount =
+    raw.discount !== undefined && raw.discount !== null
+      ? Number(raw.discount)
+      : originalPrice > price
+      ? Math.round(((originalPrice - price) / originalPrice) * 100)
+      : 0;
+
+  return {
+    id,
+    name: String(raw.name || "Product"),
+    slug: String(raw.slug || (raw.name ? raw.name.toLowerCase().replace(/[^a-z0-9]+/g, "-") : id)),
+    price,
+    originalPrice,
+    discount,
+    rating: typeof raw.rating === "number" ? raw.rating : 4.8,
+    reviewCount: typeof raw.reviewCount === "number" ? raw.reviewCount : (raw.ratingsCount || 0),
+    image: mainImage,
+    images: sanitizedImages,
+    category: String(raw.category || "General"),
+    brand: String(raw.brand || "Brand"),
+    badge: raw.badge,
+    inStock: raw.inStock !== undefined ? Boolean(raw.inStock) : (raw.stock !== undefined ? raw.stock > 0 : true),
+    description: String(raw.description || ""),
+    features: Array.isArray(raw.features) ? raw.features : [],
+    variants: Array.isArray(raw.variants) ? raw.variants : [],
+    stock: typeof raw.stock === "number" ? raw.stock : 10,
+  };
+}
+
+/**
+ * Filters mock products in-memory when backend services are offline.
+ */
+function getFilteredMockProducts(params: GetProductsParams): ProductsResponse {
+  let list = [...mockProducts];
+
+  if (params.category) {
+    const cats = Array.isArray(params.category) ? params.category : [params.category];
+    const normalizedCats = cats.map((c) => c.toLowerCase());
+    list = list.filter((p) => normalizedCats.includes(p.category.toLowerCase()));
+  }
+
+  if (params.brands && params.brands.length > 0) {
+    const normalizedBrands = params.brands.map((b) => b.toLowerCase());
+    list = list.filter((p) => normalizedBrands.includes(p.brand.toLowerCase()));
+  }
+
+  if (params.search) {
+    const q = params.search.toLowerCase();
+    list = list.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        p.description.toLowerCase().includes(q) ||
+        p.brand.toLowerCase().includes(q)
+    );
+  }
+
+  if (params.priceMin !== undefined) {
+    list = list.filter((p) => p.price >= (params.priceMin ?? 0));
+  }
+  if (params.priceMax !== undefined) {
+    list = list.filter((p) => p.price <= (params.priceMax ?? 999999));
+  }
+
+  if (params.rating !== undefined) {
+    list = list.filter((p) => p.rating >= (params.rating ?? 0));
+  }
+
+  if (params.inStock) {
+    list = list.filter((p) => p.inStock);
+  }
+
+  // Sorting
+  if (params.sort === "price-low") {
+    list.sort((a, b) => a.price - b.price);
+  } else if (params.sort === "price-high") {
+    list.sort((a, b) => b.price - a.price);
+  } else if (params.sort === "rating") {
+    list.sort((a, b) => b.rating - a.rating);
+  }
+
+  const page = params.page || 1;
+  const limit = params.limit || 8;
+  const total = list.length;
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+  const paginated = list.slice((page - 1) * limit, page * limit).map(normalizeProduct);
+
+  return {
+    products: paginated,
+    total,
+    page,
+    totalPages,
+  };
+}
+
 /**
  * Retrieves products via real backend API Route or Express gateway.
  */
 export async function fetchProducts(params: GetProductsParams): Promise<ProductsResponse> {
   const parseProductsData = (data: any): ProductsResponse | null => {
-    if (data.products && Array.isArray(data.products)) {
-      return {
-        products: data.products,
-        total: data.total ?? data.products.length,
-        page: data.page ?? params.page ?? 1,
-        totalPages: data.totalPages ?? Math.max(1, Math.ceil((data.total ?? data.products.length) / (params.limit || 8))),
-      };
-    }
-    if (data.success && data.data) {
-      if (data.data.products && Array.isArray(data.data.products)) {
-        return {
-          products: data.data.products,
-          total: data.data.total ?? data.data.products.length,
-          page: data.data.page ?? params.page ?? 1,
-          totalPages: data.data.totalPages ?? Math.max(1, Math.ceil((data.data.total ?? data.data.products.length) / (params.limit || 8))),
-        };
+    let rawList: any[] = [];
+    let total = 0;
+    let page = params.page || 1;
+    let totalPages = 1;
+
+    if (data?.products && Array.isArray(data.products)) {
+      rawList = data.products;
+      total = data.total ?? rawList.length;
+      page = data.page ?? page;
+      totalPages = data.totalPages ?? Math.max(1, Math.ceil(total / (params.limit || 8)));
+    } else if (data?.success && data?.data) {
+      if (Array.isArray(data.data.products)) {
+        rawList = data.data.products;
+        total = data.data.total ?? rawList.length;
+        page = data.data.page ?? page;
+        totalPages = data.data.totalPages ?? Math.max(1, Math.ceil(total / (params.limit || 8)));
+      } else if (Array.isArray(data.data)) {
+        rawList = data.data;
+        total = data.data.length;
+        totalPages = Math.max(1, Math.ceil(total / (params.limit || 8)));
       }
-      if (Array.isArray(data.data)) {
-        return {
-          products: data.data,
-          total: data.data.length,
-          page: params.page || 1,
-          totalPages: Math.ceil(data.data.length / (params.limit || 8)) || 1,
-        };
-      }
+    } else if (Array.isArray(data)) {
+      rawList = data;
+      total = data.length;
+      totalPages = Math.max(1, Math.ceil(total / (params.limit || 8)));
     }
-    if (Array.isArray(data)) {
+
+    if (rawList.length > 0) {
       return {
-        products: data,
-        total: data.length,
-        page: params.page || 1,
-        totalPages: Math.ceil(data.length / (params.limit || 8)) || 1,
+        products: rawList.map(normalizeProduct),
+        total,
+        page,
+        totalPages,
       };
     }
     return null;
@@ -148,18 +320,17 @@ export async function fetchProducts(params: GetProductsParams): Promise<Products
     console.warn("Next.js internal /api/products unavailable:", err);
   }
 
-  return {
-    products: [],
-    total: 0,
-    page: params.page || 1,
-    totalPages: 1,
-  };
+  // 3. Resilient fallback to mock products so the catalog never breaks
+  return getFilteredMockProducts(params);
 }
 
 /**
- * Fetch a single product by its ID.
+ * Fetch a single product by its ID or slug with robust normalization and fallback.
  */
 export async function fetchProductById(id: string): Promise<Product | null> {
+  if (!id) return null;
+
+  // 1. Try Express Gateway API
   try {
     const res = await fetch(`${API_BASE_URL}/v1/products/${id}`, {
       headers: getAuthHeaders(),
@@ -167,13 +338,14 @@ export async function fetchProductById(id: string): Promise<Product | null> {
     
     if (res.ok) {
       const data = await res.json();
-      if (data.success && data.data) return data.data;
+      const raw = data?.data || data?.product || (data && (data._id || data.id) ? data : null);
+      if (raw) return normalizeProduct(raw);
     }
   } catch (err) {
     console.warn("Backend fetchProductById failed:", err);
   }
 
-  // Also try Next.js /api/products route
+  // 2. Also try Next.js /api/products/[id] route
   try {
     const nextUrl = typeof window !== "undefined"
       ? `${window.location.origin}/api/products/${id}`
@@ -181,11 +353,17 @@ export async function fetchProductById(id: string): Promise<Product | null> {
     const res = await fetch(nextUrl, { headers: getAuthHeaders() });
     if (res.ok) {
       const data = await res.json();
-      if (data.success && data.data) return data.data;
-      if (data.product) return data.product;
+      const raw = data?.data || data?.product || (data && (data._id || data.id) ? data : null);
+      if (raw) return normalizeProduct(raw);
     }
   } catch (err) {
     // ignore
+  }
+
+  // 3. Fallback to mock products by id or slug
+  const mockMatch = mockProducts.find((p) => p.id === id || p.slug === id);
+  if (mockMatch) {
+    return normalizeProduct(mockMatch);
   }
 
   return null;
@@ -199,8 +377,14 @@ export async function fetchRelatedProducts(productId: string): Promise<Product[]
     const currentProduct = await fetchProductById(productId);
     if (!currentProduct || !currentProduct.category) return [];
     
-    const response = await fetchProducts({ category: currentProduct.category, limit: 5 });
-    return response.products.filter(p => p.id !== productId).slice(0, 4);
+    const response = await fetchProducts({ category: currentProduct.category, limit: 6 });
+    const related = response.products.filter((p) => p.id !== productId).slice(0, 4);
+
+    if (related.length > 0) return related;
+
+    // If no category matches, fall back to top catalog products
+    const general = await fetchProducts({ limit: 5 });
+    return general.products.filter((p) => p.id !== productId).slice(0, 4);
   } catch (error) {
     console.error("Failed to fetch related products:", error);
     return [];

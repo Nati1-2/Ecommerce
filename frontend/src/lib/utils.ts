@@ -13,6 +13,12 @@ export function formatPrice(price: number | string | undefined | null): string {
   }).format(isNaN(num) ? 0 : num);
 }
 
-export function formatDiscount(original: number, discounted: number): number {
-  return Math.round(((original - discounted) / original) * 100);
+export function formatDiscount(
+  original?: number | string | null,
+  discounted?: number | string | null
+): number {
+  const orig = typeof original === "number" ? original : Number(original) || 0;
+  const disc = typeof discounted === "number" ? discounted : Number(discounted) || 0;
+  if (!orig || orig <= disc) return 0;
+  return Math.round(((orig - disc) / orig) * 100);
 }

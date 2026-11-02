@@ -11,6 +11,7 @@ import { ProductCarousel } from "@/components/home/ProductCarousel";
 import { PromoBanner } from "@/components/home/PromoBanner";
 import { ReviewsSection } from "@/components/home/ReviewsSection";
 import { Newsletter } from "@/components/home/Newsletter";
+import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { fetchProducts } from "@/lib/api";
 import { Product } from "@/types";
 import {
@@ -71,48 +72,58 @@ export default function HomePage() {
       <BrandSection />
 
       {/* 3. Featured Products */}
-      <ProductGridSection
-        title="Featured Products"
-        subtitle="Hand-picked for you based on quality and value"
-        label="Editor's Choice"
-        products={featuredProducts}
-        viewAllHref="/products"
-      />
+      <ErrorBoundary name="Featured Products">
+        <ProductGridSection
+          title="Featured Products"
+          subtitle="Hand-picked for you based on quality and value"
+          label="Editor's Choice"
+          products={featuredProducts}
+          viewAllHref="/products"
+        />
+      </ErrorBoundary>
 
       {/* 4. Flash Sale */}
-      <FlashSale products={flashSaleProducts} />
+      <ErrorBoundary name="Flash Sale">
+        <FlashSale products={flashSaleProducts} />
+      </ErrorBoundary>
 
       {/* 5. New Arrivals Carousel */}
-      <ProductCarousel
-        title="New Arrivals"
-        subtitle="The latest products just landed"
-        label="Just In"
-        products={newArrivals}
-        viewAllHref="/products"
-        dark={true}
-      />
+      <ErrorBoundary name="New Arrivals">
+        <ProductCarousel
+          title="New Arrivals"
+          subtitle="The latest products just landed"
+          label="Just In"
+          products={newArrivals}
+          viewAllHref="/products"
+          dark={true}
+        />
+      </ErrorBoundary>
 
       {/* 6. Promo Banners */}
       <PromoBanner />
 
       {/* 7. Best Sellers Grid */}
-      <ProductGridSection
-        title="Best Sellers"
-        subtitle="Our most popular products loved by thousands"
-        label="Trending"
-        products={bestSellers}
-        viewAllHref="/products"
-      />
+      <ErrorBoundary name="Best Sellers">
+        <ProductGridSection
+          title="Best Sellers"
+          subtitle="Our most popular products loved by thousands"
+          label="Trending"
+          products={bestSellers}
+          viewAllHref="/products"
+        />
+      </ErrorBoundary>
 
       {/* 8. Recommendations Carousel */}
-      <ProductCarousel
-        title={isAuthenticated ? "Because You Viewed..." : "Recommended For You"}
-        subtitle={isAuthenticated ? "Personalized picks based on your recent activity" : "Top trending picks curated for new shoppers"}
-        label="AI Recommendations"
-        products={recommendations}
-        viewAllHref="/products"
-        dark={true}
-      />
+      <ErrorBoundary name="Recommendations">
+        <ProductCarousel
+          title={isAuthenticated ? "Because You Viewed..." : "Recommended For You"}
+          subtitle={isAuthenticated ? "Personalized picks based on your recent activity" : "Top trending picks curated for new shoppers"}
+          label="AI Recommendations"
+          products={recommendations}
+          viewAllHref="/products"
+          dark={true}
+        />
+      </ErrorBoundary>
 
       {/* 9. Customer Reviews */}
       <ReviewsSection reviews={mockReviews} />

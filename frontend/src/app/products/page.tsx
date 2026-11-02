@@ -16,6 +16,7 @@ import { ProductToolbar } from "@/components/ProductListing/ProductToolbar";
 import { Pagination } from "@/components/ProductListing/Pagination";
 import { EmptyState } from "@/components/ProductListing/EmptyState";
 import { ProductGridSkeleton } from "@/components/ProductListing/ProductSkeleton";
+import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 
 const FilterDrawer = dynamic(() => import("@/components/ProductListing/FilterDrawer").then((mod) => mod.FilterDrawer), {
   ssr: false,
@@ -246,11 +247,13 @@ function ProductListingContent() {
               <EmptyState onClearFilters={handleClearFilters} />
             ) : (
               <>
-                <ProductGrid
-                  products={data?.products || []}
-                  viewMode={viewMode}
-                  onQuickView={setQuickViewProduct}
-                />
+                <ErrorBoundary name="Product Grid">
+                  <ProductGrid
+                    products={data?.products || []}
+                    viewMode={viewMode}
+                    onQuickView={setQuickViewProduct}
+                  />
+                </ErrorBoundary>
                 <Pagination
                   currentPage={page}
                   totalPages={data?.totalPages || 1}

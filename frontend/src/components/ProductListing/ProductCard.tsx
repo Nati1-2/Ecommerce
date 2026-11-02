@@ -8,6 +8,7 @@ import { RatingStars } from "@/components/shared/RatingStars";
 import { useCartStore } from "@/store/cart";
 import { useWishlistStore } from "@/store/wishlist";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { cn, formatPrice, formatDiscount } from "@/lib/utils";
 
 interface ProductCardProps {
@@ -51,7 +52,17 @@ export function ProductCard({ product, index, viewMode, onQuickView }: ProductCa
 
   const handleWishlist = (e: React.MouseEvent) => {
     e.stopPropagation();
-    toggleItem(product.id);
+    toggleItem(product.id, {
+      productId: product.id,
+      name: product.name,
+      brand: product.brand,
+      image: imgSrc,
+      price: product.price,
+      oldPrice: product.originalPrice || product.price,
+      rating: product.rating,
+      reviewsCount: product.reviewCount,
+      category: product.category || "Electronics",
+    });
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
@@ -73,7 +84,11 @@ export function ProductCard({ product, index, viewMode, onQuickView }: ProductCa
         onClick={handleCardClick}
       >
         {/* Left: Image */}
-        <div className="relative w-full sm:w-48 aspect-square shrink-0 rounded-2xl bg-gray-50 overflow-hidden flex items-center justify-center">
+        <Link
+          href={`/products/${product.id}`}
+          className="relative w-full sm:w-48 aspect-square shrink-0 rounded-2xl bg-gray-50 overflow-hidden flex items-center justify-center block"
+          onClick={(e) => e.stopPropagation()}
+        >
           <img
             src={imgSrc}
             alt={product.name}
@@ -90,7 +105,7 @@ export function ProductCard({ product, index, viewMode, onQuickView }: ProductCa
               -{discount}%
             </span>
           )}
-        </div>
+        </Link>
 
         {/* Right: Content */}
         <div className="flex-1 flex flex-col justify-between py-1">
@@ -184,28 +199,34 @@ export function ProductCard({ product, index, viewMode, onQuickView }: ProductCa
       <div>
         {/* Image Container */}
         <div className="relative aspect-square w-full bg-[#F8FAFC] overflow-hidden flex items-center justify-center">
-          <img
-            src={imgSrc}
-            alt={product.name}
-            onError={() => setImgSrc(DEFAULT_FALLBACK_IMAGE)}
-            className="w-full h-full object-contain p-5 transition-transform duration-500 group-hover:scale-105"
-          />
+          <Link
+            href={`/products/${product.id}`}
+            className="w-full h-full flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={imgSrc}
+              alt={product.name}
+              onError={() => setImgSrc(DEFAULT_FALLBACK_IMAGE)}
+              className="w-full h-full object-contain p-5 transition-transform duration-500 group-hover:scale-105"
+            />
+          </Link>
 
           {/* Badge */}
           {product.badge && (
-            <span className="z-10 absolute top-3 left-3 bg-[#111827] text-white text-[9px] font-black px-2.5 py-1 rounded-lg shadow-sm">
+            <span className="z-10 absolute top-3 left-3 bg-[#111827] text-white text-[9px] font-black px-2.5 py-1 rounded-lg shadow-sm pointer-events-none">
               {product.badge.toUpperCase()}
             </span>
           )}
 
           {/* Discount */}
           {discount > 0 && (
-            <span className="z-10 absolute top-3 right-3 bg-red-500 text-white text-[9px] font-black px-2 py-1 rounded-lg shadow-sm">
+            <span className="z-10 absolute top-3 right-3 bg-red-500 text-white text-[9px] font-black px-2 py-1 rounded-lg shadow-sm pointer-events-none">
               -{discount}%
             </span>
           )}
 
-          {/* Wishlist button - visible on touch/mobile, hover on desktop */}
+          {/* Wishlist button - visible on touch/mobile */}
           <button
             onClick={handleWishlist}
             className={cn(
@@ -218,11 +239,11 @@ export function ProductCard({ product, index, viewMode, onQuickView }: ProductCa
           </button>
 
           {/* Action trigger overlay (Desktop Hover) */}
-          <div className="z-20 absolute inset-0 bg-black/10 hidden sm:flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 backdrop-blur-[2px]">
+          <div className="z-20 absolute inset-0 bg-black/10 hidden sm:flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 backdrop-blur-[2px] pointer-events-none">
             <button
               onClick={handleWishlist}
               className={cn(
-                "w-10 h-10 rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-all cursor-pointer",
+                "w-10 h-10 rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-all cursor-pointer pointer-events-auto",
                 wishlisted ? "bg-rose-500 text-white" : "bg-white text-gray-700 hover:bg-rose-500 hover:text-white"
               )}
               title="Wishlist"
@@ -234,7 +255,7 @@ export function ProductCard({ product, index, viewMode, onQuickView }: ProductCa
                 e.stopPropagation();
                 onQuickView(product);
               }}
-              className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-all text-gray-700 hover:bg-[#007BFF] hover:text-white cursor-pointer"
+              className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-all text-gray-700 hover:bg-[#007BFF] hover:text-white cursor-pointer pointer-events-auto"
               title="Quick View"
             >
               <Eye className="w-4.5 h-4.5" />

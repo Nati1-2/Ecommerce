@@ -61,7 +61,13 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
       <div className="relative overflow-hidden bg-gray-50 aspect-square shrink-0">
         <Link href={`/products/${product.id}`} className="block w-full h-full">
           <img
-            src={imageError ? "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&q=80" : product.image}
+            src={
+              imageError
+                ? "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&q=80"
+                : product.image ||
+                  product.images?.[0] ||
+                  "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&q=80"
+            }
             alt={product.name}
             onError={() => setImageError(true)}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"

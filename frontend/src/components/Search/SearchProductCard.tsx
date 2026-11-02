@@ -21,6 +21,10 @@ export default function SearchProductCard({ product, viewMode }: SearchProductCa
 
   const [isHovered, setIsHovered] = useState(false);
   const stock = product.stock ?? (product.inStock ? 10 : 0);
+  const mainImage =
+    (typeof product.image === "string" && product.image.length > 1 ? product.image : "") ||
+    (Array.isArray(product.images) && product.images[0] ? product.images[0] : "") ||
+    "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80";
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -28,7 +32,7 @@ export default function SearchProductCard({ product, viewMode }: SearchProductCa
       productId: product.id,
       name: product.name,
       price: product.price,
-      image: product.image[0],
+      image: mainImage,
       quantity: 1,
     });
     setCartDrawerOpen(true);
@@ -36,18 +40,32 @@ export default function SearchProductCard({ product, viewMode }: SearchProductCa
 
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
-    toggleWishlist(product.id);
+    toggleWishlist(product.id, {
+      productId: product.id,
+      name: product.name,
+      brand: product.brand,
+      image: mainImage,
+      price: product.price,
+      oldPrice: product.originalPrice || product.price,
+      rating: product.rating,
+      reviewsCount: product.reviewCount,
+      category: product.category || "Electronics",
+    });
   };
 
   if (viewMode === "list") {
     return (
       <Link href={`/products/${product.id}`} className="group flex bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-lg transition-all p-4 gap-6">
         <div className="relative w-48 h-48 bg-gray-50 rounded-xl shrink-0 overflow-hidden flex items-center justify-center">
-          {product.image[0] ? (
-            <Image src={product.image[0]} alt={product.name} fill className="object-contain p-4 mix-blend-multiply" />
-          ) : (
-            <div className="w-20 h-20 bg-gray-200 rounded-xl" />
-          )}
+          <img
+            src={mainImage}
+            alt={product.name}
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).src =
+                "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80";
+            }}
+            className="w-full h-full object-contain p-4 mix-blend-multiply"
+          />
           {product.discount > 0 && (
             <div className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-md">
               -{product.discount}%
@@ -111,16 +129,17 @@ export default function SearchProductCard({ product, viewMode }: SearchProductCa
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className="relative aspect-square bg-[#F5F7FA] overflow-hidden flex items-center justify-center p-6">
-        {product.image[0] ? (
-          <Image 
-            src={product.image[0]} 
-            alt={product.name} 
-            fill 
-            className={`object-contain p-6 mix-blend-multiply transition-transform duration-500 ${isHovered ? "scale-110" : "scale-100"}`} 
-          />
-        ) : (
-          <div className="w-20 h-20 bg-gray-200 rounded-xl" />
-        )}
+        <img
+          src={mainImage}
+          alt={product.name}
+          onError={(e) => {
+            (e.currentTarget as HTMLImageElement).src =
+              "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80";
+          }}
+          className={`w-full h-full object-contain p-6 mix-blend-multiply transition-transform duration-500 ${
+            isHovered ? "scale-110" : "scale-100"
+          }`}
+        />
 
         {/* Badges */}
         <div className="absolute top-4 left-4 flex flex-col gap-2">
