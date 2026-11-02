@@ -82,7 +82,6 @@ export default function WishlistProductCard({
             {product.name}
           </h4>
         </Link>
-        </h4>
 
         {/* Rating stars */}
         <div className="flex items-center gap-1 mt-1">
