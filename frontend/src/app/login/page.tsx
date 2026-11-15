@@ -16,6 +16,7 @@ import {
   CheckCircle2,
   AlertCircle,
   UserCheck,
+  Shield,
   LogOut,
   ArrowRight,
 } from "lucide-react";
@@ -168,6 +169,68 @@ function LoginContent() {
 
       setSuccess("Signed in as Demo Customer! Redirecting...");
       setTimeout(() => redirectByRole("CUSTOMER"), 300);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDatabaseAdminLogin = async () => {
+    setLoading(true);
+    setError("");
+    setSuccess("");
+    const adminEmail = "admin@gmail.com";
+    const adminPass = "admin";
+    setEmail(adminEmail);
+    setPassword(adminPass);
+
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: adminEmail,
+          password: adminPass,
+        }),
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (res.ok && data && (data.token || data.accessToken)) {
+        const token = data.token || data.accessToken;
+        const userObj = data.user;
+
+        if (typeof document !== "undefined") {
+          document.cookie = `token=${token}; path=/; max-age=604800; SameSite=Lax`;
+        }
+        if (typeof localStorage !== "undefined") {
+          localStorage.setItem("auth_token", token);
+        }
+
+        setAuth(userObj, token);
+
+        try {
+          useProfileStore.getState().setUser({
+            id: userObj.id || "usr-admin-gmail",
+            firstName: "Admin",
+            lastName: "",
+            email: userObj.email,
+            phone: "+1 (555) 999-0000",
+            role: "SuperAdmin Tier 👑",
+            avatar: "",
+            verified: true,
+          });
+        } catch (storeErr) {
+          console.warn("Profile sync notice:", storeErr);
+        }
+
+        setSuccess("Signed in as Database Admin! Redirecting to Admin Dashboard...");
+        setTimeout(() => redirectByRole("ADMIN"), 300);
+        return;
+      }
+
+      throw new Error(data?.error || data?.message || "Failed to sign in as database admin.");
+    } catch (err: any) {
+      setError(err?.message || "Could not authenticate with database admin credentials.");
     } finally {
       setLoading(false);
     }
@@ -486,18 +549,30 @@ function LoginContent() {
           <div className="mt-8 pt-6 border-t border-gray-100 text-center space-y-3">
             <div className="flex items-center justify-center gap-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
               <Sparkles className="w-3.5 h-3.5 text-[#007BFF] fill-[#007BFF]/10" />
-              <span>Instant Demo Account</span>
+              <span>Instant Access Accounts</span>
             </div>
 
-            <button
-              type="button"
-              onClick={handleDemoLogin}
-              disabled={loading}
-              className="w-full py-3.5 px-4 bg-blue-50/90 hover:bg-blue-100 text-[#007BFF] border border-blue-200 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm hover:shadow disabled:opacity-50"
-            >
-              <UserCheck className="w-4 h-4 text-[#007BFF]" />
-              <span>⚡ One-Click Demo Customer Login</span>
-            </button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <button
+                type="button"
+                onClick={handleDemoLogin}
+                disabled={loading}
+                className="py-3 px-3 bg-blue-50/90 hover:bg-blue-100 text-[#007BFF] border border-blue-200 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm hover:shadow disabled:opacity-50"
+              >
+                <UserCheck className="w-4 h-4 text-[#007BFF]" />
+                <span>Demo Customer</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleDatabaseAdminLogin}
+                disabled={loading}
+                className="py-3 px-3 bg-purple-50/90 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm hover:shadow disabled:opacity-50"
+              >
+                <Shield className="w-4 h-4 text-purple-600" />
+                <span>⚡ Admin Login (ENV)</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
 import { connectDB } from "@/lib/mongodb";
 import { requireAdmin } from "@/lib/authHelper";
 import { User } from "@/models/User";
@@ -61,8 +62,14 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       await connectDB();
       const mongoUpdates: Record<string, any> = {};
       if (updates.status !== undefined) mongoUpdates.isVerified = updates.status !== "Blocked";
-      if (updates.role) mongoUpdates.role = updates.role.toUpperCase();
+      if (updates.role) {
+        mongoUpdates.role = updates.role.toUpperCase();
+        mongoUpdates.membership = mongoUpdates.role === "ADMIN" ? "SuperAdmin Tier 👑" : mongoUpdates.role === "VENDOR" ? "Vendor Merchant 🚀" : "Standard Member ⭐";
+      }
       if (updates.name) mongoUpdates.name = updates.name;
+      if (updates.password) {
+        mongoUpdates.password = await bcrypt.hash(updates.password, 10);
+      }
 
       updatedUser = await User.findByIdAndUpdate(id, { $set: mongoUpdates }, { new: true }).select("-password");
     } catch (err: any) {

@@ -75,7 +75,28 @@ async function seedDemoUsers() {
       membership: "SuperAdmin Tier 👑",
       points: 9999,
     },
+    {
+      email: "admin@gmail.com",
+      plainPassword: "admin",
+      name: "Admin",
+      role: "ADMIN" as const,
+      id: "usr-admin-gmail",
+      membership: "SuperAdmin Tier 👑",
+      points: 9999,
+    },
   ];
+
+  if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
+    demoAccounts.push({
+      email: process.env.ADMIN_EMAIL.toLowerCase().trim(),
+      plainPassword: process.env.ADMIN_PASSWORD,
+      name: process.env.ADMIN_NAME || "System Admin",
+      role: "ADMIN" as const,
+      id: "usr-master-admin",
+      membership: "SuperAdmin Tier 👑",
+      points: 9999,
+    });
+  }
 
   for (const account of demoAccounts) {
     const hashedPassword = await bcrypt.hash(account.plainPassword, 10);

@@ -43,7 +43,46 @@ export class AuthService {
   }
 
   static async login(data: { email: string; password: string }) {
-    const user = await User.findOne({ email: data.email });
+    const normalizedEmail = data.email.toLowerCase().trim();
+    const envAdminEmail = process.env.ADMIN_EMAIL?.toLowerCase().trim();
+    const envAdminPassword = process.env.ADMIN_PASSWORD;
+    const envAdminName = process.env.ADMIN_NAME || 'System Admin';
+
+    // 0. Bootstrap .env Master Admin login (only when explicitly set in environment)
+    if (envAdminEmail && envAdminPassword && normalizedEmail === envAdminEmail && data.password === envAdminPassword) {
+      let adminUser = await User.findOne({ email: normalizedEmail });
+      if (!adminUser) {
+        const hashedPassword = await PasswordUtils.hashPassword(data.password);
+        adminUser = await User.create({
+          name: envAdminName,
+          email: normalizedEmail,
+          password: hashedPassword,
+          role: 'ADMIN',
+          isEmailVerified: true,
+          status: 'ACTIVE'
+        });
+      } else if (adminUser.role !== 'ADMIN') {
+        adminUser.role = 'ADMIN';
+        await adminUser.save();
+      }
+
+      const tokens = TokenService.generateTokens(adminUser);
+      await TokenService.saveRefreshToken(adminUser, tokens.refreshToken);
+
+      return {
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+        user: {
+          id: adminUser._id.toString(),
+          name: adminUser.name,
+          email: adminUser.email,
+          role: adminUser.role,
+          isEmailVerified: adminUser.isEmailVerified
+        }
+      };
+    }
+
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
       throw new Error('Invalid email or password');
     }

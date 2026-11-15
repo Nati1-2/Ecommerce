@@ -48,7 +48,32 @@ export async function seedDatabaseCollections() {
         points: 9999,
         isVerified: true,
       },
+      {
+        email: "admin@gmail.com",
+        plainPassword: "admin",
+        name: "Admin",
+        role: "ADMIN" as const,
+        id: "usr-admin-gmail",
+        _id: "usr-admin-gmail",
+        membership: "SuperAdmin Tier 👑",
+        points: 9999,
+        isVerified: true,
+      },
     ];
+
+    if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
+      demoAccounts.push({
+        email: process.env.ADMIN_EMAIL.toLowerCase().trim(),
+        plainPassword: process.env.ADMIN_PASSWORD,
+        name: process.env.ADMIN_NAME || "System Admin",
+        role: "ADMIN" as const,
+        id: "usr-master-admin",
+        _id: "usr-master-admin",
+        membership: "SuperAdmin Tier 👑",
+        points: 9999,
+        isVerified: true,
+      });
+    }
 
     for (const account of demoAccounts) {
       const hashedPassword = await bcrypt.hash(account.plainPassword, 10);

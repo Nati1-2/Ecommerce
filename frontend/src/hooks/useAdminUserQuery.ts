@@ -53,6 +53,9 @@ export function useCreateUser() {
       queryClient.invalidateQueries({ queryKey: ["admin-user-stats"] });
       showToast(`User account "${newUser.name}" created successfully!`, "success");
     },
+    onError: (err: any) => {
+      showToast(err?.message || "Failed to create user account.", "error");
+    },
   });
 }
 
