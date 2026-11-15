@@ -13,6 +13,7 @@ import { ReviewsSection } from "@/components/home/ReviewsSection";
 import { Newsletter } from "@/components/home/Newsletter";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { fetchProducts } from "@/lib/api";
+import { reportError } from "@/lib/errorHandler";
 import { Product } from "@/types";
 import {
   mockCategories,
@@ -66,6 +67,7 @@ export default function HomePage() {
           }
         }
       } catch (err) {
+        reportError(err, { location: "HomePage.loadBackendProducts" });
         console.warn("Home page backend fetch error:", err);
       }
     }
@@ -80,15 +82,21 @@ export default function HomePage() {
   return (
     <main className="min-h-screen bg-white text-slate-900">
       {/* 1. Hero */}
-      <Hero />
+      <ErrorBoundary name="Hero Section">
+        <Hero />
+      </ErrorBoundary>
 
       {/* 2. Categories */}
-      <CategorySection categories={mockCategories} />
+      <ErrorBoundary name="Categories">
+        <CategorySection categories={mockCategories} />
+      </ErrorBoundary>
 
       {/* 3. Top Brands */}
-      <BrandSection />
+      <ErrorBoundary name="Top Brands">
+        <BrandSection />
+      </ErrorBoundary>
 
-      {/* 3. Featured Products */}
+      {/* 4. Featured Products */}
       <ErrorBoundary name="Featured Products">
         <ProductGridSection
           title="Featured Products"
@@ -99,12 +107,12 @@ export default function HomePage() {
         />
       </ErrorBoundary>
 
-      {/* 4. Flash Sale */}
+      {/* 5. Flash Sale */}
       <ErrorBoundary name="Flash Sale">
         <FlashSale products={flashSaleProducts} />
       </ErrorBoundary>
 
-      {/* 5. New Arrivals Carousel */}
+      {/* 6. New Arrivals Carousel */}
       <ErrorBoundary name="New Arrivals">
         <ProductCarousel
           title="New Arrivals"
@@ -116,10 +124,12 @@ export default function HomePage() {
         />
       </ErrorBoundary>
 
-      {/* 6. Promo Banners */}
-      <PromoBanner />
+      {/* 7. Promo Banners */}
+      <ErrorBoundary name="Promo Banners">
+        <PromoBanner />
+      </ErrorBoundary>
 
-      {/* 7. Best Sellers Grid */}
+      {/* 8. Best Sellers Grid */}
       <ErrorBoundary name="Best Sellers">
         <ProductGridSection
           title="Best Sellers"
@@ -130,7 +140,7 @@ export default function HomePage() {
         />
       </ErrorBoundary>
 
-      {/* 8. Recommendations Carousel */}
+      {/* 9. Recommendations Carousel */}
       <ErrorBoundary name="Recommendations">
         <ProductCarousel
           title={isAuthenticated ? "Because You Viewed..." : "Recommended For You"}
@@ -142,11 +152,15 @@ export default function HomePage() {
         />
       </ErrorBoundary>
 
-      {/* 9. Customer Reviews */}
-      <ReviewsSection reviews={mockReviews} />
+      {/* 10. Customer Reviews */}
+      <ErrorBoundary name="Customer Reviews">
+        <ReviewsSection reviews={mockReviews} />
+      </ErrorBoundary>
 
-      {/* 10. Newsletter */}
-      <Newsletter />
+      {/* 11. Newsletter */}
+      <ErrorBoundary name="Newsletter">
+        <Newsletter />
+      </ErrorBoundary>
     </main>
   );
 }

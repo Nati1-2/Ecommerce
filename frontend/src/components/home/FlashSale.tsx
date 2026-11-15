@@ -3,11 +3,12 @@
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Zap, ShoppingBag, Star } from "lucide-react";
+import { Zap, ShoppingBag, Star, AlertCircle } from "lucide-react";
 import { Product } from "@/types";
 import { useCartStore } from "@/store/cart";
 import { formatPrice } from "@/lib/utils";
 import { SAFE_FALLBACK_SVG, DEFAULT_FALLBACK_IMAGE } from "@/lib/api";
+import { reportError, getErrorMessage } from "@/lib/errorHandler";
 
 interface CountdownProps {
   endTime: Date;
@@ -58,15 +59,27 @@ interface FlashSaleCardProps {
 
 function FlashSaleCard({ product, index, soldPercent }: FlashSaleCardProps) {
   const [added, setAdded] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [imgSrc, setImgSrc] = useState(
     product.image || DEFAULT_FALLBACK_IMAGE
   );
   const addItem = useCartStore((s) => s.addItem);
 
-  const handleAdd = () => {
-    addItem({ productId: product.id, name: product.name, price: product.price, quantity: 1, image: imgSrc });
-    setAdded(true);
-    setTimeout(() => setAdded(false), 2000);
+  const handleAdd = async () => {
+    try {
+      setIsAdding(true);
+      setErrorMsg(null);
+      await addItem({ productId: product.id, name: product.name, price: product.price, quantity: 1, image: imgSrc });
+      setAdded(true);
+      setTimeout(() => setAdded(false), 2000);
+    } catch (err) {
+      reportError(err, { component: "FlashSaleCard", action: "handleAdd", productId: product.id });
+      setErrorMsg(getErrorMessage(err, "Failed to add"));
+      setTimeout(() => setErrorMsg(null), 2500);
+    } finally {
+      setIsAdding(false);
+    }
   };
 
   return (
@@ -126,10 +139,26 @@ function FlashSaleCard({ product, index, soldPercent }: FlashSaleCardProps) {
 
         <button
           onClick={handleAdd}
-          className="w-full mt-3 py-2.5 rounded-xl text-sm font-bold bg-[#111827] hover:bg-[#007BFF] text-white transition-colors duration-300 flex items-center justify-center gap-2"
+          disabled={isAdding}
+          className={`w-full mt-3 py-2.5 rounded-xl text-sm font-bold transition-colors duration-300 flex items-center justify-center gap-2 cursor-pointer ${
+            errorMsg
+              ? "bg-red-500 text-white"
+              : added
+              ? "bg-emerald-600 text-white"
+              : "bg-[#111827] hover:bg-[#007BFF] text-white"
+          }`}
         >
-          <ShoppingBag className="w-4 h-4" />
-          {added ? "✓ Added!" : "Add to Cart"}
+          {errorMsg ? (
+            <>
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span className="truncate">{errorMsg}</span>
+            </>
+          ) : (
+            <>
+              <ShoppingBag className="w-4 h-4" />
+              <span>{isAdding ? "Adding..." : added ? "✓ Added!" : "Add to Cart"}</span>
+            </>
+          )}
         </button>
       </div>
     </motion.div>
@@ -145,6 +174,9 @@ export function FlashSale({ products }: FlashSaleProps) {
     () => new Date(Date.now() + 6 * 3600 * 1000 + 34 * 60 * 1000),
     []
   );
+
+  const safeProducts = Array.isArray(products) ? products : [];
+  if (safeProducts.length === 0) return null;
 
   return (
     <section className="py-16 bg-white border-y border-gray-100">
@@ -178,7 +210,7 @@ export function FlashSale({ products }: FlashSaleProps) {
 
         {/* Products Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-          {products.map((product, i) => (
+          {safeProducts.map((product, i) => (
             <FlashSaleCard
               key={product.id}
               product={product}

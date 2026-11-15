@@ -3,25 +3,39 @@
 import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, ShieldCheck, Truck, Star, Zap, ShoppingBag, Check } from "lucide-react";
+import { ArrowRight, ShieldCheck, Truck, Star, Zap, ShoppingBag, Check, AlertCircle } from "lucide-react";
 import { useCartStore } from "@/store/cart";
 import { SAFE_FALLBACK_SVG } from "@/lib/api";
+import { reportError, getErrorMessage } from "@/lib/errorHandler";
 
 export default function Hero() {
   const [addedToCart, setAddedToCart] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
+  const [cartError, setCartError] = useState<string | null>(null);
+  const [imgSrc, setImgSrc] = useState("/iphone17.png");
   const addItem = useCartStore((s) => s.addItem);
 
-  const handleAddToCart = (e?: React.MouseEvent) => {
+  const handleAddToCart = async (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    addItem({
-      productId: "0",
-      name: "Apple iPhone 17 Pro",
-      price: 1199,
-      quantity: 1,
-      image: "/iphone17.png",
-    });
-    setAddedToCart(true);
-    setTimeout(() => setAddedToCart(false), 2500);
+    try {
+      setIsAdding(true);
+      setCartError(null);
+      await addItem({
+        productId: "0",
+        name: "Apple iPhone 17 Pro",
+        price: 1199,
+        quantity: 1,
+        image: imgSrc,
+      });
+      setAddedToCart(true);
+      setTimeout(() => setAddedToCart(false), 2500);
+    } catch (err) {
+      reportError(err, { component: "Hero", action: "handleAddToCart" });
+      setCartError(getErrorMessage(err, "Failed to add to cart. Please try again."));
+      setTimeout(() => setCartError(null), 3500);
+    } finally {
+      setIsAdding(false);
+    }
   };
 
   return (
@@ -153,11 +167,12 @@ export default function Hero() {
                 <div className="relative w-full max-w-[280px] min-[360px]:max-w-[320px] sm:max-w-[360px] lg:max-w-[400px] rounded-3xl overflow-hidden bg-[#F5F7FA] border border-gray-100 shadow-2xl shadow-gray-200/80 group">
                   <Link href="/products/0" className="block relative bg-white overflow-hidden">
                     <img
-                      src="/iphone17.png"
+                      src={imgSrc}
                       alt="Featured Product — iPhone 17 Pro"
                       onError={(e) => {
                         e.currentTarget.onerror = null;
                         e.currentTarget.src = SAFE_FALLBACK_SVG;
+                        setImgSrc(SAFE_FALLBACK_SVG);
                       }}
                       className="w-full h-[280px] sm:h-[320px] object-contain object-center p-6 bg-white hover:scale-105 transition-transform duration-500 cursor-pointer pointer-events-none"
                     />
@@ -188,13 +203,21 @@ export default function Hero() {
                     <button
                       type="button"
                       onClick={handleAddToCart}
+                      disabled={isAdding}
                       className={`mt-3.5 w-full py-3 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all duration-300 shadow-md cursor-pointer ${
-                        addedToCart
+                        cartError
+                          ? "bg-red-500 text-white shadow-red-500/20"
+                          : addedToCart
                           ? "bg-emerald-600 text-white shadow-emerald-500/20"
                           : "bg-[#007BFF] hover:bg-blue-600 active:scale-[0.98] text-white shadow-blue-500/25 hover:shadow-blue-500/40"
                       }`}
                     >
-                      {addedToCart ? (
+                      {cartError ? (
+                        <>
+                          <AlertCircle className="w-4 h-4 shrink-0" />
+                          <span className="truncate">{cartError}</span>
+                        </>
+                      ) : addedToCart ? (
                         <>
                           <Check className="w-4 h-4" />
                           <span>✓ Added to Cart!</span>
@@ -202,7 +225,7 @@ export default function Hero() {
                       ) : (
                         <>
                           <ShoppingBag className="w-4 h-4" />
-                          <span>Add to Cart</span>
+                          <span>{isAdding ? "Adding..." : "Add to Cart"}</span>
                         </>
                       )}
                     </button>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, Gift, Truck, Shield } from "lucide-react";
+import { SAFE_FALLBACK_SVG } from "@/lib/api";
 
 export function PromoBanner() {
   return (
@@ -19,6 +20,10 @@ export function PromoBanner() {
             <img
               src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&q=80"
               alt="Upgrade Your Lifestyle"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = SAFE_FALLBACK_SVG;
+              }}
               className="absolute inset-0 w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-[#111827]/90 via-[#111827]/70 to-transparent" />
@@ -54,6 +59,10 @@ export function PromoBanner() {
               <img
                 src="https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=600&q=80"
                 alt="Gaming"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = SAFE_FALLBACK_SVG;
+                }}
                 className="absolute inset-0 w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-r from-[#6D28D9]/90 to-[#6D28D9]/30" />
@@ -77,6 +86,10 @@ export function PromoBanner() {
               <img
                 src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=600&q=80"
                 alt="Beauty"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = SAFE_FALLBACK_SVG;
+                }}
                 className="absolute inset-0 w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-r from-[#BE185D]/90 to-[#BE185D]/20" />

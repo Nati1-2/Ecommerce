@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { WishlistItem, useWishlistStore } from "@/store/wishlist";
 import { formatPrice } from "@/lib/utils";
 import { useCartStore } from "@/store/cart";
@@ -9,6 +10,7 @@ import StockAlert from "./StockAlert";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { SAFE_FALLBACK_SVG, DEFAULT_FALLBACK_IMAGE } from "@/lib/api";
+import { reportError, getErrorMessage } from "@/lib/errorHandler";
 
 interface WishlistProductCardProps {
   product: WishlistItem;
@@ -22,22 +24,31 @@ export default function WishlistProductCard({
   const { removeItem } = useWishlistStore();
   const addItem = useCartStore((s) => s.addItem);
   const setCartDrawerOpen = useCartStore((s) => s.setCartDrawerOpen);
+  const [imgSrc, setImgSrc] = useState(product.image || DEFAULT_FALLBACK_IMAGE);
+  const [cartError, setCartError] = useState<string | null>(null);
 
   const discountPercent =
     product.oldPrice > product.price
       ? Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100)
       : 0;
 
-  const handleAddToCart = () => {
-    addItem({
-      productId: product.productId,
-      name: product.name,
-      price: product.price,
-      quantity: 1,
-      image: product.image,
-    });
-    removeItem(product.productId);
-    setCartDrawerOpen(true);
+  const handleAddToCart = async () => {
+    try {
+      setCartError(null);
+      await addItem({
+        productId: product.productId,
+        name: product.name,
+        price: product.price,
+        quantity: 1,
+        image: imgSrc,
+      });
+      removeItem(product.productId);
+      setCartDrawerOpen(true);
+    } catch (err) {
+      reportError(err, { component: "WishlistProductCard", action: "handleAddToCart", productId: product.productId });
+      setCartError(getErrorMessage(err, "Failed to add"));
+      setTimeout(() => setCartError(null), 3000);
+    }
   };
 
   return (
@@ -47,11 +58,12 @@ export default function WishlistProductCard({
       <div className="relative aspect-square w-full rounded-xl bg-gray-50 flex items-center justify-center overflow-hidden border border-gray-100/30">
         <Link href={`/products/${product.productId}`} className="w-full h-full flex items-center justify-center">
           <img
-            src={product.image || DEFAULT_FALLBACK_IMAGE}
+            src={imgSrc}
             alt={product.name}
             onError={(e) => {
               e.currentTarget.onerror = null;
               e.currentTarget.src = SAFE_FALLBACK_SVG;
+              setImgSrc(SAFE_FALLBACK_SVG);
             }}
             className="max-w-[85%] max-h-[85%] object-contain group-hover:scale-105 transition-transform duration-300 pointer-events-none"
           />
@@ -141,10 +153,14 @@ export default function WishlistProductCard({
         {product.stock > 0 ? (
           <button
             onClick={handleAddToCart}
-            className="w-full py-2.5 bg-[#007BFF] hover:bg-blue-600 text-white font-bold text-[10px] rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm shadow-blue-500/10"
+            className={`w-full py-2.5 font-bold text-[10px] rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-sm ${
+              cartError
+                ? "bg-red-500 text-white"
+                : "bg-[#007BFF] hover:bg-blue-600 text-white shadow-blue-500/10"
+            }`}
           >
             <ShoppingBag className="w-3.5 h-3.5" />
-            Add to Cart
+            {cartError ? cartError : "Add to Cart"}
           </button>
         ) : (
           <StockAlert productId={product.productId} />

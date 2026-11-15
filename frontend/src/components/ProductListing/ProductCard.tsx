@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn, formatPrice, formatDiscount } from "@/lib/utils";
 import { SAFE_FALLBACK_SVG, DEFAULT_FALLBACK_IMAGE } from "@/lib/api";
+import { reportError } from "@/lib/errorHandler";
 
 interface ProductCardProps {
   product: Product;
@@ -36,32 +37,40 @@ export function ProductCard({ product, index, viewMode, onQuickView }: ProductCa
   const wishlisted = mounted ? isWishlisted(product.id) : false;
   const discount = product.discount || formatDiscount(product.originalPrice, product.price);
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    addItem({
-      productId: product.id,
-      name: product.name,
-      price: product.price,
-      quantity: 1,
-      image: product.image,
-    });
-    setAdded(true);
-    setTimeout(() => setAdded(false), 2000);
+    try {
+      await addItem({
+        productId: product.id,
+        name: product.name,
+        price: product.price,
+        quantity: 1,
+        image: product.image,
+      });
+      setAdded(true);
+      setTimeout(() => setAdded(false), 2000);
+    } catch (err) {
+      reportError(err, { component: "ProductListing.ProductCard", action: "handleAddToCart", productId: product.id });
+    }
   };
 
   const handleWishlist = (e: React.MouseEvent) => {
     e.stopPropagation();
-    toggleItem(product.id, {
-      productId: product.id,
-      name: product.name,
-      brand: product.brand,
-      image: imgSrc,
-      price: product.price,
-      oldPrice: product.originalPrice || product.price,
-      rating: product.rating,
-      reviewsCount: product.reviewCount,
-      category: product.category || "Electronics",
-    });
+    try {
+      toggleItem(product.id, {
+        productId: product.id,
+        name: product.name,
+        brand: product.brand,
+        image: imgSrc,
+        price: product.price,
+        oldPrice: product.originalPrice || product.price,
+        rating: product.rating,
+        reviewsCount: product.reviewCount,
+        category: product.category || "Electronics",
+      });
+    } catch (err) {
+      reportError(err, { component: "ProductListing.ProductCard", action: "handleWishlist", productId: product.id });
+    }
   };
 
   const handleCardClick = (e: React.MouseEvent) => {

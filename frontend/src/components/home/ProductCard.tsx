@@ -9,6 +9,7 @@ import { useCartStore } from "@/store/cart";
 import { useWishlistStore } from "@/store/wishlist";
 import { cn, formatPrice, formatDiscount } from "@/lib/utils";
 import { SAFE_FALLBACK_SVG, DEFAULT_FALLBACK_IMAGE } from "@/lib/api";
+import { reportError } from "@/lib/errorHandler";
 
 interface ProductCardProps {
   product: Product;
@@ -38,16 +39,20 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
   const wishlisted = mounted ? isWishlisted(product.id) : false;
   const discount = product.discount || formatDiscount(product.originalPrice, product.price);
 
-  const handleAddToCart = () => {
-    addItem({
-      productId: product.id,
-      name: product.name,
-      price: product.price,
-      quantity: 1,
-      image: product.image,
-    });
-    setAddedToCart(true);
-    setTimeout(() => setAddedToCart(false), 2000);
+  const handleAddToCart = async () => {
+    try {
+      await addItem({
+        productId: product.id,
+        name: product.name,
+        price: product.price,
+        quantity: 1,
+        image: product.image,
+      });
+      setAddedToCart(true);
+      setTimeout(() => setAddedToCart(false), 2000);
+    } catch (err) {
+      reportError(err, { component: "ProductCard", action: "handleAddToCart", productId: product.id });
+    }
   };
 
   return (
@@ -99,19 +104,23 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
         {/* Actions Overlay */}
         <div className="absolute inset-x-3 bottom-3 flex items-center justify-between opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200 z-10">
           <button
-            onClick={() =>
-              toggleItem(product.id, {
-                productId: product.id,
-                name: product.name,
-                brand: product.brand,
-                image: product.image,
-                price: product.price,
-                oldPrice: product.originalPrice || product.price,
-                rating: product.rating,
-                reviewsCount: product.reviewCount,
-                category: product.category || "Electronics",
-              })
-            }
+            onClick={() => {
+              try {
+                toggleItem(product.id, {
+                  productId: product.id,
+                  name: product.name,
+                  brand: product.brand,
+                  image: product.image,
+                  price: product.price,
+                  oldPrice: product.originalPrice || product.price,
+                  rating: product.rating,
+                  reviewsCount: product.reviewCount,
+                  category: product.category || "Electronics",
+                });
+              } catch (err) {
+                reportError(err, { component: "ProductCard", action: "toggleItem", productId: product.id });
+              }
+            }}
             className={cn(
               "w-9 h-9 rounded-xl flex items-center justify-center shadow-md transition-all duration-200 cursor-pointer",
               wishlisted

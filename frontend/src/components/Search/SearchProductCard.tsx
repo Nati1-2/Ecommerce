@@ -1,12 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import { ProductResult } from "@/services/api/search";
-import { Star, ShoppingCart, Heart } from "lucide-react";
+import { Star, ShoppingCart, Heart, AlertCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useWishlistStore } from "@/store/wishlist";
 import { useCartStore } from "@/store/cart";
 import { SAFE_FALLBACK_SVG, DEFAULT_FALLBACK_IMAGE } from "@/lib/api";
+import { reportError, getErrorMessage } from "@/lib/errorHandler";
 
 interface SearchProductCardProps {
   product: ProductResult;
@@ -25,31 +27,45 @@ export default function SearchProductCard({ product, viewMode }: SearchProductCa
     (Array.isArray(product.images) && product.images[0] ? product.images[0] : "") ||
     DEFAULT_FALLBACK_IMAGE;
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const [imgSrc, setImgSrc] = useState(mainImage);
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
-    addItem({
-      productId: product.id,
-      name: product.name,
-      price: product.price,
-      image: mainImage,
-      quantity: 1,
-    });
-    setCartDrawerOpen(true);
+    try {
+      setActionError(null);
+      await addItem({
+        productId: product.id,
+        name: product.name,
+        price: product.price,
+        image: imgSrc,
+        quantity: 1,
+      });
+      setCartDrawerOpen(true);
+    } catch (err) {
+      reportError(err, { component: "SearchProductCard", action: "handleAddToCart", productId: product.id });
+      setActionError(getErrorMessage(err, "Failed to add to cart"));
+      setTimeout(() => setActionError(null), 3000);
+    }
   };
 
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
-    toggleWishlist(product.id, {
-      productId: product.id,
-      name: product.name,
-      brand: product.brand,
-      image: mainImage,
-      price: product.price,
-      oldPrice: product.originalPrice || product.price,
-      rating: product.rating,
-      reviewsCount: product.reviewCount,
-      category: product.category || "Electronics",
-    });
+    try {
+      toggleWishlist(product.id, {
+        productId: product.id,
+        name: product.name,
+        brand: product.brand,
+        image: imgSrc,
+        price: product.price,
+        oldPrice: product.originalPrice || product.price,
+        rating: product.rating,
+        reviewsCount: product.reviewCount,
+        category: product.category || "Electronics",
+      });
+    } catch (err) {
+      reportError(err, { component: "SearchProductCard", action: "handleWishlist", productId: product.id });
+    }
   };
 
   if (viewMode === "list") {
@@ -57,11 +73,12 @@ export default function SearchProductCard({ product, viewMode }: SearchProductCa
       <Link href={`/products/${product.id}`} className="group flex bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-lg transition-all p-4 gap-6">
         <div className="relative w-48 h-48 bg-gray-50 rounded-xl shrink-0 overflow-hidden flex items-center justify-center">
           <img
-            src={mainImage}
+            src={imgSrc}
             alt={product.name}
             onError={(e) => {
               e.currentTarget.onerror = null;
               e.currentTarget.src = SAFE_FALLBACK_SVG;
+              setImgSrc(SAFE_FALLBACK_SVG);
             }}
             className="w-full h-full object-contain p-4 mix-blend-multiply pointer-events-none"
           />
@@ -94,7 +111,10 @@ export default function SearchProductCard({ product, viewMode }: SearchProductCa
                 </span>
               )}
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
+              {actionError && (
+                <span className="text-xs text-red-500 font-medium px-2">{actionError}</span>
+              )}
               <button
                 onClick={handleWishlist}
                 className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
@@ -127,11 +147,12 @@ export default function SearchProductCard({ product, viewMode }: SearchProductCa
     >
       <div className="relative aspect-square bg-[#F5F7FA] overflow-hidden flex items-center justify-center p-6">
         <img
-          src={mainImage}
+          src={imgSrc}
           alt={product.name}
           onError={(e) => {
             e.currentTarget.onerror = null;
             e.currentTarget.src = SAFE_FALLBACK_SVG;
+            setImgSrc(SAFE_FALLBACK_SVG);
           }}
           className="w-full h-full object-contain p-6 mix-blend-multiply transition-transform duration-500 group-hover:scale-110 pointer-events-none"
         />
@@ -164,13 +185,24 @@ export default function SearchProductCard({ product, viewMode }: SearchProductCa
             onClick={handleAddToCart}
             disabled={stock === 0}
             className={`w-full py-2.5 rounded-xl text-sm font-bold shadow-lg flex items-center justify-center gap-2 backdrop-blur-md ${
-              stock > 0 
+              actionError
+                ? "bg-red-500 text-white"
+                : stock > 0 
                 ? "bg-white/90 text-gray-900 hover:bg-white border border-white/20" 
                 : "bg-gray-100/90 text-gray-400 cursor-not-allowed"
             }`}
           >
-            <ShoppingCart className="w-4 h-4" />
-            {stock > 0 ? "Quick Add" : "Unavailable"}
+            {actionError ? (
+              <>
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span className="truncate">{actionError}</span>
+              </>
+            ) : (
+              <>
+                <ShoppingCart className="w-4 h-4" />
+                {stock > 0 ? "Quick Add" : "Unavailable"}
+              </>
+            )}
           </button>
         </div>
       </div>

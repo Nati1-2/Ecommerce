@@ -3,19 +3,28 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Mail, ArrowRight, CheckCircle, Gift } from "lucide-react";
+import { reportError } from "@/lib/errorHandler";
 
 export function Newsletter() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
-    setLoading(true);
-    await new Promise((r) => setTimeout(r, 1000));
-    setLoading(false);
-    setSubmitted(true);
+    try {
+      setError(null);
+      setLoading(true);
+      await new Promise((r) => setTimeout(r, 1000));
+      setSubmitted(true);
+    } catch (err) {
+      reportError(err, { component: "Newsletter", action: "handleSubmit" });
+      setError("Failed to subscribe. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -76,6 +85,9 @@ export function Newsletter() {
                   <>
                     <p className="text-sm font-semibold text-gray-600 mb-4">Enter your email to get started</p>
                     <form onSubmit={handleSubmit} className="space-y-3">
+                      {error && (
+                        <p className="text-xs text-red-500 font-medium">{error}</p>
+                      )}
                       <div className="relative">
                         <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input

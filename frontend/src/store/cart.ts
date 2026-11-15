@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { cartApi } from "@/services/api/cartApi";
+import { reportError } from "@/lib/errorHandler";
 
 export interface CartItem {
   productId: string;
@@ -41,6 +42,7 @@ export const useCartStore = create<CartState>()(
           const items = await cartApi.getCart();
           set({ items, isSyncing: false });
         } catch (error) {
+          reportError(error, { store: "cart", action: "initialize" });
           console.error("Failed to sync cart", error);
           set({ isSyncing: false });
         }
@@ -69,8 +71,8 @@ export const useCartStore = create<CartState>()(
           const serverItems = await cartApi.addItem(item);
           set({ items: serverItems });
         } catch (error) {
+          reportError(error, { store: "cart", action: "addItem", item });
           console.error("Failed to add item to server cart", error);
-          // Rollback on error could be implemented here
         }
       },
 
@@ -82,6 +84,7 @@ export const useCartStore = create<CartState>()(
           const serverItems = await cartApi.removeItem(productId);
           set({ items: serverItems });
         } catch (error) {
+          reportError(error, { store: "cart", action: "removeItem", productId });
           set({ items: originalItems }); // rollback
         }
       },
@@ -98,6 +101,7 @@ export const useCartStore = create<CartState>()(
           const serverItems = await cartApi.updateQuantity(productId, quantity);
           set({ items: serverItems });
         } catch (error) {
+          reportError(error, { store: "cart", action: "updateQuantity", productId, quantity });
           set({ items: originalItems }); // rollback
         }
       },
@@ -108,6 +112,7 @@ export const useCartStore = create<CartState>()(
         try {
           await cartApi.clearCart();
         } catch (error) {
+          reportError(error, { store: "cart", action: "clearCart" });
           set({ items: originalItems });
         }
       },

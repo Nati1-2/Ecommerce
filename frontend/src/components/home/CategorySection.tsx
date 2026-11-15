@@ -53,6 +53,9 @@ interface CategorySectionProps {
 }
 
 export function CategorySection({ categories }: CategorySectionProps) {
+  const safeCategories = Array.isArray(categories) ? categories : [];
+  if (safeCategories.length === 0) return null;
+
   return (
     <section className="py-14 bg-[#F5F7FA]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -72,7 +75,7 @@ export function CategorySection({ categories }: CategorySectionProps) {
         </motion.div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-          {categories.map((cat, i) => (
+          {safeCategories.map((cat, i) => (
             <CategoryCard key={cat.id} category={cat} index={i} />
           ))}
         </div>
