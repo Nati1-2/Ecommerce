@@ -1,5 +1,6 @@
 import { logger } from "@/lib/logger";
 import { sentry } from "@/lib/sentry";
+import { maskSensitiveData } from "@/lib/security";
 
 export class ApiError extends Error {
   statusCode: number;
@@ -82,13 +83,14 @@ export function reportError(
 ): void {
   const message = getErrorMessage(error);
   const errInstance = error instanceof Error ? error : new Error(message);
+  const sanitizedContext = maskSensitiveData(context) as Record<string, any>;
 
   logger.error(message, {
     error: errInstance.message,
     stack: errInstance.stack,
-    meta: context,
+    meta: sanitizedContext,
   });
 
-  sentry.captureException(errInstance, context);
+  sentry.captureException(errInstance, sanitizedContext);
 }
 

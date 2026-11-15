@@ -2,6 +2,8 @@ export * from './errors/CustomError.js';
 export * from './errors/BadRequestError.js';
 export * from './errors/NotFoundError.js';
 export * from './errors/UnauthorizedError.js';
+export * from './errors/ForbiddenError.js';
+export * from './errors/ConflictError.js';
 
 export * from './events/EventTypes.js';
 

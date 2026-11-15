@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Mail, ArrowRight, CheckCircle, Gift } from "lucide-react";
 import { reportError } from "@/lib/errorHandler";
+import { sanitizeInput, isValidEmail } from "@/lib/security";
 
 export function Newsletter() {
   const [email, setEmail] = useState("");
@@ -13,7 +14,12 @@ export function Newsletter() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    const cleanEmail = sanitizeInput(email);
+    if (!cleanEmail || !isValidEmail(cleanEmail)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
     try {
       setError(null);
       setLoading(true);

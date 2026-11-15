@@ -14,23 +14,62 @@ const JWT_SECRET = process.env.JWT_SECRET || process.env.JWT_ACCESS_SECRET || 'y
 
 // ── Security & Middleware ──────────────────────────────────────────────────
 app.use(helmet());
-app.use(cors({ origin: true, credentials: true }));
+
+// Whitelist CORS origins to prevent unauthorized cross-origin requests
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
+  : ['http://localhost:3000', 'http://127.0.0.1:3000'];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (e.g. mobile apps, curl, internal jobs) or whitelisted origins
+      if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+        callback(null, true);
+      } else {
+        callback(new Error('Blocked by CORS policy'));
+      }
+    },
+    credentials: true,
+  })
+);
+
+// Prevent external spoofing: strip internal user identity headers on incoming ingress
+app.use((req, _res, next) => {
+  delete req.headers['x-user-id'];
+  delete req.headers['x-user-email'];
+  delete req.headers['x-user-role'];
+  next();
+});
 
 // Bypass express.json() parsing for Stripe webhook routes to preserve raw signature buffer
 app.use((req, res, next) => {
   if (req.originalUrl.includes('/webhook')) {
     return next();
   }
-  express.json()(req, res, next);
+  express.json({ limit: '10mb' })(req, res, next);
 });
 
 // ── Rate Limiting ──────────────────────────────────────────────────────────
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // 100 requests per IP per window
+  standardHeaders: true,
+  legacyHeaders: false,
   message: { success: false, errors: [{ message: 'Too many requests, please try again later.' }] }
 });
 app.use(limiter);
+
+// Strict rate limiting on authentication routes to prevent brute-force / credential stuffing
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // max 10 requests per 15-min window per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, errors: [{ message: 'Too many authentication attempts, please try again after 15 minutes.' }] }
+});
+app.use('/api/v1/auth/login', authLimiter);
+app.use('/api/v1/auth/register', authLimiter);
 
 // ── Authentication Middleware ──────────────────────────────────────────────
 const extractUserContext = (req: express.Request, _res: express.Response, next: express.NextFunction) => {
