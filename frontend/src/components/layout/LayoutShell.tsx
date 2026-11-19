@@ -4,6 +4,8 @@ import { usePathname } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import BottomNav from "@/components/layout/BottomNav";
+import DonationPopup from "@/components/Donation/DonationPopup";
+import FloatingDonateButton from "@/components/Donation/FloatingDonateButton";
 
 /**
  * Conditionally renders the site-wide Navbar, BottomNav, and Footer.
@@ -29,6 +31,8 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
       </main>
       {!isMinimal && <Footer />}
       {!isMinimal && <BottomNav />}
+      {!isMinimal && <DonationPopup />}
+      {!isMinimal && <FloatingDonateButton />}
     </>
   );
 }

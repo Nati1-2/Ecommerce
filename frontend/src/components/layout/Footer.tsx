@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Mail } from "lucide-react";
+import { Mail, Heart } from "lucide-react";
+import { useDonationStore } from "@/store/donationStore";
 
 const FacebookIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" fill="currentColor" className={className || "w-4 h-4"}>
@@ -52,6 +53,7 @@ const footerLinks = {
     { label: "New Arrivals", href: "/new" },
     { label: "Best Sellers", href: "/bestsellers" },
     { label: "Gift Cards", href: "/gift-cards" },
+    { label: "Support / Donate (Payoneer) 💖", href: "#donate" },
     { label: "Affiliate Program", href: "/affiliate" },
   ],
 };
@@ -65,6 +67,7 @@ const socials = [
 ];
 
 export function Footer() {
+  const { openDonationModal } = useDonationStore();
   return (
     <footer className="bg-[#111827] text-gray-400">
       {/* Main footer */}
@@ -124,12 +127,22 @@ export function Footer() {
               <ul className="space-y-3">
                 {links.map((link) => (
                   <li key={link.label}>
-                    <Link
-                      href={link.href}
-                      className="text-sm hover:text-[#007BFF] hover:translate-x-0.5 transition-all inline-flex items-center gap-1"
-                    >
-                      {link.label}
-                    </Link>
+                    {link.href === "#donate" ? (
+                      <button
+                        type="button"
+                        onClick={openDonationModal}
+                        className="text-sm text-rose-400 hover:text-rose-300 hover:translate-x-0.5 transition-all inline-flex items-center gap-1 cursor-pointer font-semibold"
+                      >
+                        {link.label}
+                      </button>
+                    ) : (
+                      <Link
+                        href={link.href}
+                        className="text-sm hover:text-[#007BFF] hover:translate-x-0.5 transition-all inline-flex items-center gap-1"
+                      >
+                        {link.label}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -147,10 +160,14 @@ export function Footer() {
 
           {/* Payment icons */}
           <div className="flex items-center gap-3 flex-wrap justify-center">
-            {["Visa", "Mastercard", "Amex", "PayPal", "Apple Pay", "Google Pay"].map((method) => (
+            {["Visa", "Mastercard", "Payoneer", "Amex", "PayPal", "Apple Pay", "Google Pay"].map((method) => (
               <div
                 key={method}
-                className="bg-white/10 text-white/60 text-[10px] font-bold px-2.5 py-1 rounded-md"
+                className={`text-[10px] font-bold px-2.5 py-1 rounded-md ${
+                  method === "Payoneer"
+                    ? "bg-orange-500/20 text-orange-400 border border-orange-500/30"
+                    : "bg-white/10 text-white/60"
+                }`}
               >
                 {method}
               </div>
