@@ -1,4 +1,11 @@
 import bcrypt from "bcryptjs";
+import {
+  REAL_USERS,
+  REAL_VENDORS,
+  REAL_PRODUCTS,
+  REAL_ORDERS,
+  REAL_REVIEWS,
+} from "./realDataset";
 
 export async function seedDatabaseCollections() {
   try {
@@ -9,267 +16,142 @@ export async function seedDatabaseCollections() {
     const { Review } = await import("@/models/Review");
 
     const userCount = await User.countDocuments();
-    if (userCount > 0) return; // already seeded
+    if (userCount >= REAL_USERS.length) return; // already fully seeded
 
-    console.log("🌱 Database is empty! Seeding MongoDB with real portfolio data...");
+    console.log("🌱 Seeding MongoDB with complete, real production dataset...");
 
-    // 1. Create Users
-    const demoAccounts = [
-      {
-        email: "john.smith@gmail.com",
-        plainPassword: "password123",
-        name: "John Smith",
-        role: "CUSTOMER" as const,
-        id: "usr-demo-customer",
-        _id: "usr-demo-customer",
-        membership: "Standard Member ⭐",
-        points: 120,
-        isVerified: true,
-      },
-      {
-        email: "vendor@natistore.com",
-        plainPassword: "vendor123",
-        name: "Apex Tech Wearables Store",
-        role: "VENDOR" as const,
-        id: "usr-demo-vendor",
-        _id: "usr-demo-vendor",
-        membership: "Vendor Merchant 🚀",
-        points: 450,
-        isVerified: true,
-      },
-      {
-        email: "nati@admin.com",
-        plainPassword: "nati1234",
-        name: "Nati Demo Admin",
-        role: "ADMIN" as const,
-        id: "usr-demo-admin",
-        _id: "usr-demo-admin",
-        membership: "SuperAdmin Tier 👑",
-        points: 9999,
-        isVerified: true,
-      },
-      {
-        email: "admin@gmail.com",
-        plainPassword: "admin",
-        name: "Admin",
-        role: "ADMIN" as const,
-        id: "usr-admin-gmail",
-        _id: "usr-admin-gmail",
-        membership: "SuperAdmin Tier 👑",
-        points: 9999,
-        isVerified: true,
-      },
-    ];
-
-    if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
-      demoAccounts.push({
-        email: process.env.ADMIN_EMAIL.toLowerCase().trim(),
-        plainPassword: process.env.ADMIN_PASSWORD,
-        name: process.env.ADMIN_NAME || "System Admin",
-        role: "ADMIN" as const,
-        id: "usr-master-admin",
-        _id: "usr-master-admin",
-        membership: "SuperAdmin Tier 👑",
-        points: 9999,
-        isVerified: true,
-      });
-    }
-
-    for (const account of demoAccounts) {
-      const hashedPassword = await bcrypt.hash(account.plainPassword, 10);
-      await User.create({
-        ...account,
-        password: hashedPassword,
-      });
-    }
-
-    // 2. Create VendorProfile
-    await VendorProfile.create({
-      userId: "usr-demo-vendor",
-      storeName: "Apex Tech Wearables Store",
-      slug: "apex-tech-wearables",
-      logo: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=150&q=80",
-      banner: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80",
-      description: "Your absolute destination for premium sports smartwatches, fitness trackers and audio tech.",
-      rating: 4.8,
-      totalReviews: 2,
-      verified: true,
-      productCount: 3,
-      joinedDate: "2026-01-15",
-      email: "vendor@natistore.com",
-      phone: "+1 (555) 832-9210",
-      address: { street: "100 Innovation Way", city: "San Jose", state: "CA", zip: "95110", country: "US" },
-    });
-
-    // 3. Create Products
-    const productsData = [
-      {
-        _id: "prod-demo-1",
-        vendorId: "usr-demo-vendor",
-        name: "Apex Smart Watch Ultra",
-        slug: "apex-smart-watch-ultra",
-        sku: "APX-WCH-ULT",
-        brand: "Apex",
-        category: "Electronics",
-        description: "A premium smartwatch with heart-rate sensor, GPS and water resistance.",
-        price: 299.99,
-        discountPrice: 249.99,
-        currency: "USD",
-        taxRate: 8,
-        stock: 25,
-        warehouseLocation: "Aisle 4, Shelf B",
-        lowStockThreshold: 5,
-        status: "Active",
-        images: ["https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?auto=format&fit=crop&w=400&q=80"],
-        variants: [],
-        salesCount: 145,
-        revenueGenerated: 36248.55,
-      },
-      {
-        _id: "prod-demo-2",
-        vendorId: "usr-demo-vendor",
-        name: "Sonic Bass Pro Wireless Headphones",
-        slug: "sonic-bass-pro-wireless-headphones",
-        sku: "SNC-HDP-BSS",
-        brand: "Sonic",
-        category: "Electronics",
-        description: "Premium wireless over-ear headphones with active noise cancellation.",
-        price: 189.99,
-        discountPrice: 159.99,
-        currency: "USD",
-        taxRate: 8,
-        stock: 3,
-        warehouseLocation: "Aisle 2, Shelf A",
-        lowStockThreshold: 5,
-        status: "Active",
-        images: ["https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=400&q=80"],
-        variants: [],
-        salesCount: 92,
-        revenueGenerated: 14719.08,
-      },
-      {
-        _id: "prod-demo-3",
-        vendorId: "usr-demo-vendor",
-        name: "Pulse Fit Pro Tracker",
-        slug: "pulse-fit-pro-tracker",
-        sku: "PLS-FIT-TRK",
-        brand: "Pulse",
-        category: "Electronics",
-        description: "Sleek fitness tracker band with automatic workout detection.",
-        price: 99.99,
-        discountPrice: 79.99,
-        currency: "USD",
-        taxRate: 8,
-        stock: 0,
-        warehouseLocation: "Aisle 4, Shelf C",
-        lowStockThreshold: 5,
-        status: "Active",
-        images: ["https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?auto=format&fit=crop&w=400&q=80"],
-        variants: [],
-        salesCount: 210,
-        revenueGenerated: 16797.90,
+    // 1. Seed Real Users
+    for (const u of REAL_USERS) {
+      const existing = await User.findOne({ email: u.email.toLowerCase() });
+      if (!existing) {
+        const rawPass =
+          u.role === "ADMIN"
+            ? u.email.includes("nati")
+              ? "nati1234"
+              : "admin"
+            : u.role === "VENDOR"
+            ? "vendor123"
+            : "password123";
+        const hashedPassword = await bcrypt.hash(rawPass, 10);
+        await User.create({
+          _id: u.id,
+          email: u.email.toLowerCase(),
+          password: hashedPassword,
+          name: u.name,
+          role: u.role,
+          membership: u.membership,
+          points: u.points,
+          isVerified: u.isVerified,
+          avatar: u.avatar,
+          phone: u.phone,
+          address: u.address,
+        });
       }
-    ];
-
-    for (const p of productsData) {
-      await VendorProduct.create(p);
     }
 
-    // 4. Create Orders
-    const ordersData = [
-      {
-        _id: "ord-demo-1001",
-        orderId: "NATI-1001",
-        userId: "usr-demo-customer",
-        items: [
-          {
-            productId: "prod-demo-1",
-            name: "Apex Smart Watch Ultra",
-            image: "https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?auto=format&fit=crop&w=400&q=80",
-            quantity: 1,
-            price: 249.99,
-          }
-        ],
-        totalAmount: 249.99,
-        grandTotal: 249.99,
-        paymentStatus: "PAID",
-        orderStatus: "PROCESSING",
-        shippingAddress: {
-          street: "742 Evergreen Terrace",
-          city: "Springfield",
-          state: "IL",
-          zipCode: "62704",
-          country: "US",
-        },
-        trackingNumber: "TRK-NATI-1001-925",
-      },
-      {
-        _id: "ord-demo-1002",
-        orderId: "NATI-1002",
-        userId: "usr-demo-customer",
-        items: [
-          {
-            productId: "prod-demo-2",
-            name: "Sonic Bass Pro Wireless Headphones",
-            image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=400&q=80",
-            quantity: 2,
-            price: 159.99,
-          }
-        ],
-        totalAmount: 319.98,
-        grandTotal: 319.98,
-        paymentStatus: "PAID",
-        orderStatus: "SHIPPED",
-        shippingAddress: {
-          street: "123 Cyberdyne Systems Rd",
-          city: "Pasadena",
-          state: "CA",
-          zipCode: "91101",
-          country: "US",
-        },
-        trackingNumber: "TRK-NATI-1002-841",
-        createdAt: new Date(Date.now() - 3600 * 24 * 1000), // 1 day ago
+    // 2. Seed Real Vendor Stores
+    for (const v of REAL_VENDORS) {
+      const existingStore = await VendorProfile.findOne({ userId: v.userId });
+      if (!existingStore) {
+        await VendorProfile.create({
+          userId: v.userId,
+          storeName: v.storeName,
+          slug: v.slug,
+          logo: v.logo,
+          banner: v.banner,
+          description: v.description,
+          rating: v.rating,
+          totalReviews: v.totalReviews,
+          verified: v.verified,
+          productCount: v.productCount,
+          joinedDate: v.joinedDate,
+          email: v.email,
+          phone: v.phone,
+          address: v.address,
+        });
       }
-    ];
-
-    for (const o of ordersData) {
-      await Order.create(o);
     }
 
-    // 5. Create Reviews
-    const reviewsData = [
-      {
-        _id: "rev-demo-1",
-        productId: "prod-demo-1",
-        productName: "Apex Smart Watch Ultra",
-        productImage: "https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?auto=format&fit=crop&w=400&q=80",
-        customerName: "Sarah Connor",
-        rating: 5,
-        comment: "Incredible watch, battery life is outstanding!",
-        createdAt: new Date().toISOString(),
-        reply: "Thank you Sarah! Glad you love the battery life.",
-        status: "Published",
-        vendorId: "usr-demo-vendor",
-      },
-      {
-        _id: "rev-demo-2",
-        productId: "prod-demo-2",
-        productName: "Sonic Bass Pro Wireless Headphones",
-        productImage: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=400&q=80",
-        customerName: "John Connor",
-        rating: 4,
-        comment: "Great sound quality, ANC is decent.",
-        createdAt: new Date(Date.now() - 3600 * 24 * 1000).toISOString(),
-        status: "Published",
-        vendorId: "usr-demo-vendor",
+    // 3. Seed Real Products
+    for (const p of REAL_PRODUCTS) {
+      const existingProd = await VendorProduct.findOne({ sku: p.sku });
+      if (!existingProd) {
+        await VendorProduct.create({
+          _id: p.id,
+          vendorId: p.vendorId,
+          name: p.name,
+          slug: p.slug,
+          sku: p.sku,
+          brand: p.brand,
+          category: p.category,
+          description: p.description,
+          price: p.price,
+          discountPrice: p.discountPrice,
+          currency: p.currency,
+          taxRate: p.taxRate,
+          stock: p.stock,
+          warehouseLocation: p.warehouseLocation,
+          lowStockThreshold: p.lowStockThreshold,
+          status: p.status,
+          images: p.images,
+          salesCount: p.salesCount,
+          revenueGenerated: p.revenueGenerated,
+        });
       }
-    ];
-
-    for (const r of reviewsData) {
-      await Review.create(r);
     }
 
-    console.log("🌱 Database seeding completed successfully!");
+    // 4. Seed Real Orders
+    for (const o of REAL_ORDERS) {
+      const existingOrder = await Order.findOne({ orderId: o.orderId });
+      if (!existingOrder) {
+        await Order.create({
+          _id: o.id,
+          orderId: o.orderId,
+          userId: o.userId,
+          items: o.products.map((p) => ({
+            productId: p.productId,
+            name: p.name,
+            image: p.image,
+            quantity: p.quantity,
+            price: p.price,
+          })),
+          totalAmount: o.totalAmount,
+          grandTotal: o.grandTotal,
+          paymentStatus: o.paymentStatus,
+          orderStatus: o.orderStatus,
+          shippingAddress: {
+            street: o.shippingAddress.split(",")[0] || "742 Evergreen Terrace",
+            city: o.shippingAddress.split(",")[1]?.trim() || "Springfield",
+            state: "IL",
+            zipCode: "62704",
+            country: "US",
+          },
+          trackingNumber: o.trackingNumber,
+          createdAt: o.rawDate,
+        });
+      }
+    }
+
+    // 5. Seed Real Reviews
+    for (const r of REAL_REVIEWS) {
+      const existingReview = await Review.findOne({ productId: r.productId, customerName: r.customerName });
+      if (!existingReview) {
+        await Review.create({
+          _id: r.id,
+          productId: r.productId,
+          productName: r.productName,
+          productImage: r.productImage,
+          customerName: r.customerName,
+          rating: r.rating,
+          comment: r.comment,
+          reply: r.reply ? { text: r.reply, repliedAt: r.createdAt } : undefined,
+          status: r.status,
+          vendorId: r.vendorId,
+        });
+      }
+    }
+
+    console.log("🌱 Database seeding with real datasets completed successfully!");
   } catch (err) {
     console.error("❌ Failed to seed database collections:", err);
   }

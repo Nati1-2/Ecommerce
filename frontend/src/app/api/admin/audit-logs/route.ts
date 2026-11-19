@@ -44,8 +44,8 @@ export async function GET(req: NextRequest) {
         id: `aud_p_${p._id}`,
         timestamp: p.createdAt ? new Date(p.createdAt).toISOString() : new Date().toISOString(),
         actor: {
-          name: "Nati Demo Admin",
-          email: "nati@admin.com",
+          name: "Nati Solomon",
+          email: "natnaelsolomon571@gmail.com",
           role: "Super Admin",
           ip: "192.168.1.10",
         },

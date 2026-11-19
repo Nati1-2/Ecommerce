@@ -1,5 +1,17 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
+import {
+  REAL_USERS,
+  REAL_VENDORS,
+  REAL_PRODUCTS,
+  REAL_ORDERS,
+  REAL_REVIEWS,
+  REAL_PLATFORM_STATS,
+  REAL_PAYMENTS_DATA,
+  REAL_MARKETPLACE_HEALTH,
+  REAL_REVENUE_SERIES,
+  REAL_USER_GROWTH_SERIES,
+} from "./realDataset";
 
 const MONGODB_URI = process.env.MONGODB_URI || process.env.MONGO_URI || "mongodb://127.0.0.1:27017/ecom?authSource=admin" || "mongodb://root:rootpassword@localhost:27017/ecom?authSource=admin";
 
@@ -17,6 +29,7 @@ declare global {
   var inMemoryCustomers: any[] | undefined;
   var inMemoryPayments: any | undefined;
   var inMemoryProfile: any | undefined;
+  var inMemoryVendors: any[] | undefined;
   var inMemoryMetrics: any | undefined;
   var inMemoryAnalytics: any | undefined;
   var inMemoryUserSessions: any[] | undefined;
@@ -47,317 +60,162 @@ async function seedDemoUsers() {
   if (global.inMemorySeeded) return;
   global.inMemorySeeded = true;
 
-  const demoAccounts = [
-    {
-      email: "john.smith@gmail.com",
-      plainPassword: "password123",
-      name: "John Smith",
-      role: "CUSTOMER" as const,
-      id: "usr-demo-customer",
-      membership: "Standard Member ⭐",
-      points: 120,
-    },
-    {
-      email: "vendor@natistore.com",
-      plainPassword: "vendor123",
-      name: "Apex Tech Wearables Store",
-      role: "VENDOR" as const,
-      id: "usr-demo-vendor",
-      membership: "Vendor Merchant 🚀",
-      points: 450,
-    },
-    {
-      email: "nati@admin.com",
-      plainPassword: "nati1234",
-      name: "Nati Demo Admin",
-      role: "ADMIN" as const,
-      id: "usr-demo-admin",
-      membership: "SuperAdmin Tier 👑",
-      points: 9999,
-    },
-    {
-      email: "admin@gmail.com",
-      plainPassword: "admin",
-      name: "Admin",
-      role: "ADMIN" as const,
-      id: "usr-admin-gmail",
-      membership: "SuperAdmin Tier 👑",
-      points: 9999,
-    },
-  ];
-
-  if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
-    demoAccounts.push({
-      email: process.env.ADMIN_EMAIL.toLowerCase().trim(),
-      plainPassword: process.env.ADMIN_PASSWORD,
-      name: process.env.ADMIN_NAME || "System Admin",
-      role: "ADMIN" as const,
-      id: "usr-master-admin",
-      membership: "SuperAdmin Tier 👑",
-      points: 9999,
-    });
-  }
-
-  for (const account of demoAccounts) {
-    const hashedPassword = await bcrypt.hash(account.plainPassword, 10);
-    global.inMemoryUsers!.set(account.email, {
+  // 1. Seed Real Users
+  for (const account of REAL_USERS) {
+    const rawPass = account.role === "ADMIN" ? (account.email.includes("nati") ? "nati1234" : "admin") : account.role === "VENDOR" ? "vendor123" : "password123";
+    const hashedPassword = await bcrypt.hash(rawPass, 10);
+    global.inMemoryUsers!.set(account.email.toLowerCase(), {
       id: account.id,
       _id: account.id,
-      email: account.email,
+      email: account.email.toLowerCase(),
       password: hashedPassword,
       name: account.name,
       role: account.role,
       membership: account.membership,
       points: account.points,
-      isVerified: true,
-      avatar: "",
-      phone: "",
-      address: "",
+      isVerified: account.isVerified,
+      avatar: account.avatar,
+      phone: account.phone,
+      address: account.address,
+      totalOrders: account.totalOrders,
+      totalSpent: account.totalSpent,
+      createdAt: account.createdAt,
     });
   }
 
-  // Seed vendor data
-  global.inMemoryProducts = [
-    {
-      id: "prod-demo-1",
-      _id: "prod-demo-1",
-      vendorId: "usr-demo-vendor",
-      name: "Apex Smart Watch Ultra",
-      slug: "apex-smart-watch-ultra",
-      sku: "APX-WCH-ULT",
-      brand: "Apex",
-      category: "Electronics",
-      description: "A premium smartwatch with heart-rate sensor, GPS and water resistance.",
-      price: 299.99,
-      discountPrice: 249.99,
-      currency: "USD",
-      taxRate: 8,
-      stock: 25,
-      warehouseLocation: "Aisle 4, Shelf B",
-      lowStockThreshold: 5,
-      status: "Active",
-      images: ["https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?auto=format&fit=crop&w=400&q=80"],
-      variants: [],
-      salesCount: 145,
-      revenueGenerated: 36248.55,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      id: "prod-demo-2",
-      _id: "prod-demo-2",
-      vendorId: "usr-demo-vendor",
-      name: "Sonic Bass Pro Wireless Headphones",
-      slug: "sonic-bass-pro-wireless-headphones",
-      sku: "SNC-HDP-BSS",
-      brand: "Sonic",
-      category: "Electronics",
-      description: "Premium wireless over-ear headphones with active noise cancellation.",
-      price: 189.99,
-      discountPrice: 159.99,
-      currency: "USD",
-      taxRate: 8,
-      stock: 3,
-      warehouseLocation: "Aisle 2, Shelf A",
-      lowStockThreshold: 5,
-      status: "Active",
-      images: ["https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=400&q=80"],
-      variants: [],
-      salesCount: 92,
-      revenueGenerated: 14719.08,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-    {
-      id: "prod-demo-3",
-      _id: "prod-demo-3",
-      vendorId: "usr-demo-vendor",
-      name: "Pulse Fit Pro Tracker",
-      slug: "pulse-fit-pro-tracker",
-      sku: "PLS-FIT-TRK",
-      brand: "Pulse",
-      category: "Electronics",
-      description: "Sleek fitness tracker band with automatic workout detection.",
-      price: 99.99,
-      discountPrice: 79.99,
-      currency: "USD",
-      taxRate: 8,
-      stock: 0,
-      warehouseLocation: "Aisle 4, Shelf C",
-      lowStockThreshold: 5,
-      status: "Active",
-      images: ["https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?auto=format&fit=crop&w=400&q=80"],
-      variants: [],
-      salesCount: 210,
-      revenueGenerated: 16797.90,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+  // Also maintain backwards compatibility with legacy demo aliases
+  const legacyAliases = [
+    { email: "john.smith@gmail.com", pass: "password123", name: "John Smith", role: "CUSTOMER" },
+    { email: "vendor@natistore.com", pass: "vendor123", name: "Apex Tech Wearables Store", role: "VENDOR" },
+    { email: "nati@admin.com", pass: "nati1234", name: "Nati Demo Admin", role: "ADMIN" },
+    { email: "admin@gmail.com", pass: "admin", name: "Admin", role: "ADMIN" },
+  ];
+  for (const leg of legacyAliases) {
+    if (!global.inMemoryUsers!.has(leg.email)) {
+      const hPass = await bcrypt.hash(leg.pass, 10);
+      global.inMemoryUsers!.set(leg.email, {
+        id: "usr-" + leg.role.toLowerCase(),
+        _id: "usr-" + leg.role.toLowerCase(),
+        email: leg.email,
+        password: hPass,
+        name: leg.name,
+        role: leg.role,
+        membership: leg.role === "ADMIN" ? "SuperAdmin Tier 👑" : leg.role === "VENDOR" ? "Vendor Merchant 🚀" : "Standard Member ⭐",
+        points: 500,
+        isVerified: true,
+      });
     }
-  ];
+  }
 
-  global.inMemoryOrders = [
-    {
-      id: "ord-demo-1001",
-      _id: "ord-demo-1001",
-      orderId: "NATI-1001",
-      userId: "usr-demo-customer",
-      customerName: "Sarah Connor",
-      customerEmail: "sarah.c@gmail.com",
-      items: [
-        {
-          productId: "prod-demo-1",
-          name: "Apex Smart Watch Ultra",
-          image: "https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?auto=format&fit=crop&w=400&q=80",
-          quantity: 1,
-          price: 249.99,
-        }
-      ],
-      totalAmount: 249.99,
-      grandTotal: 249.99,
-      paymentStatus: "PAID",
-      orderStatus: "PROCESSING",
-      shippingAddress: {
-        street: "742 Evergreen Terrace",
-        city: "Springfield",
-        state: "IL",
-        zipCode: "62704",
-      },
-      trackingNumber: "TRK-NATI-1001-925",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-    {
-      id: "ord-demo-1002",
-      _id: "ord-demo-1002",
-      orderId: "NATI-1002",
-      userId: "usr-demo-customer",
-      customerName: "John Connor",
-      customerEmail: "john.c@gmail.com",
-      items: [
-        {
-          productId: "prod-demo-2",
-          name: "Sonic Bass Pro Wireless Headphones",
-          image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=400&q=80",
-          quantity: 2,
-          price: 159.99,
-        }
-      ],
-      totalAmount: 319.98,
-      grandTotal: 319.98,
-      paymentStatus: "PAID",
-      orderStatus: "SHIPPED",
-      shippingAddress: {
-        street: "123 Cyberdyne Systems Rd",
-        city: "Pasadena",
-        state: "CA",
-        zipCode: "91101",
-      },
-      trackingNumber: "TRK-NATI-1002-841",
-      createdAt: new Date(Date.now() - 3600 * 24 * 1000), // 1 day ago
-      updatedAt: new Date(Date.now() - 3600 * 24 * 1000),
-    }
-  ];
+  // 2. Seed Real Vendor Stores
+  global.inMemoryVendors = [...REAL_VENDORS];
+  global.inMemoryProfile = REAL_VENDORS[0];
 
-  global.inMemoryReviews = [
-    {
-      id: "rev-demo-1",
-      _id: "rev-demo-1",
-      productId: "prod-demo-1",
-      productName: "Apex Smart Watch Ultra",
-      productImage: "https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?auto=format&fit=crop&w=400&q=80",
-      customerName: "Sarah Connor",
-      rating: 5,
-      comment: "Incredible watch, battery life is outstanding!",
-      createdAt: new Date().toISOString(),
-      reply: "Thank you Sarah! Glad you love the battery life.",
-      status: "Published",
-    },
-    {
-      id: "rev-demo-2",
-      _id: "rev-demo-2",
-      productId: "prod-demo-2",
-      productName: "Sonic Bass Pro Wireless Headphones",
-      productImage: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=400&q=80",
-      customerName: "John Connor",
-      rating: 4,
-      comment: "Great sound quality, ANC is decent.",
-      createdAt: new Date(Date.now() - 3600 * 24 * 1000).toISOString(),
-      status: "Published",
-    }
-  ];
+  // 3. Seed Real Products Catalog
+  global.inMemoryProducts = [...REAL_PRODUCTS];
 
-  global.inMemoryCustomers = [
-    { id: "cust-demo-1", name: "Sarah Connor", email: "sarah.c@gmail.com", totalOrders: 3, totalSpent: 749.97, status: "Active" },
-    { id: "cust-demo-2", name: "John Connor", email: "john.c@gmail.com", totalOrders: 2, totalSpent: 319.98, status: "Active" },
-  ];
+  // 4. Seed Real Orders Pipeline
+  global.inMemoryOrders = [...REAL_ORDERS];
 
+  // 5. Seed Real Reviews
+  global.inMemoryReviews = [...REAL_REVIEWS];
+
+  // 6. Seed Real Customers
+  global.inMemoryCustomers = REAL_USERS.filter((u) => u.role === "CUSTOMER").map((u) => ({
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    totalOrders: u.totalOrders,
+    totalSpent: u.totalSpent,
+    status: u.isVerified ? "Active" : "Pending",
+  }));
+
+  // 7. Seed Real Payments & Ledgers
   global.inMemoryPayments = {
-    transactions: [
-      { id: "tx_1001", amount: 249.99, status: "Successful", type: "Order Payment", date: new Date().toISOString().split("T")[0] },
-      { id: "tx_1002", amount: 319.98, status: "Successful", type: "Order Payment", date: new Date(Date.now() - 3600 * 24 * 1000).toISOString().split("T")[0] },
-    ],
+    ...REAL_PAYMENTS_DATA,
+    transactions: REAL_ORDERS.map((o) => ({
+      id: o.stripeChargeId || `tx_${o.orderNumber}`,
+      amount: o.grandTotal,
+      status: o.paymentStatus === "PAID" ? "Successful" : o.paymentStatus === "PENDING" ? "Pending" : "Failed",
+      type: "Order Payment",
+      date: new Date(o.rawDate).toISOString().split("T")[0],
+      customer: o.customerName,
+      method: o.paymentMethod,
+    })),
     payouts: [
-      { id: "po_1001", amount: 850.00, currency: "USD", status: "Paid", payoutMethod: "Stripe Deposit", bankAccountLast4: "5678", initiatedAt: new Date(Date.now() - 3600 * 24 * 5 * 1000).toISOString().split("T")[0], estimatedArrival: "Delivered" }
+      {
+        id: "po_1001",
+        amount: 14850.0,
+        currency: "USD",
+        status: "Processing",
+        payoutMethod: "Stripe Escrow Deposit",
+        bankAccountLast4: "5678",
+        initiatedAt: new Date(Date.now() - 3600 * 24 * 2 * 1000).toISOString().split("T")[0],
+        estimatedArrival: "Tomorrow, Nov 20",
+      },
+      {
+        id: "po_1002",
+        amount: 28940.0,
+        currency: "USD",
+        status: "Paid",
+        payoutMethod: "Stripe Deposit",
+        bankAccountLast4: "1234",
+        initiatedAt: new Date(Date.now() - 3600 * 24 * 7 * 1000).toISOString().split("T")[0],
+        estimatedArrival: "Delivered",
+      },
     ],
-    balance: { available: 569.97, pending: 0, totalEarnings: 67765.53 }
+    balance: { available: 184500.0, pending: 14850.0, totalEarnings: REAL_PLATFORM_STATS.revenue },
   };
 
-  global.inMemoryProfile = {
-    userId: "usr-demo-vendor",
-    storeName: "Apex Tech Wearables Store",
-    slug: "apex-tech-wearables",
-    logo: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=150&q=80",
-    banner: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80",
-    description: "Your absolute destination for premium sports smartwatches, fitness trackers and audio tech.",
-    rating: 4.8,
-    totalReviews: 2,
-    verified: true,
-    productCount: 3,
-    joinedDate: "2026-01-15",
-    email: "vendor@natistore.com",
-    phone: "+1 (555) 832-9210",
-    address: { street: "100 Innovation Way", city: "San Jose", state: "CA", zip: "95110", country: "US" },
-  };
-
+  // 8. Seed Platform Metrics & Aggregations
   global.inMemoryMetrics = {
-    totalRevenue: 67765.53,
-    revenueChangePercent: 12.8,
-    totalOrders: 237,
-    ordersChangePercent: 8.5,
-    productsSold: 447,
+    totalRevenue: REAL_PLATFORM_STATS.revenue,
+    revenueChangePercent: REAL_PLATFORM_STATS.revenueGrowth,
+    totalOrders: REAL_PLATFORM_STATS.orders,
+    ordersChangePercent: REAL_PLATFORM_STATS.ordersGrowth,
+    productsSold: 8490,
     productsSoldChangePercent: 14.2,
-    totalCustomers: 182,
-    customersChangePercent: 5.6,
-    pendingOrdersCount: 0,
-    processingOrdersCount: 1,
-    shippedOrdersCount: 1,
-    deliveredOrdersCount: 235,
+    totalCustomers: REAL_PLATFORM_STATS.users,
+    customersChangePercent: REAL_PLATFORM_STATS.usersGrowth,
+    pendingOrdersCount: 2,
+    processingOrdersCount: 4,
+    shippedOrdersCount: 6,
+    deliveredOrdersCount: 3236,
     cancelledOrdersCount: 0,
-    lowStockCount: 1,
-    outOfStockCount: 1,
+    lowStockCount: 3,
+    outOfStockCount: 0,
   };
 
+  // 9. Seed Time-Series Analytics
   global.inMemoryAnalytics = {
-    dailyPerformance: [
-      { date: "Jul 23", revenue: 1450, orders: 5, profit: 435, conversionRate: 3.2, views: 240 },
-      { date: "Jul 24", revenue: 980, orders: 3, profit: 294, conversionRate: 2.8, views: 210 },
-      { date: "Jul 25", revenue: 1800, orders: 6, profit: 540, conversionRate: 4.1, views: 290 },
-      { date: "Jul 26", revenue: 2100, orders: 7, profit: 630, conversionRate: 4.5, views: 320 },
-      { date: "Jul 27", revenue: 1600, orders: 5, profit: 480, conversionRate: 3.8, views: 270 },
-      { date: "Jul 28", revenue: 1950, orders: 6, profit: 585, conversionRate: 4.2, views: 300 },
-      { date: "Jul 29", revenue: 249.99, orders: 1, profit: 75, conversionRate: 3.5, views: 180 },
-    ],
+    revenueData: REAL_REVENUE_SERIES,
+    userGrowthData: REAL_USER_GROWTH_SERIES,
+    dailyPerformance: REAL_REVENUE_SERIES.slice(-7).map((r) => ({
+      date: r.date,
+      revenue: r.revenue,
+      orders: r.sales,
+      profit: r.profit,
+      conversionRate: 3.8,
+      views: r.sales * 14,
+    })),
     categoryBreakdown: [
-      { category: "Electronics", revenue: 67765.53, sales: 447 }
+      { category: "Electronics & Tech", revenue: 485000.0, sales: 2420 },
+      { category: "Cameras & Optics", revenue: 320000.0, sales: 1100 },
+      { category: "Gaming Peripherals", revenue: 215000.0, sales: 1450 },
+      { category: "Home & Furniture", revenue: 165000.0, sales: 780 },
+      { category: "Apparel & Fashion", revenue: 99500.0, sales: 2740 },
     ],
     conversionRate: 3.8,
-    averageOrderValue: 285.93,
-    repeatCustomerRate: 24.8,
+    averageOrderValue: 395.47,
+    repeatCustomerRate: 34.2,
     topGeographicRegions: [
-      { region: "California", percentage: 28 },
-      { region: "New York", percentage: 18 },
-      { region: "Texas", percentage: 14 },
-    ]
+      { region: "California", percentage: 32 },
+      { region: "New York", percentage: 22 },
+      { region: "Texas", percentage: 16 },
+      { region: "Washington", percentage: 12 },
+      { region: "Illinois", percentage: 10 },
+      { region: "International", percentage: 8 },
+    ],
   };
 }
 

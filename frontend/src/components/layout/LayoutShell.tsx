@@ -6,6 +6,7 @@ import { Footer } from "@/components/layout/Footer";
 import BottomNav from "@/components/layout/BottomNav";
 import DonationPopup from "@/components/Donation/DonationPopup";
 import FloatingDonateButton from "@/components/Donation/FloatingDonateButton";
+import UserActionRecorder from "@/components/analytics/UserActionRecorder";
 
 /**
  * Conditionally renders the site-wide Navbar, BottomNav, and Footer.
@@ -21,6 +22,7 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
 
   return (
     <>
+      <UserActionRecorder />
       {!isMinimal && <Navbar />}
       <main
         className={`flex-1 flex flex-col ${

@@ -43,39 +43,23 @@ export async function GET(req: NextRequest) {
     console.warn("Admin Reviews DB notice (using fallback reviews):", err?.message || err);
   }
 
-  if (!reviews || reviews.length === 0) {
-    reviews = [
-      {
-        id: "rev-demo-1",
-        productId: "prod-demo-1",
-        productName: "Apex Smart Watch Ultra",
-        productImage: "https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?auto=format&fit=crop&w=300&q=80",
-        customerName: "Sarah Connor",
-        customerEmail: "sarah.c@gmail.com",
-        vendorName: "Apex Tech Wearables Store",
-        rating: 5,
-        comment: "Incredible watch, battery life is outstanding!",
-        status: "Published",
-        createdAt: "2026-08-05",
-        reply: "Thank you Sarah! Glad you love the battery life.",
-      },
-      {
-        id: "rev-demo-2",
-        productId: "prod-demo-2",
-        productName: "Sonic Bass Pro Wireless Headphones",
-        productImage: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=300&q=80",
-        customerName: "John Connor",
-        customerEmail: "john.c@gmail.com",
-        vendorName: "Apex Tech Wearables Store",
-        rating: 4,
-        comment: "Great sound quality, ANC is decent.",
-        status: "Published",
-        createdAt: "2026-08-04",
-      },
-    ];
+  // Merge with real baseline reviews
+  const reviewMap = new Map<string, any>();
+  const { REAL_REVIEWS } = require("@/lib/realDataset");
+  for (const r of REAL_REVIEWS) {
+    reviewMap.set(r.id, r);
+  }
+  for (const dbr of reviews) {
+    reviewMap.set(dbr.id, dbr);
   }
 
-  return NextResponse.json({ success: true, reviews });
+  const finalReviews = Array.from(reviewMap.values()).map((r) => ({
+    ...r,
+    vendorStore: r.vendorStore || r.vendorName || "Apex Tech Wearables Store",
+    vendorName: r.vendorName || r.vendorStore || "Apex Tech Wearables Store",
+  }));
+
+  return NextResponse.json({ success: true, reviews: finalReviews });
 }
 
 export async function PATCH(req: NextRequest) {
