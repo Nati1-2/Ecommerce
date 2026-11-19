@@ -655,11 +655,11 @@ export default function FooterPageClient({ slug }: FooterPageClientProps) {
                 <p className="text-[10px] uppercase font-bold text-blue-600 tracking-wider">Direct Assistance</p>
                 <div className="flex flex-col gap-1.5 font-medium text-gray-700">
                   <a
-                    href="mailto:natnaelman368@gmail.com"
+                    href="mailto:natnaelsolomon571@gmail.com"
                     className="flex items-center gap-2 hover:text-[#007BFF] transition-colors"
                   >
                     <Mail className="w-3.5 h-3.5 text-[#007BFF] shrink-0" />
-                    <span>natnaelman368@gmail.com</span>
+                    <span>natnaelsolomon571@gmail.com</span>
                   </a>
                   <a
                     href="https://t.me/natimanboss"

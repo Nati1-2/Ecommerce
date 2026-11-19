@@ -13,8 +13,8 @@ export default function SupportCard() {
     {
       icon: Mail,
       title: "Email help desk",
-      value: "natnaelman368@gmail.com",
-      href: "mailto:natnaelman368@gmail.com",
+      value: "natnaelsolomon571@gmail.com",
+      href: "mailto:natnaelsolomon571@gmail.com",
     },
     {
       icon: TelegramIcon,

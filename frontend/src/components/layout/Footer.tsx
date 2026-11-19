@@ -87,7 +87,7 @@ export function Footer() {
             {/* Contact info */}
             <div className="mt-6 space-y-2.5">
               {[
-                { icon: Mail, text: "natnaelman368@gmail.com", href: "mailto:natnaelman368@gmail.com" },
+                { icon: Mail, text: "natnaelsolomon571@gmail.com", href: "mailto:natnaelsolomon571@gmail.com" },
                 { icon: TelegramIcon, text: "@natimanboss", href: "https://t.me/natimanboss" },
               ].map(({ icon: Icon, text, href }) => (
                 <a

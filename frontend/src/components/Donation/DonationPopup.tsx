@@ -30,7 +30,7 @@ const PRESET_AMOUNTS = [
   { value: 100, label: "$100", subtitle: "Patron 👑", icon: Crown },
 ];
 
-const PLATFORM_PAYONEER_EMAIL = "natnaelman368@gmail.com";
+const PLATFORM_PAYONEER_EMAIL = "natnaelsolomon571@gmail.com";
 
 export default function DonationPopup() {
   const {

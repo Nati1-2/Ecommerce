@@ -798,4 +798,4 @@ This project is licensed under the **MIT License** — see the [`LICENSE`](LICEN
 - **GitHub**: [@Nati1-2](https://github.com/Nati1-2)
 - **Repository**: [https://github.com/Nati1-2/Ecommerce](https://github.com/Nati1-2/Ecommerce)
 - **Telegram**: [@natimanboss](https://t.me/natimanboss)
-- **Email**: [natnaelman368@gmail.com](mailto:natnaelman368@gmail.com)
+- **Email**: [natnaelsolomon571@gmail.com](mailto:natnaelsolomon571@gmail.com)
