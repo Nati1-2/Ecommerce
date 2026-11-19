@@ -260,6 +260,7 @@ To prevent overselling when 5,000+ customers attempt to purchase the final 2 uni
 
 ### 3. Super Admin Telemetry Control Center (`/admin`)
 - **Executive Telemetry Mesh**: Live dashboard visualizing Gross Merchandise Value (GMV), 30-day revenue trends, active visitor counts, and total transaction volume.
+- **Live Device Traffic & Activity Monitor (`/admin/devices`)**: Real-time client device fingerprinting (exact hardware models, OS versions, viewports), IP geolocation tracking, and granular event streams with visual activity logos (Cart, Checkout, Product Views, Searches, Auth).
 - **System Health Monitor**: Real-time latency and connection probes across MongoDB clusters, Redis caches, RabbitMQ queues, and microservice HTTP endpoints.
 - **Product Catalog Moderation**: Review incoming product submissions from vendors before they become visible on the public storefront.
 - **Seller Approval Queue**: Approve, suspend, or reject vendor seller licenses with audit logging.

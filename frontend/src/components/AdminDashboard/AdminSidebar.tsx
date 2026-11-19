@@ -12,6 +12,7 @@ import {
   ShoppingBag,
   LineChart,
   Globe,
+  MonitorSmartphone,
   MessageSquareText,
   Bell,
   Settings,
@@ -57,6 +58,7 @@ export default function AdminSidebar({
       items: [
         { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
         { label: "Analytics", href: "/admin/analytics", icon: LineChart },
+        { label: "Devices", href: "/admin/devices", icon: MonitorSmartphone, badge: "Live" },
         { label: "Visitor Tracker", href: "/admin/visitors", icon: Globe, badge: "Live" },
       ],
     },
