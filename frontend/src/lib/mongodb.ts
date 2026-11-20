@@ -170,7 +170,7 @@ export async function safeFindUserByEmail(email: string) {
         membership: user.membership || "Standard Member ⭐",
         points: user.points ?? 100,
         isVerified: user.isVerified,
-        status: user.status || "ACTIVE",
+        status: (user as any).status || "ACTIVE",
       };
     }
     return null;
@@ -179,15 +179,9 @@ export async function safeFindUserByEmail(email: string) {
       throw new Error(`Database failure during user lookup: ${err.message}`);
     }
     console.warn("MongoDB query notice in development:", err?.message || err);
-  }
-
-  // Development/test-only in-memory fallback
-  if (process.env.NODE_ENV !== "production") {
     await seedDemoUsers();
     return global.inMemoryUsers!.get(normalizedEmail) || null;
   }
-
-  return null;
 }
 
 export async function safeCreateUser(userData: {
@@ -223,10 +217,6 @@ export async function safeCreateUser(userData: {
       throw new Error(`Database failure during user registration: ${err.message}`);
     }
     console.warn("MongoDB insert notice in development:", err?.message || err);
-  }
-
-  // Development/test-only in-memory fallback
-  if (process.env.NODE_ENV !== "production") {
     const id = "usr-" + Math.random().toString(36).substring(2, 9);
     const memoryUser = {
       id,
@@ -245,8 +235,6 @@ export async function safeCreateUser(userData: {
     global.inMemoryUsers!.set(normalizedEmail, memoryUser);
     return memoryUser;
   }
-
-  throw new Error("User creation failed: Database is unavailable.");
 }
 
 export async function safeFindUserById(id: string) {
@@ -276,17 +264,12 @@ export async function safeFindUserById(id: string) {
       throw new Error(`Database failure during user lookup by ID: ${err.message}`);
     }
     console.warn("MongoDB findById notice in development:", err?.message || err);
-  }
-
-  // Development/test-only in-memory fallback
-  if (process.env.NODE_ENV !== "production") {
     await seedDemoUsers();
     for (const u of global.inMemoryUsers!.values()) {
       if (u.id === id || u._id === id) return u;
     }
+    return null;
   }
-
-  return null;
 }
 
 export async function safeUpdateUser(id: string, updateData: Record<string, any>) {
@@ -340,15 +323,17 @@ export async function safeSaveUserSession(sessionData: {
   browser: string;
   location: any;
   userAgent: string;
+  loginAt?: Date;
+  lastActive?: Date;
 }) {
   try {
     await connectDB();
     const { UserSession } = await import("@/models/UserSession");
     await UserSession.create({
-      ...sessionData,
-      loginAt: new Date(),
-      lastActive: new Date(),
+      loginAt: sessionData.loginAt || new Date(),
+      lastActive: sessionData.lastActive || new Date(),
       revoked: false,
+      ...sessionData,
     });
     return true;
   } catch (err: any) {
@@ -454,12 +439,16 @@ export async function safeFindProductById(productId: string) {
       prod = await VendorProduct.findOne({ $or: [{ sku: productId }, { slug: productId }] });
     }
     if (prod) {
+      const anyProd = prod as any;
+      const isActive = anyProd.isActive !== undefined
+        ? anyProd.isActive !== false
+        : anyProd.status === "Active" || anyProd.status === "Approved";
       return {
         id: String(prod._id || prod.id),
         name: prod.name,
         price: Number(prod.price),
         stock: Number(prod.stock ?? 0),
-        isActive: prod.isActive !== false && prod.status !== "INACTIVE" && prod.status !== "DRAFT",
+        isActive,
         image: Array.isArray(prod.images) && prod.images.length > 0 ? prod.images[0] : "/iphone17.png",
       };
     }
@@ -468,10 +457,6 @@ export async function safeFindProductById(productId: string) {
     if (process.env.NODE_ENV === "production") {
       throw new Error(`Database error looking up product '${productId}': ${e.message}`);
     }
-  }
-
-  // Development/test-only in-memory catalog
-  if (process.env.NODE_ENV !== "production") {
     const mem = (REAL_PRODUCTS || []).find(
       (p: any) => p.id === productId || p._id === productId || p.sku === productId || p.slug === productId
     );
@@ -481,13 +466,12 @@ export async function safeFindProductById(productId: string) {
         name: mem.name,
         price: Number(mem.price),
         stock: Number(mem.stock ?? 0),
-        isActive: mem.status !== "INACTIVE" && mem.status !== "DRAFT",
+        isActive: mem.status === "Approved",
         image: Array.isArray(mem.images) && mem.images.length > 0 ? mem.images[0] : "/iphone17.png",
       };
     }
+    return null;
   }
-
-  return null;
 }
 
 /**
@@ -550,18 +534,13 @@ export async function safeDeductProductStock(productId: string, quantity: number
     if (process.env.NODE_ENV === "production") {
       throw new Error(`Database error during stock deduction for '${productId}': ${e.message}`);
     }
-  }
-
-  // Development/test-only in-memory deduction
-  if (process.env.NODE_ENV !== "production") {
     const mem = (REAL_PRODUCTS || []).find((p: any) => p.id === productId || p._id === productId || p.sku === productId);
     if (mem && (mem.stock ?? 100) >= quantity) {
       mem.stock = (mem.stock ?? 100) - quantity;
       return true;
     }
+    return false;
   }
-
-  return false;
 }
 
 /**

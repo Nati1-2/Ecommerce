@@ -169,9 +169,7 @@ export async function POST(req: NextRequest) {
     // Persist session ID to order
     if (session.id) {
       order.checkoutSessionId = session.id;
-      if (order.paymentStatus !== PaymentStatus.PAID) {
-        order.orderStatus = OrderStatus.PENDING_PAYMENT;
-      }
+      order.orderStatus = OrderStatus.PENDING_PAYMENT;
       await order.save();
     }
 

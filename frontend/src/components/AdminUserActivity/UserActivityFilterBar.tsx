@@ -18,33 +18,39 @@ import {
 
 interface UserActivityFilterBarProps {
   searchQuery: string;
-  setSearchQuery: (val: string) => void;
+  setSearchQuery?: (val: string) => void;
+  onSearchChange?: (val: string) => void;
   selectedEventType: string;
-  setSelectedEventType: (val: string) => void;
+  setSelectedEventType?: (val: string) => void;
+  onEventTypeChange?: (val: string) => void;
   selectedRole: string;
-  setSelectedRole: (val: string) => void;
+  setSelectedRole?: (val: string) => void;
+  onRoleChange?: (val: string) => void;
   isAutoRefresh: boolean;
-  setIsAutoRefresh: (val: boolean) => void;
-  onRefresh: () => void;
+  setIsAutoRefresh?: (val: boolean) => void;
+  onToggleAutoRefresh?: () => void;
+  onRefresh?: () => void;
   onSimulateClick: () => void;
   isSimulating: boolean;
-  isFetching: boolean;
+  isFetching?: boolean;
 }
 
-export default function UserActivityFilterBar({
-  searchQuery,
-  setSearchQuery,
-  selectedEventType,
-  setSelectedEventType,
-  selectedRole,
-  setSelectedRole,
-  isAutoRefresh,
-  setIsAutoRefresh,
-  onRefresh,
-  onSimulateClick,
-  isSimulating,
-  isFetching,
-}: UserActivityFilterBarProps) {
+export default function UserActivityFilterBar(props: UserActivityFilterBarProps) {
+  const {
+    searchQuery,
+    selectedEventType,
+    selectedRole,
+    isAutoRefresh,
+    isSimulating,
+    isFetching = false,
+    onSimulateClick,
+  } = props;
+
+  const setSearchQuery = props.setSearchQuery || props.onSearchChange || (() => {});
+  const setSelectedEventType = props.setSelectedEventType || props.onEventTypeChange || (() => {});
+  const setSelectedRole = props.setSelectedRole || props.onRoleChange || (() => {});
+  const onRefresh = props.onRefresh || (() => {});
+  const setIsAutoRefresh = props.setIsAutoRefresh || (() => {});
   const eventTypeFilters = [
     { id: "all", label: "All Actions" },
     { id: "BUTTON_CLICK", label: "Buttons 🖱️" },

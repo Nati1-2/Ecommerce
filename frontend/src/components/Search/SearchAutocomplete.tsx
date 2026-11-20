@@ -1,3 +1,5 @@
+"use client";
+
 import { motion } from "framer-motion";
 import { Search, ArrowRight, History, Flame, Tag } from "lucide-react";
 import Link from "next/link";

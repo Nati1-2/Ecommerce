@@ -1,7 +1,8 @@
 "use client";
 
 import { useKPIMetrics } from "@/hooks/useAdminAnalyticsQuery";
-import { DollarSign, TrendingUp, ShoppingBag, Users, Store, Percent, LucideIcon } from "lucide-react";
+import { DollarSign, TrendingUp, ShoppingBag, Users, Store, Percent } from "lucide-react";
+import type { LucideIcon } from "@/types/icon";
 import AdminMetricCard from "@/components/AdminShared/AdminMetricCard";
 
 export default function KPICards() {

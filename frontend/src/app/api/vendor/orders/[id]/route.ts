@@ -60,7 +60,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       }
     }
 
-    order.orderStatus = normalizedStatus;
+    order.orderStatus = normalizedStatus as any;
     await order.save();
 
     const { notifyOrderStatusChanged } = await import("@/lib/notifications");

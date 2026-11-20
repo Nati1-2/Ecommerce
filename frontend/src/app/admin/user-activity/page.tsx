@@ -12,8 +12,8 @@ import {
 } from "lucide-react";
 import { useUserActivity, useSimulateUserClick } from "@/hooks/useUserActivityQuery";
 import { UserClickEvent } from "@/types/userActivity";
-import { UserActivityKPIs } from "@/components/AdminUserActivity/UserActivityKPIs";
-import { UserActivityFilterBar } from "@/components/AdminUserActivity/UserActivityFilterBar";
+import UserActivityKPIs from "@/components/AdminUserActivity/UserActivityKPIs";
+import UserActivityFilterBar from "@/components/AdminUserActivity/UserActivityFilterBar";
 import { ClickHotspotsCard } from "@/components/AdminUserActivity/ClickHotspotsCard";
 import { UserActivityTable } from "@/components/AdminUserActivity/UserActivityTable";
 import { ClickDetailModal } from "@/components/AdminUserActivity/ClickDetailModal";

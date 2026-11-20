@@ -33,6 +33,7 @@ export type ActivityType =
   | "USER_LOGIN"
   | "USER_REGISTER"
   | "REVIEW_SUBMITTED"
+  | "COUPON_APPLIED"
   | "PAGE_NAVIGATION";
 
 export interface ActivityLogEntry {

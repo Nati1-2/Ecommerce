@@ -2,7 +2,8 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-import { TrendingUp, TrendingDown, Minus, LucideIcon } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import type { LucideIcon } from "@/types/icon";
 
 interface AdminMetricCardProps {
   title: string;

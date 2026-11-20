@@ -1,10 +1,9 @@
-import { Inter } from "next/font/google";
 import "./globals.css";
 import LayoutShell from "@/components/layout/LayoutShell";
 import { Providers } from "@/components/providers";
 import type { Metadata } from "next";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = { className: "font-sans" };
 
 export const metadata: Metadata = {
   title: "Nati — Premium E-Commerce | Shop Everything You Love",

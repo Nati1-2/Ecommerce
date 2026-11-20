@@ -198,7 +198,13 @@ export async function POST(req: NextRequest) {
     const response = NextResponse.json({
       success: true,
       session: {
-        ...saved,
+        sessionId,
+        deviceType: parsed.deviceType,
+        deviceBrand: body.clientBrand || parsed.deviceBrand,
+        deviceModel: body.clientModel || parsed.deviceModel,
+        os: body.clientOs || parsed.os,
+        browser: parsed.browser,
+        location,
         isCurrentSession: true,
       },
     });

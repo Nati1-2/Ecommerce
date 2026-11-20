@@ -130,10 +130,8 @@ export async function POST(req: NextRequest) {
     // Attach payment attempt to order in DB
     order.paymentIntentId = paymentIntent.id;
     order.paymentAttemptId = idempotencyKey;
-    if (order.paymentStatus !== PaymentStatus.PAID) {
-      order.paymentStatus = PaymentStatus.PENDING;
-      order.orderStatus = OrderStatus.PENDING_PAYMENT;
-    }
+    order.paymentStatus = PaymentStatus.PENDING;
+    order.orderStatus = OrderStatus.PENDING_PAYMENT;
     await order.save();
 
     return NextResponse.json({

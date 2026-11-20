@@ -2,7 +2,8 @@
 
 import React, { ReactNode } from "react";
 import { cn } from "@/lib/utils";
-import { LucideIcon, Inbox } from "lucide-react";
+import { Inbox } from "lucide-react";
+import type { LucideIcon } from "@/types/icon";
 
 interface AdminEmptyStateProps {
   icon?: LucideIcon;
