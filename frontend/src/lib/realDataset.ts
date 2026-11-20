@@ -161,22 +161,7 @@ export const REAL_USERS: RealUserAccount[] = [
     totalSpent: 8450.0,
     createdAt: "2025-01-10",
   },
-  {
-    id: "usr-admin-sec",
-    _id: "usr-admin-sec",
-    email: "admin@gmail.com",
-    name: "Admin",
-    role: "ADMIN",
-    membership: "SuperAdmin Tier 👑",
-    points: 9999,
-    isVerified: true,
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80",
-    phone: "+1 (415) 555-0199",
-    address: "New York, NY, United States",
-    totalOrders: 14,
-    totalSpent: 3820.0,
-    createdAt: "2025-02-14",
-  },
+
   {
     id: "usr-vnd-apex",
     _id: "usr-vnd-apex",

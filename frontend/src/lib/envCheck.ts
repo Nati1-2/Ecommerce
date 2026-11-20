@@ -3,26 +3,40 @@
  * Verifies that required environment variables are set before startup.
  */
 
-export function validateProductionEnv(): { valid: boolean; missing: string[] } {
-  const requiredEnvVars = [
+export interface EnvValidationResult {
+  valid: boolean;
+  missing: string[];
+  warnings: string[];
+}
+
+export function validateProductionEnv(): EnvValidationResult {
+  const criticalEnvVars = [
     "MONGODB_URI",
     "JWT_SECRET",
   ];
 
-  const optionalEnvVars = [
+  const paymentEnvVars = [
     "STRIPE_SECRET_KEY",
     "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY",
     "STRIPE_WEBHOOK_SECRET",
   ];
 
-  const missing = requiredEnvVars.filter((key) => !process.env[key]);
+  const missingCritical = criticalEnvVars.filter((key) => !process.env[key]);
+  const missingPayment = paymentEnvVars.filter((key) => !process.env[key]);
 
-  if (missing.length > 0 && process.env.NODE_ENV === "production") {
-    console.warn(`[ENV WARNING] Missing critical production environment variables: ${missing.join(", ")}`);
+  const warnings: string[] = [];
+  if (missingPayment.length > 0) {
+    warnings.push(`Stripe payment integration incomplete. Missing: ${missingPayment.join(", ")}`);
+  }
+
+  if (missingCritical.length > 0 && process.env.NODE_ENV === "production") {
+    const errorMsg = `[CRITICAL FATAL CONFIG] Missing essential production environment variables: ${missingCritical.join(", ")}`;
+    console.error(errorMsg);
   }
 
   return {
-    valid: missing.length === 0,
-    missing,
+    valid: missingCritical.length === 0,
+    missing: missingCritical,
+    warnings,
   };
 }

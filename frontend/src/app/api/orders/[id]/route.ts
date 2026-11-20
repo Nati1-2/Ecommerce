@@ -60,14 +60,16 @@ export async function GET(
       );
     }
 
-    // Verify session or payment intent with Stripe if payment is pending or needs confirmation
+    // Verify session or payment intent with Stripe strictly associating with this order
     if (order.paymentStatus !== PaymentStatus.PAID && (sessionId || paymentIntentId)) {
       const stripe = getStripeClient();
       if (stripe) {
         try {
           if (sessionId) {
             const session = await stripe.checkout.sessions.retrieve(sessionId);
-            if (session.payment_status === "paid") {
+            // Verify session belongs to THIS specific order
+            const sessionOrderId = session.metadata?.orderId || session.client_reference_id;
+            if (sessionOrderId === order.orderId && session.payment_status === "paid") {
               order.paymentStatus = PaymentStatus.PAID;
               order.orderStatus = OrderStatus.PAID;
               if (session.payment_intent) {
@@ -77,7 +79,10 @@ export async function GET(
             }
           } else if (paymentIntentId) {
             const intent = await stripe.paymentIntents.retrieve(paymentIntentId);
-            if (intent.status === "succeeded") {
+            // Verify payment intent belongs to THIS specific order and covers the full amount
+            const intentOrderId = intent.metadata?.orderId;
+            const expectedCents = Math.round(Number(order.grandTotal ?? order.totalAmount) * 100);
+            if (intentOrderId === order.orderId && intent.status === "succeeded" && intent.amount >= expectedCents) {
               order.paymentStatus = PaymentStatus.PAID;
               order.orderStatus = OrderStatus.PAID;
               order.paymentIntentId = intent.id;

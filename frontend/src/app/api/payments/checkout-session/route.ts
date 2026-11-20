@@ -2,14 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import mongoose from "mongoose";
 import { connectDB, safeFindUserById } from "@/lib/mongodb";
-import { Order } from "@/models/Order";
+import { Order, PaymentStatus } from "@/models/Order";
 import { getUserFromToken } from "@/lib/authHelper";
-
 import { getStripeClient } from "@/lib/stripe";
 
 export async function POST(req: NextRequest) {
   try {
-    // 1. Enforce Authentication: Checkout/Payment is available ONLY to logged-in users
+    // 1. Enforce Authentication
     const decoded = getUserFromToken(req);
     if (!decoded) {
       return NextResponse.json(
@@ -19,34 +18,45 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { orderId, amount, currency = "USD", items, successUrl, cancelUrl } = body;
+    const { orderId, currency = "USD", successUrl, cancelUrl } = body;
 
-    if (!orderId || amount === undefined || amount === null) {
+    if (!orderId) {
       return NextResponse.json(
-        { success: false, error: "Missing required parameters: orderId, amount" },
+        { success: false, error: "Missing required parameter: orderId" },
         { status: 400 }
       );
     }
 
-    // 2. Validate Order Ownership in Database
-    try {
-      await connectDB();
-      const query = mongoose.isValidObjectId(orderId)
-        ? { $or: [{ orderId }, { _id: orderId }] }
-        : { orderId };
-      const order = await Order.findOne(query);
+    // 2. Validate Order Existence & Ownership in Database (Fail Closed)
+    await connectDB();
+    const query = mongoose.isValidObjectId(orderId)
+      ? { $or: [{ orderId }, { _id: orderId }] }
+      : { orderId };
 
-      if (order) {
-        const isPrivileged = decoded.role === "ADMIN" || decoded.role === "VENDOR";
-        if (!isPrivileged && order.userId && order.userId !== decoded.id) {
-          return NextResponse.json(
-            { success: false, error: "Forbidden: You are not authorized to pay for another user's order." },
-            { status: 403 }
-          );
-        }
-      }
-    } catch (dbErr: any) {
-      console.warn("Notice: could not query order for authorization check:", dbErr.message);
+    const order = await Order.findOne(query);
+
+    if (!order) {
+      return NextResponse.json(
+        { success: false, error: `Order '${orderId}' was not found. Cannot initiate checkout session.` },
+        { status: 404 }
+      );
+    }
+
+    // Check ownership
+    const isPrivileged = decoded.role === "ADMIN";
+    if (!isPrivileged && order.userId && order.userId !== decoded.id) {
+      return NextResponse.json(
+        { success: false, error: "Forbidden: You are not authorized to pay for another user's order." },
+        { status: 403 }
+      );
+    }
+
+    // Check if order is already paid
+    if (order.paymentStatus === PaymentStatus.PAID) {
+      return NextResponse.json(
+        { success: false, error: "This order has already been paid and settled." },
+        { status: 400 }
+      );
     }
 
     // 3. Ensure Stripe Client is configured
@@ -58,23 +68,48 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = items && items.length > 0
-      ? items.map((item: any) => ({
+    // 4. Server-Authoritative Line Items Built from Verified Order in DB
+    const authoritativeItems = Array.isArray(order.items) && order.items.length > 0 ? order.items : [];
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = authoritativeItems.length > 0
+      ? authoritativeItems.map((item: any) => ({
           price_data: {
             currency: currency.toLowerCase(),
-            product_data: { name: item.name || "Item" },
-            unit_amount: Math.max(50, Math.round(Number(item.amount || amount) * 100)),
+            product_data: { name: String(item.name || "Item") },
+            unit_amount: Math.max(50, Math.round(Number(item.price) * 100)),
           },
-          quantity: item.quantity || 1,
+          quantity: Math.max(1, Number(item.quantity) || 1),
         }))
       : [{
           price_data: {
             currency: currency.toLowerCase(),
-            product_data: { name: `Nati Order #${orderId}` },
-            unit_amount: Math.max(50, Math.round(Number(amount) * 100)),
+            product_data: { name: `Order #${order.orderId}` },
+            unit_amount: Math.max(50, Math.round(Number(order.grandTotal ?? order.totalAmount) * 100)),
           },
           quantity: 1,
         }];
+
+    // Append shipping and tax as line items if applicable
+    if (order.shippingCost && order.shippingCost > 0) {
+      lineItems.push({
+        price_data: {
+          currency: currency.toLowerCase(),
+          product_data: { name: "Shipping & Handling" },
+          unit_amount: Math.round(order.shippingCost * 100),
+        },
+        quantity: 1,
+      });
+    }
+
+    if (order.tax && order.tax > 0) {
+      lineItems.push({
+        price_data: {
+          currency: currency.toLowerCase(),
+          product_data: { name: "Estimated Tax (5%)" },
+          unit_amount: Math.round(order.tax * 100),
+        },
+        quantity: 1,
+      });
+    }
 
     let customerEmail = decoded.email;
     let stripeCustomerId: string | undefined = undefined;
@@ -89,9 +124,13 @@ export async function POST(req: NextRequest) {
           }
         }
       } catch (err) {
-        console.warn("User lookup notice:", err);
+        // User lookup warning
       }
     }
+
+    const host = req.headers.get("origin") || req.headers.get("referer") || "http://localhost:3000";
+    const resolvedSuccessUrl = successUrl || `${host}/orders/${order.orderId}?session_id={CHECKOUT_SESSION_ID}`;
+    const resolvedCancelUrl = cancelUrl || `${host}/orders/${order.orderId}?payment_cancelled=true`;
 
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       payment_method_types: ["card"],
@@ -99,53 +138,32 @@ export async function POST(req: NextRequest) {
       customer: stripeCustomerId,
       customer_email: stripeCustomerId ? undefined : (customerEmail || undefined),
       line_items: lineItems,
-      success_url: successUrl || `${req.nextUrl.origin}/order/success/${orderId}?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: cancelUrl || `${req.nextUrl.origin}/order/failed/${orderId}`,
-      client_reference_id: String(orderId),
+      success_url: resolvedSuccessUrl,
+      cancel_url: resolvedCancelUrl,
+      client_reference_id: String(order.orderId),
       metadata: {
-        orderId: String(orderId),
+        orderId: String(order.orderId),
         userId: decoded.id,
       },
     };
 
-    let session: Stripe.Checkout.Session;
-    try {
-      session = await stripe.checkout.sessions.create(sessionParams);
-    } catch (stripeErr: any) {
-      if (stripeCustomerId && stripeErr?.message?.includes("No such customer")) {
-        delete sessionParams.customer;
-        sessionParams.customer_email = customerEmail || undefined;
-        session = await stripe.checkout.sessions.create(sessionParams);
-      } else {
-        throw stripeErr;
-      }
-    }
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
-    // Attach session to order in DB
-    try {
-      const query = mongoose.isValidObjectId(orderId)
-        ? { $or: [{ orderId }, { _id: orderId }] }
-        : { orderId };
-      const order = await Order.findOne(query);
-      if (order) {
-        order.paymentIntentId = session.id;
-        await order.save();
-      }
-    } catch (dbErr) {
-      console.warn("Notice: could not attach session ID to order:", dbErr);
+    // Attach session ID to order
+    if (session.id) {
+      order.checkoutSessionId = session.id;
+      await order.save();
     }
 
     return NextResponse.json({
       success: true,
-      data: {
-        checkoutUrl: session.url,
-        sessionId: session.id,
-      },
+      url: session.url,
+      sessionId: session.id,
     });
   } catch (error: any) {
-    console.error("Stripe Checkout Session Error:", error);
+    console.error("Create checkout session error:", error);
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to create checkout session" },
+      { success: false, error: error.message || "Checkout session creation failed" },
       { status: 500 }
     );
   }

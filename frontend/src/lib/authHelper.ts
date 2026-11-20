@@ -1,7 +1,16 @@
 import { NextRequest } from "next/server";
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET || process.env.JWT_ACCESS_SECRET || "your_jwt_access_secret_key_change_in_production";
+export function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET || process.env.JWT_ACCESS_SECRET;
+  if (!secret) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("CRITICAL: JWT_SECRET environment variable is not configured.");
+    }
+    return "dev_jwt_secret_must_be_configured_in_env_before_production_deployment";
+  }
+  return secret;
+}
 
 export interface TokenPayload {
   id: string;
@@ -24,15 +33,16 @@ export function getUserFromToken(req: NextRequest): TokenPayload | null {
       return null;
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    const secret = getJwtSecret();
+    const decoded = jwt.verify(token, secret) as any;
     if (!decoded) return null;
 
     const id = decoded.id || decoded.userId;
     if (!id) return null;
 
     return {
-      id,
-      email: decoded.email || "",
+      id: String(id),
+      email: decoded.email ? String(decoded.email) : "",
       role: decoded.role || "CUSTOMER",
     };
   } catch (err) {
@@ -45,9 +55,6 @@ export const getTokenPayload = getUserFromToken;
 export function requireAuth(req: NextRequest): { payload: TokenPayload } | { error: string; status: number } {
   const payload = getTokenPayload(req);
   if (!payload) {
-    if (process.env.NODE_ENV !== "production") {
-      return { payload: { id: "usr-demo-customer", email: "john.smith@gmail.com", role: "CUSTOMER" } };
-    }
     return { error: "Authentication required", status: 401 };
   }
   return { payload };
@@ -56,15 +63,9 @@ export function requireAuth(req: NextRequest): { payload: TokenPayload } | { err
 export function requireVendor(req: NextRequest): { payload: TokenPayload } | { error: string; status: number } {
   const payload = getTokenPayload(req);
   if (!payload) {
-    if (process.env.NODE_ENV !== "production") {
-      return { payload: { id: "usr-demo-vendor", email: "vendor@natistore.com", role: "VENDOR" } };
-    }
     return { error: "Authentication required", status: 401 };
   }
   if (payload.role !== "VENDOR" && payload.role !== "ADMIN") {
-    if (process.env.NODE_ENV !== "production") {
-      return { payload: { id: "usr-demo-vendor", email: "vendor@natistore.com", role: "VENDOR" } };
-    }
     return { error: "Forbidden: Vendor access required", status: 403 };
   }
   return { payload };
@@ -73,17 +74,10 @@ export function requireVendor(req: NextRequest): { payload: TokenPayload } | { e
 export function requireAdmin(req: NextRequest): { payload: TokenPayload } | { error: string; status: number } {
   const payload = getTokenPayload(req);
   if (!payload) {
-    if (process.env.NODE_ENV !== "production") {
-      return { payload: { id: "usr-demo-admin", email: "nati@admin.com", role: "ADMIN" } };
-    }
     return { error: "Authentication required", status: 401 };
   }
   if (payload.role !== "ADMIN") {
-    if (process.env.NODE_ENV !== "production") {
-      return { payload: { id: "usr-demo-admin", email: "nati@admin.com", role: "ADMIN" } };
-    }
-    return { error: "Forbidden: Admin access required", status: 403 };
+    return { error: "Forbidden: Administrator access required", status: 403 };
   }
   return { payload };
 }
-

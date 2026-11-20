@@ -22,7 +22,15 @@ export async function POST(req: NextRequest) {
 
     const response = NextResponse.json({ success: true, message: "Logged out successfully" });
     response.cookies.set("token", "", {
-      httpOnly: false,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 0,
+      path: "/",
+      expires: new Date(0),
+    });
+    response.cookies.set("session_id", "", {
+      httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 0,

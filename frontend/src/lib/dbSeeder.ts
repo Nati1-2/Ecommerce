@@ -8,6 +8,11 @@ import {
 } from "./realDataset";
 
 export async function seedDatabaseCollections() {
+  // Never seed demo data in production
+  if (process.env.NODE_ENV === "production") {
+    return;
+  }
+
   try {
     const { User } = await import("@/models/User");
     const { VendorProfile } = await import("@/models/VendorProfile");

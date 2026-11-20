@@ -73,16 +73,12 @@ export function middleware(req: NextRequest) {
 
     // Restrict /admin strictly to ADMIN
     if (pathname.startsWith("/admin") && userRole !== "ADMIN") {
-      if (process.env.NODE_ENV === "production") {
-        return NextResponse.redirect(new URL("/login?error=unauthorized_admin", req.url));
-      }
+      return NextResponse.redirect(new URL("/login?error=unauthorized_admin", req.url));
     }
 
     // Restrict /vendor strictly to VENDOR or ADMIN
     if (pathname.startsWith("/vendor") && userRole !== "VENDOR" && userRole !== "ADMIN") {
-      if (process.env.NODE_ENV === "production") {
-        return NextResponse.redirect(new URL("/login?error=unauthorized_vendor", req.url));
-      }
+      return NextResponse.redirect(new URL("/login?error=unauthorized_vendor", req.url));
     }
   }
 

@@ -1,7 +1,21 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
-const MONGODB_URI = process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/ecom';
+const MONGODB_URI = process.env.MONGODB_URI || process.env.MONGO_URI;
+
+if (!MONGODB_URI) {
+  console.error('❌ MONGODB_URI environment variable is required.');
+  process.exit(1);
+}
+
+const email = process.env.ADMIN_EMAIL ? process.env.ADMIN_EMAIL.toLowerCase().trim() : null;
+const plainPassword = process.env.ADMIN_PASSWORD;
+const adminName = process.env.ADMIN_NAME || 'System Administrator';
+
+if (!email || !plainPassword || plainPassword.length < 8) {
+  console.error('❌ ADMIN_EMAIL and ADMIN_PASSWORD (minimum 8 characters) must be configured in environment.');
+  process.exit(1);
+}
 
 const UserSchema = new mongoose.Schema(
   {
@@ -18,14 +32,12 @@ const UserSchema = new mongoose.Schema(
 const User = mongoose.models.User || mongoose.model('User', UserSchema);
 
 async function seedAdmin() {
-  console.log('Connecting to MongoDB at:', MONGODB_URI);
+  console.log('Connecting to MongoDB...');
   try {
-    await mongoose.connect(MONGODB_URI, { serverSelectionTimeoutMS: 4000 });
+    await mongoose.connect(MONGODB_URI, { serverSelectionTimeoutMS: 5000 });
     console.log('Connected to MongoDB successfully!');
 
-    const email = 'admin@gmail.com';
-    const plainPassword = 'admin';
-    const hashedPassword = await bcrypt.hash(plainPassword, 10);
+    const hashedPassword = await bcrypt.hash(plainPassword, 12);
 
     const existing = await User.findOne({ email });
     if (existing) {
@@ -34,26 +46,25 @@ async function seedAdmin() {
       existing.membership = 'SuperAdmin Tier 👑';
       existing.isVerified = true;
       await existing.save();
-      console.log(`✅ Admin account "${email}" updated successfully with password "${plainPassword}" and role "ADMIN"!`);
+      console.log(`✅ Admin account "${email}" updated successfully with role "ADMIN"!`);
     } else {
       await User.create({
         email,
         password: hashedPassword,
-        name: 'Admin',
+        name: adminName,
         role: 'ADMIN',
         membership: 'SuperAdmin Tier 👑',
         isVerified: true,
       });
-      console.log(`✅ Admin account "${email}" created successfully in database with password "${plainPassword}" and role "ADMIN"!`);
+      console.log(`✅ Admin account "${email}" created successfully with role "ADMIN"!`);
     }
 
     await mongoose.disconnect();
-    console.log('Done!');
+    console.log('Disconnected from MongoDB.');
   } catch (err) {
-    console.warn('Notice: MongoDB is currently unreachable or offline:', err.message);
-    console.log('Account is also permanently seeded in frontend/src/lib/mongodb.ts & dbSeeder.ts for zero-downtime runtime & in-memory support.');
+    console.error('❌ Failed to seed admin account:', err.message);
+    process.exit(1);
   }
 }
 
 seedAdmin();
-

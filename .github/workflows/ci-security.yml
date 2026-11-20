@@ -28,7 +28,10 @@ jobs:
         run: npm ci
 
       - name: Lint
-        run: npx next lint || true
+        run: npm run lint
+
+      - name: Automated Security & Regression Tests
+        run: node --test --experimental-strip-types ../tests/unit/*.test.ts ../tests/integration/*.test.ts ../tests/security/*.test.ts
 
       - name: TypeScript Type Check
         run: npx tsc --noEmit

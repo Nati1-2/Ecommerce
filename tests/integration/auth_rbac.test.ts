@@ -1,10 +1,11 @@
-import { describe, it, expect } from 'vitest';
-import { authTokens } from '../../frontend/src/lib/authTokens';
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
+import { authTokens } from '../../frontend/src/lib/authTokens.ts';
 
 describe('Security & RBAC Integration Tests', () => {
   it('prevents access when token is invalid or missing', () => {
     const verified = authTokens.verifyAccessToken('invalid.token.string');
-    expect(verified).toBeNull();
+    assert.strictEqual(verified, null);
   });
 
   it('correctly validates role attributes for CUSTOMER, VENDOR, and ADMIN', () => {
@@ -15,8 +16,8 @@ describe('Security & RBAC Integration Tests', () => {
     });
 
     const decoded = authTokens.verifyAccessToken(adminToken);
-    expect(decoded).not.toBeNull();
-    expect(decoded?.role).toBe('ADMIN');
+    assert.notStrictEqual(decoded, null);
+    assert.strictEqual(decoded?.role, 'ADMIN');
   });
 
   it('revokes tokens immediately upon logout', () => {
@@ -28,6 +29,6 @@ describe('Security & RBAC Integration Tests', () => {
 
     authTokens.revokeToken(userToken);
     const verifiedAfterRevoke = authTokens.verifyAccessToken(userToken);
-    expect(verifiedAfterRevoke).toBeNull();
+    assert.strictEqual(verifiedAfterRevoke, null);
   });
 });

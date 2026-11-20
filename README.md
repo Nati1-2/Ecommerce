@@ -1,6 +1,6 @@
 # 🛍️ Nati. — Enterprise Multi-Vendor E-Commerce Platform
 
-> **A high-performance, event-driven e-commerce microservices ecosystem engineered for sub-second latency, zero-downtime scalability, distributed concurrency control, and mobile-first user experiences.**
+> **A production-hardened multi-vendor e-commerce platform built with Next.js App Router, TypeScript, MongoDB, and Stripe, engineered with defense-in-depth security, server-authoritative pricing, and role-based access control.**
 
 [![Next.js](https://img.shields.io/badge/Next.js-15.5-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
@@ -455,19 +455,15 @@ npm run docker:down --prefix backend
 
 ---
 
-### Database Seeding & Default Credentials
+### Administrative Provisioning & Access
 
-Run the database seed script to initialize administrative accounts and sample catalog data:
+For production deployments, administrator access is provisioned securely through environment variables (`ADMIN_EMAIL` and `ADMIN_PASSWORD`) or internal provisioning scripts. **Default admin credentials are never committed or enabled in production.**
 
-```bash
-node scripts/seed-admin.mjs
-```
-
-| Portal | URL Route | Default Email | Default Password | Role |
-| :--- | :--- | :--- | :--- | :--- |
-| **Super Admin** | `http://localhost:3000/admin` | `admin@gmail.com` | `admin` | `ADMIN` |
-| **Seller Portal** | `http://localhost:3000/vendor` | `vendor@natistore.com` | `vendor123` | `VENDOR` |
-| **Customer Store** | `http://localhost:3000` | `customer@natistore.com` | `customer123` | `CUSTOMER` |
+| Portal | URL Route | Access Requirements | Role |
+| :--- | :--- | :--- | :--- |
+| **Super Admin** | `http://localhost:3000/admin` | Provisioned via `ADMIN_EMAIL` / `ADMIN_PASSWORD` env vars | `ADMIN` |
+| **Seller Portal** | `http://localhost:3000/vendor` | Approved vendor merchant account | `VENDOR` |
+| **Customer Store** | `http://localhost:3000` | Public registration (assigns `CUSTOMER`) | `CUSTOMER` |
 
 ---
 

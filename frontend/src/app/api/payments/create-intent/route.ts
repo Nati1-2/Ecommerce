@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import Stripe from "stripe";
 import mongoose from "mongoose";
 import { connectDB } from "@/lib/mongodb";
 import { Order, PaymentStatus } from "@/models/Order";
 import { getUserFromToken } from "@/lib/authHelper";
-
-import { getStripeClient, getStripePublishableKey } from "@/lib/stripe";
+import { getStripeClient } from "@/lib/stripe";
 
 export async function POST(req: NextRequest) {
   try {
-    // 1. Enforce Authentication: Only logged-in users can create payment intents
+    // 1. Enforce Authentication
     const decoded = getUserFromToken(req);
     if (!decoded) {
       return NextResponse.json(
@@ -19,55 +17,76 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { orderId, amount, currency = "usd", billingAddress, receiptEmail } = body;
+    const { orderId, currency = "usd", billingAddress, receiptEmail } = body;
 
-    if (!orderId || amount === undefined || amount === null) {
+    if (!orderId) {
       return NextResponse.json(
-        { success: false, error: "Missing required fields: orderId and amount" },
+        { success: false, error: "Missing required parameter: orderId" },
         { status: 400 }
       );
     }
 
-    // 2. Validate Order Ownership in Database
-    try {
-      await connectDB();
-      const query = mongoose.isValidObjectId(orderId)
-        ? { $or: [{ orderId }, { _id: orderId }] }
-        : { orderId };
-      const order = await Order.findOne(query);
+    // 2. Validate Order Existence & Ownership in Database (Fail Closed)
+    await connectDB();
+    const query = mongoose.isValidObjectId(orderId)
+      ? { $or: [{ orderId }, { _id: orderId }] }
+      : { orderId };
 
-      if (order) {
-        const isPrivileged = decoded.role === "ADMIN" || decoded.role === "VENDOR";
-        if (!isPrivileged && order.userId && order.userId !== decoded.id) {
-          return NextResponse.json(
-            { success: false, error: "Forbidden: You are not authorized to create a payment for another user's order." },
-            { status: 403 }
-          );
-        }
-      }
-    } catch (dbErr: any) {
-      console.warn("Notice: could not query order for authorization check:", dbErr.message);
+    const order = await Order.findOne(query);
+
+    if (!order) {
+      return NextResponse.json(
+        { success: false, error: `Order '${orderId}' not found. Cannot initiate payment for nonexistent order.` },
+        { status: 404 }
+      );
+    }
+
+    // Check ownership
+    const isPrivileged = decoded.role === "ADMIN";
+    if (!isPrivileged && order.userId && order.userId !== decoded.id) {
+      return NextResponse.json(
+        { success: false, error: "Forbidden: You are not authorized to pay for another user's order." },
+        { status: 403 }
+      );
+    }
+
+    // Check if order is already paid
+    if (order.paymentStatus === PaymentStatus.PAID) {
+      return NextResponse.json(
+        { success: false, error: "This order has already been paid and settled." },
+        { status: 400 }
+      );
+    }
+
+    // 3. Server-Authoritative Amount Calculation
+    // Never trust client-provided amount; strictly use order.grandTotal from database
+    const authoritativeAmount = Number(order.grandTotal ?? order.totalAmount ?? 0);
+    if (authoritativeAmount <= 0) {
+      return NextResponse.json(
+        { success: false, error: "Invalid order amount. Total must be greater than zero." },
+        { status: 400 }
+      );
     }
 
     const stripe = getStripeClient();
     if (!stripe) {
       return NextResponse.json(
-        { success: false, error: "Stripe configuration error: STRIPE_SECRET_KEY is not configured on the server" },
+        { success: false, error: "Stripe configuration error: STRIPE_SECRET_KEY is not configured on the server." },
         { status: 503 }
       );
     }
 
     // Stripe expects amounts in cents for USD (min 50 cents)
-    const unitAmount = Math.max(50, Math.round(Number(amount) * 100));
+    const unitAmount = Math.max(50, Math.round(authoritativeAmount * 100));
 
-    // Create a real Stripe PaymentIntent
+    // Create Stripe PaymentIntent with authoritative amount and verified order metadata
     const paymentIntent = await stripe.paymentIntents.create({
       amount: unitAmount,
-      currency: currency.toLowerCase(),
+      currency: String(currency).toLowerCase(),
       receipt_email: receiptEmail || decoded.email || undefined,
-      description: `Payment for Order #${orderId}`,
+      description: `Payment for Order #${order.orderId}`,
       metadata: {
-        orderId: String(orderId),
+        orderId: String(order.orderId),
         userId: decoded.id,
         customerEmail: decoded.email,
         customerName: billingAddress?.name || "Customer",
@@ -77,35 +96,23 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Save paymentIntentId to order in DB if order exists
-    try {
-      const query = mongoose.isValidObjectId(orderId)
-        ? { $or: [{ orderId }, { _id: orderId }] }
-        : { orderId };
-      const order = await Order.findOne(query);
-      if (order) {
-        order.paymentIntentId = paymentIntent.id;
-        if (order.paymentStatus !== PaymentStatus.PAID) {
-          order.paymentStatus = PaymentStatus.PENDING;
-        }
-        await order.save();
-      }
-    } catch (dbErr) {
-      console.warn("Notice: could not attach paymentIntentId to MongoDB order:", dbErr);
+    // Attach paymentIntentId to order
+    order.paymentIntentId = paymentIntent.id;
+    if (order.paymentStatus !== PaymentStatus.PAID) {
+      order.paymentStatus = PaymentStatus.PENDING;
     }
+    await order.save();
 
     return NextResponse.json({
       success: true,
       clientSecret: paymentIntent.client_secret,
       paymentIntentId: paymentIntent.id,
-      amount: paymentIntent.amount / 100,
-      currency: paymentIntent.currency,
-      publishableKey: getStripePublishableKey(),
+      amount: authoritativeAmount,
     });
   } catch (error: any) {
-    console.error("Stripe create-intent error:", error);
+    console.error("Create payment intent error:", error);
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to create payment intent" },
+      { success: false, error: error.message || "Payment intent creation failed" },
       { status: 500 }
     );
   }

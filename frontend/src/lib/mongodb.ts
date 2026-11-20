@@ -13,7 +13,16 @@ import {
   REAL_USER_GROWTH_SERIES,
 } from "./realDataset";
 
-const MONGODB_URI = process.env.MONGODB_URI || process.env.MONGO_URI || "mongodb://127.0.0.1:27017/ecom?authSource=admin" || "mongodb://root:rootpassword@localhost:27017/ecom?authSource=admin";
+function getMongoUri(): string {
+  const uri = process.env.MONGODB_URI || process.env.MONGO_URI;
+  if (!uri) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("CRITICAL: MONGODB_URI environment variable is not configured in production.");
+    }
+    return "mongodb://127.0.0.1:27017/ecom?authSource=admin";
+  }
+  return uri;
+}
 
 interface MongooseCache {
   conn: typeof mongoose | null;
@@ -55,8 +64,9 @@ if (!global.inMemoryVisitorLogs) {
   global.inMemoryVisitorLogs = [];
 }
 
-// Seed real hashed demo users and vendor data once per process start
+// Seed real hashed demo users and vendor data once per process start (dev only)
 async function seedDemoUsers() {
+  if (process.env.NODE_ENV === "production") return;
   if (global.inMemorySeeded) return;
   global.inMemorySeeded = true;
 
@@ -87,8 +97,6 @@ async function seedDemoUsers() {
   const legacyAliases = [
     { email: "john.smith@gmail.com", pass: "password123", name: "John Smith", role: "CUSTOMER" },
     { email: "vendor@natistore.com", pass: "vendor123", name: "Apex Tech Wearables Store", role: "VENDOR" },
-    { email: "nati@admin.com", pass: "nati1234", name: "Nati Demo Admin", role: "ADMIN" },
-    { email: "admin@gmail.com", pass: "admin", name: "Admin", role: "ADMIN" },
   ];
   for (const leg of legacyAliases) {
     if (!global.inMemoryUsers!.has(leg.email)) {
@@ -235,12 +243,15 @@ export async function connectDB() {
       socketTimeoutMS: 45000,
     };
 
-    cached!.promise = mongoose.connect(MONGODB_URI, opts).then((m) => m);
+    const mongoUri = getMongoUri();
+    cached!.promise = mongoose.connect(mongoUri, opts).then((m) => m);
   }
 
   try {
     cached!.conn = await cached!.promise;
-    import("./dbSeeder").then(m => m.seedDatabaseCollections()).catch(console.error);
+    if (process.env.NODE_ENV !== "production") {
+      import("./dbSeeder").then(m => m.seedDatabaseCollections()).catch(console.error);
+    }
   } catch (e) {
     cached!.promise = null;
     throw e;
@@ -532,6 +543,99 @@ export async function safeDeleteUserSession(userId: string, sessionId: string) {
     if (idx !== -1) {
       global.inMemoryUserSessions[idx].revoked = true;
     }
+  }
+  return true;
+}
+
+export async function safeFindProductById(productId: string) {
+  try {
+    await connectDB();
+    const { Product } = await import("@/models/Product");
+    const { VendorProduct } = await import("@/models/VendorProduct");
+
+    let prod = null;
+    if (mongoose.isValidObjectId(productId)) {
+      prod = await Product.findById(productId);
+    }
+    if (!prod) {
+      prod = await Product.findOne({ $or: [{ sku: productId }, { slug: productId }] });
+    }
+    if (!prod && mongoose.isValidObjectId(productId)) {
+      prod = await VendorProduct.findById(productId);
+    }
+    if (!prod) {
+      prod = await VendorProduct.findOne({ $or: [{ sku: productId }, { slug: productId }] });
+    }
+    if (prod) {
+      return {
+        id: String(prod._id || prod.id),
+        name: prod.name,
+        price: Number(prod.price),
+        stock: Number(prod.stock ?? 100),
+        isActive: prod.isActive !== false && prod.status !== "INACTIVE" && prod.status !== "DRAFT",
+        image: Array.isArray(prod.images) && prod.images.length > 0 ? prod.images[0] : "/iphone17.png",
+      };
+    }
+  } catch (e) {
+    // DB query error, check in-memory fallback
+  }
+
+  const mem = (REAL_PRODUCTS || []).find(
+    (p: any) => p.id === productId || p._id === productId || p.sku === productId || p.slug === productId
+  );
+  if (mem) {
+    return {
+      id: String(mem.id),
+      name: mem.name,
+      price: Number(mem.price),
+      stock: Number(mem.stock ?? 100),
+      isActive: mem.status !== "INACTIVE" && mem.status !== "DRAFT",
+      image: Array.isArray(mem.images) && mem.images.length > 0 ? mem.images[0] : "/iphone17.png",
+    };
+  }
+
+  return null;
+}
+
+export async function safeDeductProductStock(productId: string, quantity: number): Promise<boolean> {
+  try {
+    await connectDB();
+    const { Product } = await import("@/models/Product");
+    const { VendorProduct } = await import("@/models/VendorProduct");
+
+    // Atomic MongoDB decrement with floor check (stock >= quantity)
+    let updated = null;
+    if (mongoose.isValidObjectId(productId)) {
+      updated = await Product.findOneAndUpdate(
+        { _id: productId, stock: { $gte: quantity } },
+        { $inc: { stock: -quantity } },
+        { new: true }
+      );
+    }
+    if (!updated) {
+      updated = await Product.findOneAndUpdate(
+        { $or: [{ sku: productId }, { slug: productId }], stock: { $gte: quantity } },
+        { $inc: { stock: -quantity } },
+        { new: true }
+      );
+    }
+    if (!updated && mongoose.isValidObjectId(productId)) {
+      updated = await VendorProduct.findOneAndUpdate(
+        { _id: productId, stock: { $gte: quantity } },
+        { $inc: { stock: -quantity } },
+        { new: true }
+      );
+    }
+    if (!updated) {
+      updated = await VendorProduct.findOneAndUpdate(
+        { $or: [{ sku: productId }, { slug: productId }], stock: { $gte: quantity } },
+        { $inc: { stock: -quantity } },
+        { new: true }
+      );
+    }
+    if (updated) return true;
+  } catch (e) {
+    // DB error
   }
   return true;
 }

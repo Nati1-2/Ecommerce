@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { connectDB } from "@/lib/mongodb";
-import { Order } from "@/models/Order";
+import { connectDB, safeFindProductById, safeDeductProductStock } from "@/lib/mongodb";
+import { Order, PaymentStatus, OrderStatus } from "@/models/Order";
 import { getUserFromToken } from "@/lib/authHelper";
 
 export async function GET(req: NextRequest) {
@@ -31,53 +31,55 @@ export async function GET(req: NextRequest) {
     // 1. Try to fetch from backend Order Service via API Gateway
     const authHeader = req.headers.get("authorization");
     const token = authHeader || req.cookies.get("token")?.value;
-    const gatewayUrl = process.env.API_GATEWAY_URL || process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, "") || "http://localhost:8000";
+    const gatewayUrl = process.env.API_GATEWAY_URL || process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, "");
 
-    try {
-      const endpoint = isAdmin && !requestedUserId
-        ? `${gatewayUrl}/api/v1/orders/admin/all`
-        : `${gatewayUrl}/api/v1/orders/my-orders`;
+    if (gatewayUrl) {
+      try {
+        const endpoint = isAdmin && !requestedUserId
+          ? `${gatewayUrl}/api/v1/orders/admin/all`
+          : `${gatewayUrl}/api/v1/orders/my-orders`;
 
-      const response = await fetch(endpoint, {
-        headers: token ? { Authorization: token.startsWith("Bearer ") ? token : `Bearer ${token}` } : {},
-      });
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success && Array.isArray(result.data)) {
-          const mappedOrders = result.data.map((o: any) => ({
-            id: o.orderId || o._id,
-            orderId: o.orderId || o._id,
-            userId: o.customerId || o.userId,
-            items: (o.items || []).map((item: any) => ({
-              productId: item.productId,
-              name: item.productName || item.name,
-              price: item.price,
-              quantity: item.quantity,
-              image: item.image || "/iphone17.png"
-            })),
-            shippingAddress: {
-              street: o.shippingAddress?.street || "",
-              city: o.shippingAddress?.city || "",
-              state: o.shippingAddress?.state || "",
-              zipCode: o.shippingAddress?.zipCode || "",
-              country: o.shippingAddress?.country || ""
-            },
-            paymentStatus: o.paymentStatus || "PENDING",
-            orderStatus: o.status || o.orderStatus || "PENDING",
-            status: o.status || o.orderStatus || "PENDING",
-            totalAmount: o.pricing?.total || o.totalAmount || 0,
-            grandTotal: o.pricing?.total || o.grandTotal || 0,
-            createdAt: o.createdAt,
-            updatedAt: o.updatedAt
-          }));
-          return NextResponse.json({ success: true, data: mappedOrders });
+        const response = await fetch(endpoint, {
+          headers: token ? { Authorization: token.startsWith("Bearer ") ? token : `Bearer ${token}` } : {},
+        });
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success && Array.isArray(result.data)) {
+            const mappedOrders = result.data.map((o: any) => ({
+              id: o.orderId || o._id,
+              orderId: o.orderId || o._id,
+              userId: o.customerId || o.userId,
+              items: (o.items || []).map((item: any) => ({
+                productId: item.productId,
+                name: item.productName || item.name,
+                price: item.price,
+                quantity: item.quantity,
+                image: item.image || "/iphone17.png"
+              })),
+              shippingAddress: {
+                street: o.shippingAddress?.street || "",
+                city: o.shippingAddress?.city || "",
+                state: o.shippingAddress?.state || "",
+                zipCode: o.shippingAddress?.zipCode || "",
+                country: o.shippingAddress?.country || ""
+              },
+              paymentStatus: o.paymentStatus || "PENDING",
+              orderStatus: o.status || o.orderStatus || "PENDING",
+              status: o.status || o.orderStatus || "PENDING",
+              totalAmount: o.pricing?.total || o.totalAmount || 0,
+              grandTotal: o.pricing?.total || o.grandTotal || 0,
+              createdAt: o.createdAt,
+              updatedAt: o.updatedAt
+            }));
+            return NextResponse.json({ success: true, data: mappedOrders });
+          }
         }
+      } catch (err) {
+        // Continue to local DB
       }
-    } catch (err) {
-      console.warn("Backend Order Service fetch failed, falling back to local DB:", err);
     }
 
-    // 2. Fallback to direct local MongoDB database query
+    // 2. Fetch directly from MongoDB
     try {
       await connectDB();
 
@@ -106,141 +108,119 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const items = (body.items || []).map((item: any) => ({
-      productId: item.productId || "prod-unknown",
-      name: item.name || item.productName || "Product",
-      price: Number(item.price) || 0,
-      quantity: Number(item.quantity) || 1,
-      image: item.image || item.imageUrl || "/iphone17.png",
-    }));
+    const rawItems = Array.isArray(body.items) ? body.items : [];
 
-    if (items.length === 0) {
+    if (rawItems.length === 0) {
       return NextResponse.json(
         { success: false, error: "Cannot create an order with an empty cart." },
         { status: 400 }
       );
     }
 
-    const authHeader = req.headers.get("authorization");
-    const token = authHeader || req.cookies.get("token")?.value;
-    const userId = decoded.id; // Strictly associate with the authenticated user
+    // ── Server-Authoritative Product Verification & Pricing ───────────────
+    // Never trust client prices, totals, or stock values
+    const verifiedItems = [];
+    let subtotal = 0;
 
-    // 1. Try to submit to backend Order Service via API Gateway
-    const gatewayUrl = process.env.API_GATEWAY_URL || process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, "") || "http://localhost:8000";
-    try {
-      const backendPayload = {
-        items: items.map((item: any) => ({
-          productId: item.productId,
-          quantity: item.quantity
-        })),
-        shippingAddress: {
-          fullName: body.shippingAddress?.fullName || `${body.shippingAddress?.firstName || ""} ${body.shippingAddress?.lastName || ""}`.trim() || "Customer",
-          phone: body.shippingAddress?.phone || "+1 (555) 019-2834",
-          street: body.shippingAddress?.street || "",
-          city: body.shippingAddress?.city || "",
-          state: body.shippingAddress?.state || "",
-          zipCode: body.shippingAddress?.zipCode || "",
-          country: body.shippingAddress?.country || "US"
-        },
-        pricing: {
-          subtotal: body.subtotal || body.totalAmount || 0,
-          tax: body.tax || 0,
-          shippingFee: body.shippingCost || 0,
-          discount: body.discount || 0,
-          total: body.grandTotal || body.totalAmount || 0
-        }
-      };
+    for (const rawItem of rawItems) {
+      const productId = String(rawItem.productId || rawItem.id || "");
+      const quantity = Math.max(1, Math.floor(Number(rawItem.quantity) || 1));
 
-      const response = await fetch(`${gatewayUrl}/api/v1/orders`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: token.startsWith("Bearer ") ? token : `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify(backendPayload),
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success && result.data) {
-          const o = result.data;
-          const mappedOrder = {
-            id: o.orderId || o._id,
-            orderId: o.orderId || o._id,
-            userId: o.customerId || o.userId,
-            items: (o.items || []).map((item: any) => ({
-              productId: item.productId,
-              name: item.productName || item.name,
-              price: item.price,
-              quantity: item.quantity,
-              image: item.image || "/iphone17.png"
-            })),
-            shippingAddress: {
-              street: o.shippingAddress?.street || "",
-              city: o.shippingAddress?.city || "",
-              state: o.shippingAddress?.state || "",
-              zipCode: o.shippingAddress?.zipCode || "",
-              country: o.shippingAddress?.country || ""
-            },
-            paymentStatus: o.paymentStatus || "PENDING",
-            orderStatus: o.status || o.orderStatus || "PENDING",
-            status: o.status || o.orderStatus || "PENDING",
-            totalAmount: o.pricing?.total || o.totalAmount || 0,
-            grandTotal: o.pricing?.total || o.grandTotal || 0,
-            createdAt: o.createdAt,
-            updatedAt: o.updatedAt
-          };
-          return NextResponse.json({ success: true, data: mappedOrder }, { status: 201 });
-        }
+      if (!productId) {
+        return NextResponse.json(
+          { success: false, error: "Each cart item must have a valid productId." },
+          { status: 400 }
+        );
       }
-    } catch (err) {
-      console.warn("Backend Order Service submit failed, falling back to local DB:", err);
-    }
 
-    // 2. Fallback to direct local MongoDB database write
-    try {
-      await connectDB();
+      // 1. Fetch authoritative product from database
+      const product = await safeFindProductById(productId);
+      if (!product) {
+        return NextResponse.json(
+          { success: false, error: `Product '${productId}' could not be found or is discontinued.` },
+          { status: 400 }
+        );
+      }
 
-      const orderId = `ORD-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+      // 2. Verify product active status
+      if (!product.isActive) {
+        return NextResponse.json(
+          { success: false, error: `Product '${product.name}' is currently unavailable.` },
+          { status: 400 }
+        );
+      }
 
-      const calculatedTotal = items.reduce((acc: number, i: any) => acc + (i.price * i.quantity), 0);
-      const totalAmount = Number(body.totalAmount ?? body.subtotal ?? calculatedTotal);
-      const shippingCost = Number(body.shippingCost ?? body.shippingFee ?? 0);
-      const tax = Number(body.tax ?? Math.round(totalAmount * 0.05 * 100) / 100);
-      const grandTotal = Number(body.grandTotal ?? (totalAmount + shippingCost + tax));
+      // 3. Verify stock availability
+      if (product.stock < quantity) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Insufficient stock for product '${product.name}'. Requested: ${quantity}, Available: ${product.stock}.`
+          },
+          { status: 400 }
+        );
+      }
 
-      const shippingAddress = {
-        street: body.shippingAddress?.street || "123 Main St",
-        city: body.shippingAddress?.city || "San Francisco",
-        state: body.shippingAddress?.state || "CA",
-        zipCode: body.shippingAddress?.zipCode || body.shippingAddress?.postalCode || "94105",
-        country: body.shippingAddress?.country || "US",
-      };
+      // 4. Use server-authoritative price
+      const itemPrice = Number(product.price);
+      subtotal += itemPrice * quantity;
 
-      const newOrder = await Order.create({
-        orderId,
-        userId,
-        items,
-        shippingAddress,
-        paymentStatus: body.paymentStatus || "PENDING",
-        orderStatus: body.orderStatus || "PENDING",
-        totalAmount,
-        shippingCost,
-        tax,
-        grandTotal,
-        paymentIntentId: body.paymentIntentId,
-        trackingNumber: body.trackingNumber,
+      verifiedItems.push({
+        productId: product.id,
+        name: product.name,
+        price: itemPrice, // Server-calculated authoritative price
+        quantity,
+        image: product.image || "/iphone17.png",
       });
-
-      const { notifyOrderCreated } = await import("@/lib/notifications");
-      await notifyOrderCreated(newOrder).catch((err) => console.warn("Notify error:", err));
-
-      return NextResponse.json({ success: true, data: newOrder }, { status: 201 });
-    } catch (dbErr: any) {
-      console.error("Order creation database error:", dbErr);
-      return NextResponse.json({ error: `Database error: ${dbErr.message}` }, { status: 500 });
     }
+
+    // Server-calculated financial figures
+    const shippingCost = subtotal >= 100 ? 0 : 10;
+    const tax = Math.round(subtotal * 0.05 * 100) / 100;
+    const grandTotal = Math.round((subtotal + shippingCost + tax) * 100) / 100;
+    const totalAmount = grandTotal;
+
+    const userId = decoded.id; // Strictly from verified JWT
+    const orderId = `ORD-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+
+    const shippingAddress = {
+      street: String(body.shippingAddress?.street || "123 Main St").trim(),
+      city: String(body.shippingAddress?.city || "San Francisco").trim(),
+      state: String(body.shippingAddress?.state || "CA").trim(),
+      zipCode: String(body.shippingAddress?.zipCode || body.shippingAddress?.postalCode || "94105").trim(),
+      country: String(body.shippingAddress?.country || "US").trim(),
+    };
+
+    // ── Atomic Inventory Deduction ─────────────────────────────────────────
+    for (const item of verifiedItems) {
+      await safeDeductProductStock(item.productId, item.quantity);
+    }
+
+    // ── Save Order in MongoDB ──────────────────────────────────────────────
+    await connectDB();
+
+    const newOrder = await Order.create({
+      orderId,
+      userId,
+      items: verifiedItems,
+      shippingAddress,
+      paymentStatus: PaymentStatus.PENDING, // Always starts PENDING on creation
+      orderStatus: OrderStatus.PENDING,
+      totalAmount,
+      shippingCost,
+      tax,
+      grandTotal,
+    });
+
+    const { notifyOrderCreated } = await import("@/lib/notifications");
+    await notifyOrderCreated(newOrder).catch((err) => console.warn("Notify error:", err));
+
+    return NextResponse.json({ success: true, data: newOrder }, { status: 201 });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || "Failed to create order" }, { status: 400 });
+    console.error("Order creation error:", error);
+    return NextResponse.json(
+      { success: false, error: error.message || "Failed to create order" },
+      { status: 500 }
+    );
   }
 }

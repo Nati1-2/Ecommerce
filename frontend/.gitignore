@@ -11,17 +11,15 @@
 # Testing
 /coverage
 
-# Environment & Example Files (Strictly Ignored & Hidden)
+# Environment & Example Files (Actual secrets ignored; templates tracked)
 .env
-.env*
-*.env*
-.env.example
-**/.env.example
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 .env*.local
+!.env.example
+!**/.env.example
 
 # Vercel Build Folder
 .vercel

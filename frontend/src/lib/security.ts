@@ -28,6 +28,9 @@ export function sanitizeInput(input: unknown): string {
   // Strip dangerous javascript: / data: / vbscript: protocols
   clean = clean.replace(/^(javascript|data|vbscript):/gi, "");
 
+  // Strip dangerous inline event handlers (onerror=, onload=, onclick=)
+  clean = clean.replace(/\bon\w+\s*=/gi, "");
+
   // Escape HTML special characters to prevent cross-site scripting (XSS)
   return clean.replace(/[&<>"'/]/g, (match) => HTML_ENTITIES[match] || match);
 }

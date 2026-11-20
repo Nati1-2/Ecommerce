@@ -1,9 +1,11 @@
 {
   "name": "ecommerce-microservices",
   "version": "1.0.0",
+  "type": "module",
   "private": true,
   "description": "Production-grade E-Commerce Microservices Platform",
   "scripts": {
+    "test": "node --test --experimental-strip-types tests/unit/*.test.ts tests/integration/*.test.ts tests/security/*.test.ts",
     "build": "npm run build --prefix frontend",
     "vercel-build": "npm run build --prefix frontend",
     "dev:frontend": "npm run dev --prefix frontend",

@@ -4,7 +4,16 @@ import jwt from "jsonwebtoken";
 import { safeFindUserByEmail, safeCreateUser, safeSaveUserSession } from "@/lib/mongodb";
 import { parseUserAgent, getRealClientIp, resolveGeoLocation } from "@/lib/deviceTracker";
 
-const JWT_SECRET = process.env.JWT_SECRET || process.env.JWT_ACCESS_SECRET || "your_jwt_access_secret_key_change_in_production";
+function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET || process.env.JWT_ACCESS_SECRET;
+  if (!secret) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("CRITICAL: JWT_SECRET environment variable is not configured.");
+    }
+    return "dev_jwt_secret_must_be_configured_in_env_before_production_deployment";
+  }
+  return secret;
+}
 
 async function recordSession(req: NextRequest, userId: string, email: string, body: any) {
   try {
@@ -41,100 +50,48 @@ async function recordSession(req: NextRequest, userId: string, email: string, bo
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { email, password, name, role = "CUSTOMER" } = body;
+    const { email, password, name } = body;
+
+    // Security: Disallow client-specified role. Public registration is strictly CUSTOMER.
+    const assignedRole = "CUSTOMER";
 
     if (!email || !password) {
       return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
     }
 
-    if (!name || name.trim().length < 2) {
+    if (!name || String(name).trim().length < 2) {
       return NextResponse.json({ error: "Full name is required (minimum 2 characters)" }, { status: 400 });
     }
 
-    if (password.length < 8) {
+    if (String(password).length < 8) {
       return NextResponse.json({ error: "Password must be at least 8 characters long" }, { status: 400 });
     }
 
-    const normalizedEmail = email.toLowerCase().trim();
+    const normalizedEmail = String(email).toLowerCase().trim();
+    const isHttps = req.nextUrl.protocol === "https:" || req.headers.get("x-forwarded-proto") === "https";
+    const jwtSecret = getJwtSecret();
 
-    // 1. Try to register with backend Auth Service via API Gateway
-    const gatewayUrl = process.env.API_GATEWAY_URL || process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, "") || "http://localhost:8000";
-    try {
-      const response = await fetch(`${gatewayUrl}/api/v1/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: normalizedEmail, password, name: name.trim(), role }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        const token = data.accessToken || data.token;
-        if (data.success && token) {
-          const userObj = {
-            id: data.user?.id || data.user?._id || data.user?.userId || data.userId,
-            email: data.user?.email || normalizedEmail,
-            name: data.user?.name || name.trim(),
-            role: data.user?.role || role || "CUSTOMER",
-          };
-
-          const sessionId = await recordSession(req, userObj.id, userObj.email, body);
-
-          const res = NextResponse.json({
-            success: true,
-            token,
-            sessionId,
-            user: userObj,
-          });
-
-          res.cookies.set("token", token, {
-            httpOnly: false,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-            maxAge: 60 * 60 * 24 * 7,
-            path: "/",
-          });
-
-          res.cookies.set("session_id", sessionId, {
-            httpOnly: false,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-            maxAge: 60 * 60 * 24 * 30,
-            path: "/",
-          });
-
-          return res;
-        }
-      } else if (response.status === 400 || response.status === 409) {
-        const errData = await response.json().catch(() => null);
-        return NextResponse.json(
-          { error: errData?.message || errData?.error || "Registration failed" },
-          { status: response.status }
-        );
-      }
-    } catch (err) {
-      console.warn("Backend Auth Service unreachable, falling back to local DB:", err);
-    }
-
-    // 2. Fallback to local MongoDB / in-memory
+    // 1. Check if user already exists
     const existingUser = await safeFindUserByEmail(normalizedEmail);
     if (existingUser) {
-      return NextResponse.json({ error: "An account with this email already exists" }, { status: 400 });
+      return NextResponse.json({ error: "An account with this email already exists" }, { status: 409 });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // 2. Hash password with bcrypt cost 12
+    const hashedPassword = await bcrypt.hash(password, 12);
 
     const newUser = await safeCreateUser({
       email: normalizedEmail,
       password: hashedPassword,
-      name: name.trim(),
-      role: role || "CUSTOMER",
+      name: String(name).trim(),
+      role: assignedRole,
       isVerified: true,
     });
 
     const userId = newUser.id || newUser._id;
     const token = jwt.sign(
-      { id: userId, userId, email: newUser.email, role: newUser.role },
-      JWT_SECRET,
+      { id: userId, userId, email: newUser.email, role: assignedRole },
+      jwtSecret,
       { expiresIn: "7d" }
     );
 
@@ -148,21 +105,21 @@ export async function POST(req: NextRequest) {
         id: userId,
         email: newUser.email,
         name: newUser.name || "",
-        role: newUser.role,
+        role: assignedRole,
       },
-    });
+    }, { status: 201 });
 
     response.cookies.set("token", token, {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === "production",
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production" || isHttps,
       sameSite: "lax",
       maxAge: 60 * 60 * 24 * 7,
       path: "/",
     });
 
     response.cookies.set("session_id", sessionId, {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === "production",
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production" || isHttps,
       sameSite: "lax",
       maxAge: 60 * 60 * 24 * 30,
       path: "/",
