@@ -322,7 +322,12 @@ export async function fetchProducts(params: GetProductsParams): Promise<Products
     console.warn("Next.js internal /api/products unavailable:", err);
   }
 
-  // 3. Resilient fallback to mock products so the catalog never breaks
+  // 3. In production, never silently mask database/backend failures with mock products
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("Unable to fetch products from backend database. Please check your connection and try again.");
+  }
+
+  // Development/test-only fallback to local sample data
   return getFilteredMockProducts(params);
 }
 
@@ -362,7 +367,12 @@ export async function fetchProductById(id: string): Promise<Product | null> {
     // ignore
   }
 
-  // 3. Fallback to mock products by id or slug
+  // In production, do not fake products when not found in database
+  if (process.env.NODE_ENV === "production") {
+    return null;
+  }
+
+  // Fallback to mock products by id or slug (development only)
   const mockMatch = mockProducts.find((p) => p.id === id || p.slug === id);
   if (mockMatch) {
     return normalizeProduct(mockMatch);
@@ -486,7 +496,11 @@ export async function fetchOrderById(id: string): Promise<Order> {
   const localOrder = useOrderStore.getState().orders.find((o) => o.id === id);
   if (localOrder) return localOrder;
 
-  // Final structured fallback order
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(`Order "${id}" could not be retrieved from the database.`);
+  }
+
+  // Development-only fallback order for offline UI inspection
   return {
     id: id || "ORD-TEST-1001",
     status: "Processing",

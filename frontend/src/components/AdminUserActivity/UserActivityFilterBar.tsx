@@ -30,8 +30,8 @@ interface UserActivityFilterBarProps {
   setIsAutoRefresh?: (val: boolean) => void;
   onToggleAutoRefresh?: () => void;
   onRefresh?: () => void;
-  onSimulateClick: () => void;
-  isSimulating: boolean;
+  onSimulateClick?: () => void;
+  isSimulating?: boolean;
   isFetching?: boolean;
 }
 
@@ -41,9 +41,7 @@ export default function UserActivityFilterBar(props: UserActivityFilterBarProps)
     selectedEventType,
     selectedRole,
     isAutoRefresh,
-    isSimulating,
     isFetching = false,
-    onSimulateClick,
   } = props;
 
   const setSearchQuery = props.setSearchQuery || props.onSearchChange || (() => {});
@@ -122,17 +120,6 @@ export default function UserActivityFilterBar(props: UserActivityFilterBarProps)
             title="Refresh Ingress Clickstream"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? "animate-spin text-blue-600" : ""}`} />
-          </button>
-
-          <button
-            type="button"
-            onClick={onSimulateClick}
-            disabled={isSimulating}
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm hover:shadow active:scale-98 transition-all disabled:opacity-50 cursor-pointer"
-            title="Inject simulated live user click & action event"
-          >
-            <PlusCircle className="w-3.5 h-3.5" />
-            <span>{isSimulating ? "Recording..." : "Simulate Click"}</span>
           </button>
         </div>
       </div>

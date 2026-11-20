@@ -44,11 +44,4 @@ export const userActivityApi = {
     const qs = params.toString() ? `?${params.toString()}` : "";
     return apiFetch<UserActivityApiResponse>(`/api/track/activity${qs}`);
   },
-
-  simulateClick: async (): Promise<{ success: boolean; message: string }> => {
-    return apiFetch<{ success: boolean; message: string }>("/api/track/activity", {
-      method: "POST",
-      body: JSON.stringify({ action: "simulate" }),
-    });
-  },
 };

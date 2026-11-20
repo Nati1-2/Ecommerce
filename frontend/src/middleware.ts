@@ -2,24 +2,62 @@ import { NextRequest, NextResponse } from "next/server";
 
 const PROTECTED_PREFIXES = ["/admin", "/vendor", "/checkout", "/payment", "/profile", "/account", "/orders"];
 
-function parseJwtPayload(token: string): { role?: string; id?: string; email?: string } | null {
+function getJwtSecret(): string {
+  return process.env.JWT_SECRET || process.env.JWT_ACCESS_SECRET || "";
+}
+
+/**
+ * Cryptographic JWT signature verification at the edge using Web Crypto API.
+ * Validates HMAC-SHA256 signature and expiration without relying on external Node libraries.
+ */
+async function verifyJwtSignature(
+  token: string,
+  secret: string
+): Promise<{ role?: string; id?: string; email?: string } | null> {
   try {
     const parts = token.split(".");
     if (parts.length !== 3) return null;
-    const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split("")
-        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-        .join("")
+    const [headerB64, payloadB64, signatureB64] = parts;
+
+    // Decode payload
+    const payloadJson = JSON.parse(
+      atob(payloadB64.replace(/-/g, "+").replace(/_/g, "/"))
     );
-    return JSON.parse(jsonPayload);
+
+    // Validate expiration
+    if (payloadJson.exp && payloadJson.exp * 1000 < Date.now()) {
+      return null;
+    }
+
+    // Fail closed if secret is not configured
+    if (!secret) {
+      return null;
+    }
+
+    const enc = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      "raw",
+      enc.encode(secret),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["verify"]
+    );
+
+    const data = enc.encode(`${headerB64}.${payloadB64}`);
+    const sigStr = atob(signatureB64.replace(/-/g, "+").replace(/_/g, "/"));
+    const sigBytes = new Uint8Array(sigStr.length);
+    for (let i = 0; i < sigStr.length; i++) {
+      sigBytes[i] = sigStr.charCodeAt(i);
+    }
+
+    const isValid = await crypto.subtle.verify("HMAC", key, sigBytes, data);
+    return isValid ? payloadJson : null;
   } catch {
     return null;
   }
 }
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Add enterprise security headers
@@ -67,9 +105,21 @@ export function middleware(req: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
 
-    // Role-Based Access Control (RBAC) validation
-    const payload = parseJwtPayload(token);
-    const userRole = payload?.role?.toUpperCase();
+    // Cryptographic JWT signature verification
+    const secret = getJwtSecret();
+    const payload = await verifyJwtSignature(token, secret);
+
+    if (!payload) {
+      const loginUrl = new URL("/login", req.url);
+      loginUrl.searchParams.set("redirect", pathname);
+      loginUrl.searchParams.set("error", "invalid_or_expired_session");
+      const redirectResponse = NextResponse.redirect(loginUrl);
+      redirectResponse.cookies.delete("token");
+      redirectResponse.cookies.delete("session_id");
+      return redirectResponse;
+    }
+
+    const userRole = payload.role?.toUpperCase();
 
     // Restrict /admin strictly to ADMIN
     if (pathname.startsWith("/admin") && userRole !== "ADMIN") {

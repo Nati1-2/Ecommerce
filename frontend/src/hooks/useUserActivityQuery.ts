@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { userActivityApi, UserActivityFilters } from "@/services/api/userActivityApi";
 
 export function useUserActivity(
@@ -19,15 +19,5 @@ export function useUserActivity(
     queryFn: () => userActivityApi.getUserActivity(filters),
     refetchInterval: refetchIntervalMs,
     staleTime: 2000,
-  });
-}
-
-export function useSimulateUserClick() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: userActivityApi.simulateClick,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-user-activity"] });
-    },
   });
 }

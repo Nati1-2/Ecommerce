@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import jwt from "jsonwebtoken";
+import { authTokens } from "./authTokens.ts";
 
 export function getJwtSecret(): string {
   const secret = process.env.JWT_SECRET || process.env.JWT_ACCESS_SECRET;
@@ -7,7 +7,7 @@ export function getJwtSecret(): string {
     if (process.env.NODE_ENV === "production") {
       throw new Error("CRITICAL: JWT_SECRET environment variable is not configured.");
     }
-    return "dev_jwt_secret_must_be_configured_in_env_before_production_deployment";
+    return "dev_secret_only_for_local_development_testing_min_32_chars";
   }
   return secret;
 }
@@ -33,17 +33,16 @@ export function getUserFromToken(req: NextRequest): TokenPayload | null {
       return null;
     }
 
-    const secret = getJwtSecret();
-    const decoded = jwt.verify(token, secret) as any;
-    if (!decoded) return null;
+    const verified = authTokens.verifyAccessToken(token);
+    if (!verified) return null;
 
-    const id = decoded.id || decoded.userId;
+    const id = verified.id || verified.userId;
     if (!id) return null;
 
     return {
       id: String(id),
-      email: decoded.email ? String(decoded.email) : "",
-      role: decoded.role || "CUSTOMER",
+      email: verified.email ? String(verified.email) : "",
+      role: verified.role || "CUSTOMER",
     };
   } catch (err) {
     return null;

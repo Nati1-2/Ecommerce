@@ -10,7 +10,12 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 8000;
-const JWT_SECRET = process.env.JWT_SECRET || process.env.JWT_ACCESS_SECRET || 'your_jwt_access_secret_key_change_in_production';
+const JWT_SECRET = process.env.JWT_SECRET || process.env.JWT_ACCESS_SECRET || (process.env.NODE_ENV === 'production' ? '' : 'dev_secret_only_for_local_development_testing_min_32_chars');
+
+if (process.env.NODE_ENV === 'production' && !JWT_SECRET) {
+  console.error('FATAL: JWT_SECRET environment variable is missing in production.');
+  process.exit(1);
+}
 
 // ── Security & Middleware ──────────────────────────────────────────────────
 app.use(helmet());

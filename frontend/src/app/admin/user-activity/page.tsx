@@ -10,7 +10,7 @@ import {
   ShieldCheck,
   CheckCircle2,
 } from "lucide-react";
-import { useUserActivity, useSimulateUserClick } from "@/hooks/useUserActivityQuery";
+import { useUserActivity } from "@/hooks/useUserActivityQuery";
 import { UserClickEvent } from "@/types/userActivity";
 import UserActivityKPIs from "@/components/AdminUserActivity/UserActivityKPIs";
 import UserActivityFilterBar from "@/components/AdminUserActivity/UserActivityFilterBar";
@@ -40,19 +40,6 @@ export default function AdminUserActivityPage() {
     },
     refetchInterval
   );
-
-  const simulateMutation = useSimulateUserClick();
-
-  const handleSimulate = async () => {
-    try {
-      await simulateMutation.mutateAsync();
-      setToastMessage("⚡ Synthetic User Click successfully recorded into live clickstream!");
-      setTimeout(() => setToastMessage(null), 3500);
-    } catch {
-      setToastMessage("Failed to simulate click event.");
-      setTimeout(() => setToastMessage(null), 3500);
-    }
-  };
 
   const handleHotspotFilter = (text: string) => {
     setSearchQuery(text);
@@ -167,12 +154,10 @@ export default function AdminUserActivityPage() {
         selectedEventType={selectedEventType}
         selectedRole={selectedRole}
         isAutoRefresh={isAutoRefresh}
-        isSimulating={simulateMutation.isPending}
         onSearchChange={handleSearchChange}
         onEventTypeChange={handleEventTypeChange}
         onRoleChange={handleRoleChange}
         onToggleAutoRefresh={() => setIsAutoRefresh(!isAutoRefresh)}
-        onSimulateClick={handleSimulate}
       />
 
       {/* 3. Hotspots Card */}

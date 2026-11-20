@@ -352,7 +352,7 @@ function generateSeedClicks(): UserClickEvent[] {
 let userClicksStore: UserClickEvent[] = [];
 
 function getClicksStore(): UserClickEvent[] {
-  if (userClicksStore.length === 0) {
+  if (userClicksStore.length === 0 && process.env.NODE_ENV !== "production") {
     userClicksStore = generateSeedClicks();
   }
   return userClicksStore;
@@ -419,12 +419,15 @@ export async function GET(req: NextRequest) {
   const vendorClicks = clicks.filter((c) => c.user.role === "VENDOR").length;
   const adminClicks = clicks.filter((c) => c.user.role === "ADMIN").length;
 
+  const oneMinuteAgo = Date.now() - 60 * 1000;
+  const recentClicks = clicks.filter((c) => new Date(c.timestamp).getTime() > oneMinuteAgo).length;
+
   const stats: UserActivityStats = {
-    totalClicksToday: clicks.length + 18450,
+    totalClicksToday: clicks.length,
     activeClickersCount: new Set(clicks.map((c) => c.sessionId)).size,
-    clicksPerMinute: 48,
-    topClickedElement: hotspots[0]?.elementText || "Add to Cart",
-    topClickedCategory: "Cart & Checkout Clicks (38%)",
+    clicksPerMinute: recentClicks,
+    topClickedElement: hotspots[0]?.elementText || "None",
+    topClickedCategory: hotspots[0] ? `${hotspots[0].eventType} (${hotspots[0].percentage}%)` : "None",
     customerClicksShare: Math.round((customerClicks / totalCalculated) * 100),
     guestClicksShare: Math.round((guestClicks / totalCalculated) * 100),
     vendorClicksShare: Math.round((vendorClicks / totalCalculated) * 100),
@@ -453,105 +456,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => ({}));
     const store = getClicksStore();
 
-    if (body.action === "simulate") {
-      const simulatedPresets: Array<{
-        type: ClickEventType;
-        tag: string;
-        text: string;
-        path: string;
-        role: UserRoleType;
-        name: string;
-        email: string;
-      }> = [
-        {
-          type: "ADD_TO_CART_CLICK",
-          tag: "BUTTON",
-          text: "Add to Cart - Wireless Earbuds Pro",
-          path: "/products/quantum-anc-headphones",
-          role: "CUSTOMER",
-          name: "John Smith",
-          email: "john.smith@gmail.com",
-        },
-        {
-          type: "CHECKOUT_CLICK",
-          tag: "BUTTON",
-          text: "Confirm & Pay with Apple Pay ($249.00)",
-          path: "/checkout",
-          role: "CUSTOMER",
-          name: "John Smith",
-          email: "john.smith@gmail.com",
-        },
-        {
-          type: "NAV_CLICK",
-          tag: "A",
-          text: "Best Sellers & Top Deals",
-          path: "/bestsellers",
-          role: "GUEST",
-          name: "Guest Shopper #7712",
-          email: "guest_7712@natistore.com",
-        },
-        {
-          type: "DONATE_CLICK",
-          tag: "BUTTON",
-          text: "Support Platform via Payoneer 💖",
-          path: "/",
-          role: "CUSTOMER",
-          name: "Elena Rostova",
-          email: "elena.r@gmail.com",
-        },
-      ];
-
-      const pick = simulatedPresets[Math.floor(Math.random() * simulatedPresets.length)];
-      const newEvent: UserClickEvent = {
-        id: `clk_sim_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-        eventType: pick.type,
-        targetTag: pick.tag,
-        elementText: pick.text,
-        elementId: `elem_${Math.random().toString(36).substring(2, 8)}`,
-        coordinates: {
-          x: Math.floor(100 + Math.random() * 800),
-          y: Math.floor(200 + Math.random() * 600),
-        },
-        path: pick.path,
-        user: {
-          id: `usr_${Math.random().toString(36).substring(2, 8)}`,
-          email: pick.email,
-          name: pick.name,
-          role: pick.role,
-        },
-        sessionId: `sess_sim_${Math.random().toString(36).substring(2, 8)}`,
-        ip: "104.28.19.45",
-        location: {
-          city: "San Francisco",
-          region: "California",
-          country: "United States",
-          countryCode: "US",
-          flag: "🇺🇸",
-          isp: "Cloudflare Ingress",
-        },
-        device: {
-          model: "Apple iPhone 15 Pro",
-          brand: "Apple",
-          type: "Mobile",
-          os: "iOS 17.5",
-          browser: "Mobile Safari 17.5",
-          screenResolution: "393×852",
-        },
-        timestamp: new Date().toISOString(),
-        durationOnPageSeconds: Math.floor(10 + Math.random() * 90),
-      };
-
-      store.unshift(newEvent);
-      if (store.length > 500) store.pop();
-
-      return NextResponse.json({
-        success: true,
-        message: "Simulated user click recorded successfully.",
-        event: newEvent,
-      });
-    }
-
-    // Normal client auto-recorded click
+    // Authenticated or anonymous client auto-recorded click
     const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "127.0.0.1";
     const userAgent = req.headers.get("user-agent") || "";
 
