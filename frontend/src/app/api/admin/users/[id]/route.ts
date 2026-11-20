@@ -14,30 +14,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     const resolvedParams = await params;
     const { id } = resolvedParams;
 
-    let user = null;
-    try {
-      await connectDB();
-      user = await User.findById(id).select("-password");
-    } catch (err: any) {
-      console.warn("Get User Detail DB notice:", err?.message || err);
-    }
+    await connectDB();
+    const user = await User.findById(id).select("-password");
 
     if (!user) {
-      return NextResponse.json({
-        success: true,
-        user: {
-          id,
-          name: "User Account",
-          email: "user@natistore.com",
-          role: "Customer",
-          status: "Active",
-          location: "United States",
-          totalOrders: 5,
-          totalSpent: 450,
-          createdAt: "2026-01-15",
-          lastLogin: "Active recently",
-        }
-      });
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     return NextResponse.json({ success: true, user });
@@ -57,28 +38,35 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const { id } = resolvedParams;
     const updates = await req.json();
 
-    let updatedUser = null;
-    try {
-      await connectDB();
-      const mongoUpdates: Record<string, any> = {};
-      if (updates.status !== undefined) mongoUpdates.isVerified = updates.status !== "Blocked";
-      if (updates.role) {
-        mongoUpdates.role = updates.role.toUpperCase();
-        mongoUpdates.membership = mongoUpdates.role === "ADMIN" ? "SuperAdmin Tier 👑" : mongoUpdates.role === "VENDOR" ? "Vendor Merchant 🚀" : "Standard Member ⭐";
+    await connectDB();
+    const mongoUpdates: Record<string, any> = {};
+    if (updates.status !== undefined) mongoUpdates.isVerified = updates.status !== "Blocked";
+    if (updates.role) {
+      const allowedRoles = ["ADMIN", "VENDOR", "CUSTOMER"];
+      const upperRole = updates.role.toUpperCase();
+      if (!allowedRoles.includes(upperRole)) {
+        return NextResponse.json({ error: "Invalid role specified" }, { status: 400 });
       }
-      if (updates.name) mongoUpdates.name = updates.name;
-      if (updates.password) {
-        mongoUpdates.password = await bcrypt.hash(updates.password, 10);
+      mongoUpdates.role = upperRole;
+      mongoUpdates.membership = upperRole === "ADMIN" ? "SuperAdmin Tier 👑" : upperRole === "VENDOR" ? "Vendor Merchant 🚀" : "Standard Member ⭐";
+    }
+    if (updates.name && typeof updates.name === "string") mongoUpdates.name = updates.name.trim();
+    if (updates.password) {
+      if (typeof updates.password === "string" && updates.password.length >= 8) {
+        mongoUpdates.password = await bcrypt.hash(updates.password, 12);
+      } else {
+        return NextResponse.json({ error: "Password must be at least 8 characters long" }, { status: 400 });
       }
+    }
 
-      updatedUser = await User.findByIdAndUpdate(id, { $set: mongoUpdates }, { new: true }).select("-password");
-    } catch (err: any) {
-      console.warn("Update User DB notice:", err?.message || err);
+    const updatedUser = await User.findByIdAndUpdate(id, { $set: mongoUpdates }, { new: true }).select("-password");
+    if (!updatedUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     return NextResponse.json({
       success: true,
-      user: updatedUser || { id, ...updates },
+      user: updatedUser,
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
@@ -95,11 +83,14 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     const resolvedParams = await params;
     const { id } = resolvedParams;
 
-    try {
-      await connectDB();
-      await User.findByIdAndDelete(id);
-    } catch (err: any) {
-      console.warn("Delete User DB notice:", err?.message || err);
+    if (id === auth.payload.id) {
+      return NextResponse.json({ error: "Cannot delete your own administrator account" }, { status: 400 });
+    }
+
+    await connectDB();
+    const deleted = await User.findByIdAndDelete(id);
+    if (!deleted) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     return NextResponse.json({ success: true, id });

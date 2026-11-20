@@ -64,15 +64,15 @@ if (!global.inMemoryVisitorLogs) {
   global.inMemoryVisitorLogs = [];
 }
 
-// Seed real hashed demo users and vendor data once per process start (dev only)
+// Seed real hashed demo users and vendor data once per process start (strictly dev/test only)
 async function seedDemoUsers() {
   if (process.env.NODE_ENV === "production") return;
   if (global.inMemorySeeded) return;
   global.inMemorySeeded = true;
 
-  // 1. Seed Real Users
+  // Seed Real Users in dev
   for (const account of REAL_USERS) {
-    const rawPass = account.role === "ADMIN" ? (account.email.includes("nati") ? "nati1234" : "admin") : account.role === "VENDOR" ? "vendor123" : "password123";
+    const rawPass = account.role === "VENDOR" ? "vendor123" : "password123";
     const hashedPassword = await bcrypt.hash(rawPass, 10);
     global.inMemoryUsers!.set(account.email.toLowerCase(), {
       id: account.id,
@@ -93,7 +93,6 @@ async function seedDemoUsers() {
     });
   }
 
-  // Also maintain backwards compatibility with legacy demo aliases
   const legacyAliases = [
     { email: "john.smith@gmail.com", pass: "password123", name: "John Smith", role: "CUSTOMER" },
     { email: "vendor@natistore.com", pass: "vendor123", name: "Apex Tech Wearables Store", role: "VENDOR" },
@@ -108,127 +107,18 @@ async function seedDemoUsers() {
         password: hPass,
         name: leg.name,
         role: leg.role,
-        membership: leg.role === "ADMIN" ? "SuperAdmin Tier 👑" : leg.role === "VENDOR" ? "Vendor Merchant 🚀" : "Standard Member ⭐",
+        membership: leg.role === "VENDOR" ? "Vendor Merchant 🚀" : "Standard Member ⭐",
         points: 500,
         isVerified: true,
       });
     }
   }
-
-  // 2. Seed Real Vendor Stores
-  global.inMemoryVendors = [...REAL_VENDORS];
-  global.inMemoryProfile = REAL_VENDORS[0];
-
-  // 3. Seed Real Products Catalog
-  global.inMemoryProducts = [...REAL_PRODUCTS];
-
-  // 4. Seed Real Orders Pipeline
-  global.inMemoryOrders = [...REAL_ORDERS];
-
-  // 5. Seed Real Reviews
-  global.inMemoryReviews = [...REAL_REVIEWS];
-
-  // 6. Seed Real Customers
-  global.inMemoryCustomers = REAL_USERS.filter((u) => u.role === "CUSTOMER").map((u) => ({
-    id: u.id,
-    name: u.name,
-    email: u.email,
-    totalOrders: u.totalOrders,
-    totalSpent: u.totalSpent,
-    status: u.isVerified ? "Active" : "Pending",
-  }));
-
-  // 7. Seed Real Payments & Ledgers
-  global.inMemoryPayments = {
-    ...REAL_PAYMENTS_DATA,
-    transactions: REAL_ORDERS.map((o) => ({
-      id: o.stripeChargeId || `tx_${o.orderNumber}`,
-      amount: o.grandTotal,
-      status: o.paymentStatus === "PAID" ? "Successful" : o.paymentStatus === "PENDING" ? "Pending" : "Failed",
-      type: "Order Payment",
-      date: new Date(o.rawDate).toISOString().split("T")[0],
-      customer: o.customerName,
-      method: o.paymentMethod,
-    })),
-    payouts: [
-      {
-        id: "po_1001",
-        amount: 14850.0,
-        currency: "USD",
-        status: "Processing",
-        payoutMethod: "Stripe Escrow Deposit",
-        bankAccountLast4: "5678",
-        initiatedAt: new Date(Date.now() - 3600 * 24 * 2 * 1000).toISOString().split("T")[0],
-        estimatedArrival: "Tomorrow, Nov 20",
-      },
-      {
-        id: "po_1002",
-        amount: 28940.0,
-        currency: "USD",
-        status: "Paid",
-        payoutMethod: "Stripe Deposit",
-        bankAccountLast4: "1234",
-        initiatedAt: new Date(Date.now() - 3600 * 24 * 7 * 1000).toISOString().split("T")[0],
-        estimatedArrival: "Delivered",
-      },
-    ],
-    balance: { available: 184500.0, pending: 14850.0, totalEarnings: REAL_PLATFORM_STATS.revenue },
-  };
-
-  // 8. Seed Platform Metrics & Aggregations
-  global.inMemoryMetrics = {
-    totalRevenue: REAL_PLATFORM_STATS.revenue,
-    revenueChangePercent: REAL_PLATFORM_STATS.revenueGrowth,
-    totalOrders: REAL_PLATFORM_STATS.orders,
-    ordersChangePercent: REAL_PLATFORM_STATS.ordersGrowth,
-    productsSold: 8490,
-    productsSoldChangePercent: 14.2,
-    totalCustomers: REAL_PLATFORM_STATS.users,
-    customersChangePercent: REAL_PLATFORM_STATS.usersGrowth,
-    pendingOrdersCount: 2,
-    processingOrdersCount: 4,
-    shippedOrdersCount: 6,
-    deliveredOrdersCount: 3236,
-    cancelledOrdersCount: 0,
-    lowStockCount: 3,
-    outOfStockCount: 0,
-  };
-
-  // 9. Seed Time-Series Analytics
-  global.inMemoryAnalytics = {
-    revenueData: REAL_REVENUE_SERIES,
-    userGrowthData: REAL_USER_GROWTH_SERIES,
-    dailyPerformance: REAL_REVENUE_SERIES.slice(-7).map((r) => ({
-      date: r.date,
-      revenue: r.revenue,
-      orders: r.sales,
-      profit: r.profit,
-      conversionRate: 3.8,
-      views: r.sales * 14,
-    })),
-    categoryBreakdown: [
-      { category: "Electronics & Tech", revenue: 485000.0, sales: 2420 },
-      { category: "Cameras & Optics", revenue: 320000.0, sales: 1100 },
-      { category: "Gaming Peripherals", revenue: 215000.0, sales: 1450 },
-      { category: "Home & Furniture", revenue: 165000.0, sales: 780 },
-      { category: "Apparel & Fashion", revenue: 99500.0, sales: 2740 },
-    ],
-    conversionRate: 3.8,
-    averageOrderValue: 395.47,
-    repeatCustomerRate: 34.2,
-    topGeographicRegions: [
-      { region: "California", percentage: 32 },
-      { region: "New York", percentage: 22 },
-      { region: "Texas", percentage: 16 },
-      { region: "Washington", percentage: 12 },
-      { region: "Illinois", percentage: 10 },
-      { region: "International", percentage: 8 },
-    ],
-  };
 }
 
-// Kick off seeding immediately (non-blocking)
-seedDemoUsers().catch(console.error);
+// Kick off seeding in development only
+if (process.env.NODE_ENV !== "production") {
+  seedDemoUsers().catch(() => null);
+}
 
 export async function connectDB() {
   if (cached!.conn) {
@@ -239,7 +129,7 @@ export async function connectDB() {
     const opts = {
       bufferCommands: false,
       maxPoolSize: 5,
-      serverSelectionTimeoutMS: 3000,
+      serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
     };
 
@@ -250,7 +140,7 @@ export async function connectDB() {
   try {
     cached!.conn = await cached!.promise;
     if (process.env.NODE_ENV !== "production") {
-      import("./dbSeeder").then(m => m.seedDatabaseCollections()).catch(console.error);
+      import("./dbSeeder").then(m => m.seedDatabaseCollections()).catch(() => null);
     }
   } catch (e) {
     cached!.promise = null;
@@ -261,7 +151,7 @@ export async function connectDB() {
 }
 
 export async function safeFindUserByEmail(email: string) {
-  const normalizedEmail = email.toLowerCase();
+  const normalizedEmail = email.toLowerCase().trim();
   try {
     await connectDB();
     const { User } = await import("@/models/User");
@@ -280,15 +170,24 @@ export async function safeFindUserByEmail(email: string) {
         membership: user.membership || "Standard Member ⭐",
         points: user.points ?? 100,
         isVerified: user.isVerified,
+        status: user.status || "ACTIVE",
       };
     }
+    return null;
   } catch (err: any) {
-    console.warn("MongoDB query notice:", err?.message || err);
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(`Database failure during user lookup: ${err.message}`);
+    }
+    console.warn("MongoDB query notice in development:", err?.message || err);
   }
 
-  // Ensure seeds are ready before checking memory
-  await seedDemoUsers();
-  return global.inMemoryUsers!.get(normalizedEmail) || null;
+  // Development/test-only in-memory fallback
+  if (process.env.NODE_ENV !== "production") {
+    await seedDemoUsers();
+    return global.inMemoryUsers!.get(normalizedEmail) || null;
+  }
+
+  return null;
 }
 
 export async function safeCreateUser(userData: {
@@ -298,7 +197,7 @@ export async function safeCreateUser(userData: {
   role?: "CUSTOMER" | "ADMIN" | "VENDOR";
   isVerified?: boolean;
 }) {
-  const normalizedEmail = userData.email.toLowerCase();
+  const normalizedEmail = userData.email.toLowerCase().trim();
   try {
     await connectDB();
     const { User } = await import("@/models/User");
@@ -320,26 +219,34 @@ export async function safeCreateUser(userData: {
       isVerified: newUser.isVerified,
     };
   } catch (err: any) {
-    console.warn("MongoDB insert notice:", err?.message || err);
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(`Database failure during user registration: ${err.message}`);
+    }
+    console.warn("MongoDB insert notice in development:", err?.message || err);
   }
 
-  const id = "usr-" + Math.random().toString(36).substring(2, 9);
-  const memoryUser = {
-    id,
-    _id: id,
-    email: normalizedEmail,
-    password: userData.password,
-    name: userData.name || "",
-    role: userData.role || "CUSTOMER",
-    isVerified: userData.isVerified ?? true,
-    avatar: "",
-    phone: "",
-    address: "",
-    membership: "Standard Member ⭐",
-    points: 100,
-  };
-  global.inMemoryUsers!.set(normalizedEmail, memoryUser);
-  return memoryUser;
+  // Development/test-only in-memory fallback
+  if (process.env.NODE_ENV !== "production") {
+    const id = "usr-" + Math.random().toString(36).substring(2, 9);
+    const memoryUser = {
+      id,
+      _id: id,
+      email: normalizedEmail,
+      password: userData.password,
+      name: userData.name || "",
+      role: userData.role || "CUSTOMER",
+      isVerified: userData.isVerified ?? true,
+      avatar: "",
+      phone: "",
+      address: "",
+      membership: "Standard Member ⭐",
+      points: 100,
+    };
+    global.inMemoryUsers!.set(normalizedEmail, memoryUser);
+    return memoryUser;
+  }
+
+  throw new Error("User creation failed: Database is unavailable.");
 }
 
 export async function safeFindUserById(id: string) {
@@ -360,19 +267,25 @@ export async function safeFindUserById(id: string) {
         membership: user.membership || "Standard Member ⭐",
         points: user.points ?? 100,
         isVerified: user.isVerified,
+        stripeCustomerId: user.stripeCustomerId,
       };
     }
+    return null;
   } catch (err: any) {
-    console.warn("MongoDB findById notice:", err?.message || err);
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(`Database failure during user lookup by ID: ${err.message}`);
+    }
+    console.warn("MongoDB findById notice in development:", err?.message || err);
   }
 
-  await seedDemoUsers();
-  for (const u of global.inMemoryUsers!.values()) {
-    if (u.id === id || u._id === id) {
-      const { password, ...safeUser } = u;
-      return safeUser;
+  // Development/test-only in-memory fallback
+  if (process.env.NODE_ENV !== "production") {
+    await seedDemoUsers();
+    for (const u of global.inMemoryUsers!.values()) {
+      if (u.id === id || u._id === id) return u;
     }
   }
+
   return null;
 }
 
@@ -386,142 +299,110 @@ export async function safeUpdateUser(id: string, updateData: Record<string, any>
         id: updated._id.toString(),
         _id: updated._id.toString(),
         email: updated.email,
-        name: updated.name || "",
+        name: updated.name,
         role: updated.role,
-        avatar: updated.avatar || "",
-        phone: updated.phone || "",
-        address: updated.address || "",
-        membership: updated.membership || "Standard Member ⭐",
-        points: updated.points ?? 100,
+        avatar: updated.avatar,
+        phone: updated.phone,
+        address: updated.address,
+        membership: updated.membership,
+        points: updated.points,
         isVerified: updated.isVerified,
       };
     }
   } catch (err: any) {
-    console.warn("MongoDB update notice:", err?.message || err);
-  }
-
-  for (const [email, u] of global.inMemoryUsers!.entries()) {
-    if (u.id === id || u._id === id) {
-      const updatedUser = { ...u, ...updateData };
-      global.inMemoryUsers!.set(email, updatedUser);
-      const { password, ...safeUser } = updatedUser;
-      return safeUser;
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(`Database failure updating user: ${err.message}`);
     }
   }
+
+  if (process.env.NODE_ENV !== "production") {
+    for (const [email, u] of global.inMemoryUsers!.entries()) {
+      if (u.id === id || u._id === id) {
+        const merged = { ...u, ...updateData };
+        global.inMemoryUsers!.set(email, merged);
+        return merged;
+      }
+    }
+  }
+
   return null;
 }
 
 export async function safeSaveUserSession(sessionData: {
   sessionId: string;
   userId: string;
-  email?: string;
+  email: string;
   ipAddress: string;
-  deviceType: "Desktop" | "Mobile" | "Tablet" | "Unknown";
+  deviceType: string;
   deviceBrand: string;
   deviceModel: string;
   os: string;
   browser: string;
-  location: {
-    city: string;
-    region: string;
-    country: string;
-    countryCode: string;
-    latitude: number;
-    longitude: number;
-    timezone?: string;
-    isp?: string;
-  };
-  loginAt?: Date;
-  lastActive?: Date;
-  revoked?: boolean;
-  userAgent?: string;
+  location: any;
+  userAgent: string;
 }) {
-  const now = new Date();
-  const normalizedSession = {
-    ...sessionData,
-    loginAt: sessionData.loginAt || now,
-    lastActive: sessionData.lastActive || now,
-    revoked: Boolean(sessionData.revoked),
-  };
-
-  // Try MongoDB
   try {
     await connectDB();
     const { UserSession } = await import("@/models/UserSession");
-    const existing = await UserSession.findOne({ sessionId: sessionData.sessionId });
-    if (existing) {
-      existing.lastActive = now;
-      existing.ipAddress = sessionData.ipAddress || existing.ipAddress;
-      existing.deviceBrand = sessionData.deviceBrand || existing.deviceBrand;
-      existing.deviceModel = sessionData.deviceModel || existing.deviceModel;
-      existing.location = { ...existing.location, ...sessionData.location };
-      await existing.save();
-      return existing.toJSON();
-    } else {
-      const created = await UserSession.create(normalizedSession);
-      return created.toJSON();
-    }
+    await UserSession.create({
+      ...sessionData,
+      loginAt: new Date(),
+      lastActive: new Date(),
+      revoked: false,
+    });
+    return true;
   } catch (err: any) {
-    console.warn("MongoDB session save notice:", err?.message || err);
+    if (process.env.NODE_ENV === "production") {
+      console.warn("Session recording warning:", err?.message || err);
+    }
   }
 
-  // In-memory fallback
-  if (!global.inMemoryUserSessions) {
-    global.inMemoryUserSessions = [];
-  }
-  const idx = global.inMemoryUserSessions.findIndex(
-    (s: any) => s.sessionId === sessionData.sessionId
-  );
-  if (idx !== -1) {
-    global.inMemoryUserSessions[idx] = {
-      ...global.inMemoryUserSessions[idx],
-      ...normalizedSession,
-      lastActive: now,
+  if (process.env.NODE_ENV !== "production") {
+    const memSession = {
+      ...sessionData,
+      loginAt: new Date().toISOString(),
+      lastActive: new Date().toISOString(),
+      revoked: false,
     };
-    return global.inMemoryUserSessions[idx];
-  } else {
-    global.inMemoryUserSessions.unshift(normalizedSession);
-    return normalizedSession;
+    global.inMemoryUserSessions!.unshift(memSession);
+    if (global.inMemoryUserSessions!.length > 100) {
+      global.inMemoryUserSessions = global.inMemoryUserSessions!.slice(0, 100);
+    }
   }
+  return true;
 }
 
 export async function safeGetUserSessions(userId: string) {
-  let dbSessions: any[] = [];
   try {
     await connectDB();
     const { UserSession } = await import("@/models/UserSession");
-    const found = await UserSession.find({ userId, revoked: { $ne: true } })
+    const sessions = await UserSession.find({ userId, revoked: false })
       .sort({ loginAt: -1 })
-      .limit(20)
-      .lean();
-    if (found && found.length > 0) {
-      dbSessions = found.map((s: any) => ({
-        ...s,
-        id: s.sessionId || s._id?.toString(),
+      .limit(10);
+    if (sessions && sessions.length > 0) {
+      return sessions.map((s) => ({
+        sessionId: s.sessionId,
+        ipAddress: s.ipAddress,
+        deviceType: s.deviceType,
+        deviceBrand: s.deviceBrand,
+        deviceModel: s.deviceModel,
+        os: s.os,
+        browser: s.browser,
+        location: s.location,
+        loginAt: s.loginAt,
       }));
     }
   } catch (err: any) {
-    console.warn("MongoDB getUserSessions notice:", err?.message || err);
-  }
-
-  // Merge with memory sessions
-  const memSessions = (global.inMemoryUserSessions || []).filter(
-    (s: any) => s.userId === userId && !s.revoked
-  );
-
-  const map = new Map<string, any>();
-  for (const s of [...dbSessions, ...memSessions]) {
-    const key = s.sessionId || s.id;
-    if (key && !map.has(key)) {
-      map.set(key, s);
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(`Database failure retrieving sessions: ${err.message}`);
     }
   }
 
-  const results = Array.from(map.values()).sort(
-    (a, b) => new Date(b.loginAt).getTime() - new Date(a.loginAt).getTime()
-  );
+  if (process.env.NODE_ENV !== "production") {
+    return (global.inMemoryUserSessions || []).filter((s: any) => s.userId === userId && !s.revoked);
+  }
 
-  return results;
+  return [];
 }
 
 export async function safeDeleteUserSession(userId: string, sessionId: string) {
@@ -533,7 +414,9 @@ export async function safeDeleteUserSession(userId: string, sessionId: string) {
       { $set: { revoked: true } }
     );
   } catch (err: any) {
-    console.warn("MongoDB deleteSession notice:", err?.message || err);
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(`Database failure revoking session: ${err.message}`);
+    }
   }
 
   if (global.inMemoryUserSessions) {
@@ -548,6 +431,10 @@ export async function safeDeleteUserSession(userId: string, sessionId: string) {
 }
 
 export async function safeFindProductById(productId: string) {
+  if (!productId || typeof productId !== "string") {
+    return null;
+  }
+
   try {
     await connectDB();
     const { Product } = await import("@/models/Product");
@@ -571,39 +458,58 @@ export async function safeFindProductById(productId: string) {
         id: String(prod._id || prod.id),
         name: prod.name,
         price: Number(prod.price),
-        stock: Number(prod.stock ?? 100),
+        stock: Number(prod.stock ?? 0),
         isActive: prod.isActive !== false && prod.status !== "INACTIVE" && prod.status !== "DRAFT",
         image: Array.isArray(prod.images) && prod.images.length > 0 ? prod.images[0] : "/iphone17.png",
       };
     }
-  } catch (e) {
-    // DB query error, check in-memory fallback
+    return null;
+  } catch (e: any) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(`Database error looking up product '${productId}': ${e.message}`);
+    }
   }
 
-  const mem = (REAL_PRODUCTS || []).find(
-    (p: any) => p.id === productId || p._id === productId || p.sku === productId || p.slug === productId
-  );
-  if (mem) {
-    return {
-      id: String(mem.id),
-      name: mem.name,
-      price: Number(mem.price),
-      stock: Number(mem.stock ?? 100),
-      isActive: mem.status !== "INACTIVE" && mem.status !== "DRAFT",
-      image: Array.isArray(mem.images) && mem.images.length > 0 ? mem.images[0] : "/iphone17.png",
-    };
+  // Development/test-only in-memory catalog
+  if (process.env.NODE_ENV !== "production") {
+    const mem = (REAL_PRODUCTS || []).find(
+      (p: any) => p.id === productId || p._id === productId || p.sku === productId || p.slug === productId
+    );
+    if (mem) {
+      return {
+        id: String(mem.id),
+        name: mem.name,
+        price: Number(mem.price),
+        stock: Number(mem.stock ?? 0),
+        isActive: mem.status !== "INACTIVE" && mem.status !== "DRAFT",
+        image: Array.isArray(mem.images) && mem.images.length > 0 ? mem.images[0] : "/iphone17.png",
+      };
+    }
   }
 
   return null;
 }
 
+/**
+ * Atomically deducts inventory using strict MongoDB conditional updates (`stock >= quantity`).
+ * Guaranteed to return true ONLY when deduction succeeds.
+ * Throws or returns false on insufficient stock, invalid quantities, or DB failure.
+ */
 export async function safeDeductProductStock(productId: string, quantity: number): Promise<boolean> {
+  // Validate quantity
+  if (typeof quantity !== "number" || isNaN(quantity) || !Number.isInteger(quantity) || quantity <= 0) {
+    throw new Error(`Invalid stock deduction quantity: ${quantity}. Whole positive integers required.`);
+  }
+
+  if (!productId || typeof productId !== "string") {
+    throw new Error("Invalid product ID provided for stock deduction.");
+  }
+
   try {
     await connectDB();
     const { Product } = await import("@/models/Product");
     const { VendorProduct } = await import("@/models/VendorProduct");
 
-    // Atomic MongoDB decrement with floor check (stock >= quantity)
     let updated = null;
     if (mongoose.isValidObjectId(productId)) {
       updated = await Product.findOneAndUpdate(
@@ -633,11 +539,65 @@ export async function safeDeductProductStock(productId: string, quantity: number
         { new: true }
       );
     }
-    if (updated) return true;
-  } catch (e) {
-    // DB error
+
+    if (updated) {
+      return true;
+    }
+
+    // If update returned null, stock was insufficient or product did not exist
+    return false;
+  } catch (e: any) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(`Database error during stock deduction for '${productId}': ${e.message}`);
+    }
   }
-  return true;
+
+  // Development/test-only in-memory deduction
+  if (process.env.NODE_ENV !== "production") {
+    const mem = (REAL_PRODUCTS || []).find((p: any) => p.id === productId || p._id === productId || p.sku === productId);
+    if (mem && (mem.stock ?? 100) >= quantity) {
+      mem.stock = (mem.stock ?? 100) - quantity;
+      return true;
+    }
+  }
+
+  return false;
 }
 
+/**
+ * Restores product stock atomically during compensation/rollback when order creation fails.
+ */
+export async function safeRestoreProductStock(productId: string, quantity: number): Promise<boolean> {
+  if (typeof quantity !== "number" || isNaN(quantity) || quantity <= 0) return false;
+  try {
+    await connectDB();
+    const { Product } = await import("@/models/Product");
+    const { VendorProduct } = await import("@/models/VendorProduct");
 
+    let updated = null;
+    if (mongoose.isValidObjectId(productId)) {
+      updated = await Product.findByIdAndUpdate(productId, { $inc: { stock: quantity } }, { new: true });
+    }
+    if (!updated) {
+      updated = await Product.findOneAndUpdate(
+        { $or: [{ sku: productId }, { slug: productId }] },
+        { $inc: { stock: quantity } },
+        { new: true }
+      );
+    }
+    if (!updated && mongoose.isValidObjectId(productId)) {
+      updated = await VendorProduct.findByIdAndUpdate(productId, { $inc: { stock: quantity } }, { new: true });
+    }
+    if (!updated) {
+      updated = await VendorProduct.findOneAndUpdate(
+        { $or: [{ sku: productId }, { slug: productId }] },
+        { $inc: { stock: quantity } },
+        { new: true }
+      );
+    }
+    return Boolean(updated);
+  } catch (err) {
+    console.error(`Failed to restore product stock for ${productId}:`, err);
+    return false;
+  }
+}

@@ -3,17 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { safeFindUserByEmail, safeCreateUser, safeSaveUserSession } from "@/lib/mongodb";
 import { parseUserAgent, getRealClientIp, resolveGeoLocation } from "@/lib/deviceTracker";
-
-function getJwtSecret(): string {
-  const secret = process.env.JWT_SECRET || process.env.JWT_ACCESS_SECRET;
-  if (!secret) {
-    if (process.env.NODE_ENV === "production") {
-      throw new Error("CRITICAL: JWT_SECRET environment variable is not configured.");
-    }
-    return "dev_jwt_secret_must_be_configured_in_env_before_production_deployment";
-  }
-  return secret;
-}
+import { getJwtSecret } from "@/lib/authHelper";
 
 async function recordSession(req: NextRequest, userId: string, email: string, body: any) {
   try {
@@ -50,9 +40,22 @@ async function recordSession(req: NextRequest, userId: string, email: string, bo
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { email, password, name } = body;
+    const { email, password, name, role } = body;
 
-    // Security: Disallow client-specified role. Public registration is strictly CUSTOMER.
+    // Security: Explicitly reject any attempts to self-assign privileged roles
+    if (role && String(role).toUpperCase() !== "CUSTOMER") {
+      const requestedRole = String(role).toUpperCase();
+      if (["ADMIN", "SUPER_ADMIN", "VENDOR", "MODERATOR", "SELLER"].includes(requestedRole)) {
+        return NextResponse.json(
+          {
+            error: "Privilege escalation rejected: Public registration cannot create privileged accounts. Vendor registration requires an approved merchant application.",
+          },
+          { status: 403 }
+        );
+      }
+    }
+
+    // Public registration always assigns CUSTOMER
     const assignedRole = "CUSTOMER";
 
     if (!email || !password) {
@@ -97,17 +100,19 @@ export async function POST(req: NextRequest) {
 
     const sessionId = await recordSession(req, userId, newUser.email, body);
 
-    const response = NextResponse.json({
-      success: true,
-      token,
-      sessionId,
-      user: {
-        id: userId,
-        email: newUser.email,
-        name: newUser.name || "",
-        role: assignedRole,
+    // Omit raw JWT from JSON response body; deliver securely in HttpOnly cookie
+    const response = NextResponse.json(
+      {
+        success: true,
+        user: {
+          id: userId,
+          email: newUser.email,
+          name: newUser.name || "",
+          role: assignedRole,
+        },
       },
-    }, { status: 201 });
+      { status: 201 }
+    );
 
     response.cookies.set("token", token, {
       httpOnly: true,

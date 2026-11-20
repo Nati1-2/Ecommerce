@@ -17,26 +17,39 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "ids array required" }, { status: 400 });
     }
 
-    const filter = { _id: { $in: ids }, vendorId: payload.id };
+    const baseFilter = { _id: { $in: ids }, vendorId: payload.id };
 
     if (action === "delete") {
-      await VendorProduct.deleteMany(filter);
-      return NextResponse.json({ success: true, action: "deleted", count: ids.length });
+      const result = await VendorProduct.deleteMany(baseFilter);
+      return NextResponse.json({ success: true, action: "deleted", count: result.deletedCount });
     }
 
     if (action === "activate") {
-      await VendorProduct.updateMany(filter, { $set: { status: "Active" } });
-      return NextResponse.json({ success: true, action: "activated" });
+      // Vendors can only unpause already-approved products (cannot bypass admin approval for Pending/Draft)
+      const result = await VendorProduct.updateMany(
+        { ...baseFilter, status: "Paused" },
+        { $set: { status: "Active", updatedAt: new Date() } }
+      );
+      return NextResponse.json({ success: true, action: "activated", count: result.modifiedCount });
     }
 
     if (action === "pause") {
-      await VendorProduct.updateMany(filter, { $set: { status: "Paused" } });
-      return NextResponse.json({ success: true, action: "paused" });
+      const result = await VendorProduct.updateMany(
+        { ...baseFilter, status: "Active" },
+        { $set: { status: "Paused", updatedAt: new Date() } }
+      );
+      return NextResponse.json({ success: true, action: "paused", count: result.modifiedCount });
     }
 
-    if (action === "restock" && typeof stock === "number") {
-      await VendorProduct.updateMany(filter, { $inc: { stock } });
-      return NextResponse.json({ success: true, action: "restocked", addedStock: stock });
+    if (action === "restock") {
+      if (typeof stock !== "number" || stock <= 0 || !Number.isInteger(stock)) {
+        return NextResponse.json({ error: "Stock must be a positive integer" }, { status: 400 });
+      }
+      const result = await VendorProduct.updateMany(
+        baseFilter,
+        { $inc: { stock }, $set: { updatedAt: new Date() } }
+      );
+      return NextResponse.json({ success: true, action: "restocked", addedStock: stock, count: result.modifiedCount });
     }
 
     return NextResponse.json({ error: "Unknown action" }, { status: 400 });

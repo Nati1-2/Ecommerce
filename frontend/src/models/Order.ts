@@ -9,12 +9,15 @@ export enum PaymentStatus {
 
 export enum OrderStatus {
   PENDING = "PENDING",
-  PAYMENT_PENDING = "PAYMENT_PENDING",
+  PENDING_PAYMENT = "PENDING_PAYMENT",
   PAID = "PAID",
   PROCESSING = "PROCESSING",
   SHIPPED = "SHIPPED",
   DELIVERED = "DELIVERED",
   CANCELLED = "CANCELLED",
+  REFUND_PENDING = "REFUND_PENDING",
+  REFUNDED = "REFUNDED",
+  PAYMENT_FAILED = "PAYMENT_FAILED",
 }
 
 export interface IOrderItem {
@@ -44,7 +47,13 @@ export interface IOrder extends Document {
   shippingCost: number;
   tax: number;
   grandTotal: number;
+  currency: string;
+  paymentProvider: string;
   paymentIntentId?: string;
+  checkoutSessionId?: string;
+  paymentAttemptId?: string;
+  paidAt?: Date;
+  paymentFailureReason?: string;
   trackingNumber?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -74,17 +83,23 @@ const shippingAddressSchema = new Schema<IShippingAddress>(
 
 const orderSchema = new Schema<IOrder>(
   {
-    orderId: { type: String, unique: true, required: true },
+    orderId: { type: String, unique: true, required: true, index: true },
     userId: { type: String, required: true, index: true },
     items: { type: [orderItemSchema], required: true },
     shippingAddress: { type: shippingAddressSchema, required: true },
-    paymentStatus: { type: String, enum: Object.values(PaymentStatus), default: PaymentStatus.PENDING },
-    orderStatus: { type: String, enum: Object.values(OrderStatus), default: OrderStatus.PENDING, index: true },
+    paymentStatus: { type: String, enum: Object.values(PaymentStatus), default: PaymentStatus.PENDING, index: true },
+    orderStatus: { type: String, enum: Object.values(OrderStatus), default: OrderStatus.PENDING_PAYMENT, index: true },
     totalAmount: { type: Number, required: true, min: 0 },
     shippingCost: { type: Number, default: 0, min: 0 },
     tax: { type: Number, default: 0, min: 0 },
     grandTotal: { type: Number, required: true, min: 0 },
-    paymentIntentId: { type: String },
+    currency: { type: String, default: "usd", lowercase: true, trim: true },
+    paymentProvider: { type: String, default: "stripe" },
+    paymentIntentId: { type: String, index: true, sparse: true },
+    checkoutSessionId: { type: String, index: true, sparse: true },
+    paymentAttemptId: { type: String },
+    paidAt: { type: Date },
+    paymentFailureReason: { type: String },
     trackingNumber: { type: String },
   },
   {

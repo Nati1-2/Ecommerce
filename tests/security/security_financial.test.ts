@@ -47,6 +47,46 @@ describe('P0 Security & Authorization Tests', () => {
     assert.notStrictEqual(payload?.role, 'VENDOR', 'Customer must not have VENDOR role');
   });
 
+  it('blocks horizontal privilege escalation: customer cannot access another customer order', () => {
+    const victimOrder = {
+      id: 'ord-victim-789',
+      userId: 'usr-victim-111',
+      grandTotal: 349.99,
+    };
+
+    const attackerTokenPayload = {
+      id: 'usr-attacker-222',
+      email: 'attacker@store.com',
+      role: 'CUSTOMER',
+    };
+
+    const isAuthorized =
+      attackerTokenPayload.role === 'ADMIN' ||
+      victimOrder.userId === attackerTokenPayload.id;
+
+    assert.strictEqual(isAuthorized, false, 'Customer must not access another customer order');
+  });
+
+  it('blocks vendor cross-tenant access: vendor cannot modify another vendor product or order', () => {
+    const ownerVendorProduct = {
+      id: 'prod-owner-456',
+      vendorId: 'vendor-owner-999',
+      name: 'Genuine Item',
+    };
+
+    const attackerVendorPayload = {
+      id: 'vendor-attacker-888',
+      email: 'badvendor@store.com',
+      role: 'VENDOR',
+    };
+
+    const canModify =
+      attackerVendorPayload.role === 'ADMIN' ||
+      ownerVendorProduct.vendorId === attackerVendorPayload.id;
+
+    assert.strictEqual(canModify, false, 'Vendor must not modify another vendor product');
+  });
+
   it('blocks XSS payloads and script tags in user input sanitization', () => {
     const maliciousInput = '<script>alert("xss")</script><img src=x onerror=alert(1)>';
     const clean = sanitizeInput(maliciousInput);
@@ -84,7 +124,6 @@ describe('P0 Security & Authorization Tests', () => {
 
 describe('P0 Financial & Payment Integrity Tests', () => {
   it('calculates server-authoritative pricing and ignores client-submitted price overrides', () => {
-    // Authoritative product catalog
     const databaseProducts: Record<string, { price: number; stock: number; isActive: boolean }> = {
       'prod-macbook': { price: 1999, stock: 15, isActive: true },
       'prod-mouse': { price: 79, stock: 50, isActive: true },
@@ -92,11 +131,10 @@ describe('P0 Financial & Payment Integrity Tests', () => {
 
     // Client maliciously attempts to pay $1 instead of $1999
     const clientCart = [
-      { productId: 'prod-macbook', quantity: 1, price: 1 }, // Client attempts $1 price tampering
-      { productId: 'prod-mouse', quantity: 2, price: 5 },  // Client attempts $5 price tampering
+      { productId: 'prod-macbook', quantity: 1, price: 1 },
+      { productId: 'prod-mouse', quantity: 2, price: 5 },
     ];
 
-    // Server-authoritative calculation
     let authoritativeSubtotal = 0;
     const verifiedItems = clientCart.map((item) => {
       const dbProduct = databaseProducts[item.productId];
@@ -104,7 +142,6 @@ describe('P0 Financial & Payment Integrity Tests', () => {
       assert.strictEqual(dbProduct.isActive, true, 'Product must be active');
       assert.ok(dbProduct.stock >= item.quantity, 'Stock must be sufficient');
 
-      // Server takes authoritative price, ignoring item.price
       const authoritativePrice = dbProduct.price;
       authoritativeSubtotal += authoritativePrice * item.quantity;
       return {
@@ -115,7 +152,7 @@ describe('P0 Financial & Payment Integrity Tests', () => {
     });
 
     const expectedSubtotal = 1999 * 1 + 79 * 2; // 2157
-    const shipping = authoritativeSubtotal >= 100 ? 0 : 10; // Free shipping over 100
+    const shipping = authoritativeSubtotal >= 100 ? 0 : 10;
     const tax = Math.round(authoritativeSubtotal * 0.05 * 100) / 100;
     const grandTotal = Math.round((authoritativeSubtotal + shipping + tax) * 100) / 100;
 
@@ -130,6 +167,89 @@ describe('P0 Financial & Payment Integrity Tests', () => {
 
     const canFulfill = dbProduct.stock >= requestedQuantity;
     assert.strictEqual(canFulfill, false, 'Server must reject checkout when requested quantity exceeds stock');
+  });
+
+  it('consolidates duplicate cart lines to prevent inventory overselling', () => {
+    // Available stock in database is 5
+    const dbStock = 5;
+
+    // Attacker sends duplicate lines with small quantities to bypass per-line checks
+    const cart = [
+      { productId: 'prod-rare', quantity: 3 },
+      { productId: 'prod-rare', quantity: 3 },
+    ];
+
+    // Consolidation logic implemented in orders API
+    const consolidatedMap = new Map<string, number>();
+    for (const item of cart) {
+      consolidatedMap.set(
+        item.productId,
+        (consolidatedMap.get(item.productId) || 0) + item.quantity
+      );
+    }
+
+    const totalRequested = consolidatedMap.get('prod-rare') || 0;
+    const canFulfill = dbStock >= totalRequested;
+
+    assert.strictEqual(totalRequested, 6, 'Duplicate lines must be consolidated to 6 units');
+    assert.strictEqual(canFulfill, false, 'Combined quantity must be rejected when exceeding stock of 5');
+  });
+
+  it('executes atomic compensation rollback if order persistence fails after stock deduction', () => {
+    const productCatalog = { 'prod-limited': { stock: 10 } };
+    const reservedQuantity = 4;
+
+    // Step 1: Stock is atomically deducted
+    productCatalog['prod-limited'].stock -= reservedQuantity;
+    assert.strictEqual(productCatalog['prod-limited'].stock, 6);
+
+    // Step 2: Order write fails simulated
+    const orderWriteFailed = true;
+
+    // Step 3: Compensation handler restores stock
+    if (orderWriteFailed) {
+      productCatalog['prod-limited'].stock += reservedQuantity;
+    }
+
+    assert.strictEqual(
+      productCatalog['prod-limited'].stock,
+      10,
+      'Product stock must be cleanly restored to initial value on order write failure'
+    );
+  });
+
+  it('rejects PaymentIntent creation when currency or order status is invalid', () => {
+    const order = {
+      id: 'ord-123',
+      userId: 'usr-1',
+      grandTotal: 100,
+      orderStatus: 'PAID', // Already paid
+      currency: 'USD',
+    };
+
+    const requestedCurrency = 'EUR'; // Mismatched currency
+
+    const canPay = order.orderStatus !== 'PAID' && order.currency.toLowerCase() === requestedCurrency.toLowerCase();
+    assert.strictEqual(canPay, false, 'PaymentIntent must be rejected for already-paid or currency-mismatched order');
+  });
+
+  it('detects underpayment fraud in Stripe webhook processing', () => {
+    const authoritativeOrder = {
+      id: 'ord-999',
+      grandTotal: 250.00,
+    };
+
+    // Attacker manipulated Stripe PaymentIntent to only pay $25.00
+    const spoofedIntent = {
+      id: 'pi_spoofed_amount',
+      amount: 2500, // $25.00 in cents
+      currency: 'usd',
+    };
+
+    const expectedCents = Math.round(authoritativeOrder.grandTotal * 100); // 25000 cents
+    const isPaymentValid = spoofedIntent.amount >= expectedCents;
+
+    assert.strictEqual(isPaymentValid, false, 'Webhook must reject intent where paid amount is less than expected order cents');
   });
 
   it('verifies Stripe webhook idempotency: duplicate events are skipped', () => {

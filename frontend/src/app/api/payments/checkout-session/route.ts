@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import mongoose from "mongoose";
 import { connectDB, safeFindUserById } from "@/lib/mongodb";
-import { Order, PaymentStatus } from "@/models/Order";
+import { Order, PaymentStatus, OrderStatus } from "@/models/Order";
 import { getUserFromToken } from "@/lib/authHelper";
 import { getStripeClient } from "@/lib/stripe";
 
@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { orderId, currency = "USD", successUrl, cancelUrl } = body;
+    const { orderId } = body;
 
     if (!orderId) {
       return NextResponse.json(
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 2. Validate Order Existence & Ownership in Database (Fail Closed)
+    // 2. Validate Order Existence & Strict Ownership in Database (Fail Closed)
     await connectDB();
     const query = mongoose.isValidObjectId(orderId)
       ? { $or: [{ orderId }, { _id: orderId }] }
@@ -42,19 +42,27 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check ownership
+    // Exact ownership validation: Non-admins can only checkout their own orders
     const isPrivileged = decoded.role === "ADMIN";
-    if (!isPrivileged && order.userId && order.userId !== decoded.id) {
+    if (!isPrivileged && (!order.userId || order.userId !== decoded.id)) {
       return NextResponse.json(
         { success: false, error: "Forbidden: You are not authorized to pay for another user's order." },
         { status: 403 }
       );
     }
 
-    // Check if order is already paid
+    // Reject already-paid orders
     if (order.paymentStatus === PaymentStatus.PAID) {
       return NextResponse.json(
         { success: false, error: "This order has already been paid and settled." },
+        { status: 400 }
+      );
+    }
+
+    // Reject cancelled orders
+    if (order.orderStatus === OrderStatus.CANCELLED) {
+      return NextResponse.json(
+        { success: false, error: "Cannot process payment: This order has been cancelled." },
         { status: 400 }
       );
     }
@@ -68,12 +76,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const orderCurrency = String(order.currency || "usd").toLowerCase().trim();
+
     // 4. Server-Authoritative Line Items Built from Verified Order in DB
     const authoritativeItems = Array.isArray(order.items) && order.items.length > 0 ? order.items : [];
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = authoritativeItems.length > 0
       ? authoritativeItems.map((item: any) => ({
           price_data: {
-            currency: currency.toLowerCase(),
+            currency: orderCurrency,
             product_data: { name: String(item.name || "Item") },
             unit_amount: Math.max(50, Math.round(Number(item.price) * 100)),
           },
@@ -81,18 +91,18 @@ export async function POST(req: NextRequest) {
         }))
       : [{
           price_data: {
-            currency: currency.toLowerCase(),
+            currency: orderCurrency,
             product_data: { name: `Order #${order.orderId}` },
             unit_amount: Math.max(50, Math.round(Number(order.grandTotal ?? order.totalAmount) * 100)),
           },
           quantity: 1,
         }];
 
-    // Append shipping and tax as line items if applicable
+    // Append shipping and tax as line items
     if (order.shippingCost && order.shippingCost > 0) {
       lineItems.push({
         price_data: {
-          currency: currency.toLowerCase(),
+          currency: orderCurrency,
           product_data: { name: "Shipping & Handling" },
           unit_amount: Math.round(order.shippingCost * 100),
         },
@@ -103,7 +113,7 @@ export async function POST(req: NextRequest) {
     if (order.tax && order.tax > 0) {
       lineItems.push({
         price_data: {
-          currency: currency.toLowerCase(),
+          currency: orderCurrency,
           product_data: { name: "Estimated Tax (5%)" },
           unit_amount: Math.round(order.tax * 100),
         },
@@ -128,9 +138,14 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const host = req.headers.get("origin") || req.headers.get("referer") || "http://localhost:3000";
-    const resolvedSuccessUrl = successUrl || `${host}/orders/${order.orderId}?session_id={CHECKOUT_SESSION_ID}`;
-    const resolvedCancelUrl = cancelUrl || `${host}/orders/${order.orderId}?payment_cancelled=true`;
+    // Enforce trusted origins for redirect URLs (reject arbitrary client destinations)
+    const trustedAppUrl = process.env.NEXT_PUBLIC_APP_URL || req.headers.get("origin") || "http://localhost:3000";
+    const appOrigin = new URL(trustedAppUrl).origin;
+
+    const resolvedSuccessUrl = `${appOrigin}/orders/${order.orderId}?session_id={CHECKOUT_SESSION_ID}`;
+    const resolvedCancelUrl = `${appOrigin}/orders/${order.orderId}?payment_cancelled=true`;
+
+    const expectedCents = Math.round(Number(order.grandTotal ?? order.totalAmount) * 100);
 
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       payment_method_types: ["card"],
@@ -144,14 +159,19 @@ export async function POST(req: NextRequest) {
       metadata: {
         orderId: String(order.orderId),
         userId: decoded.id,
+        expectedAmount: String(expectedCents),
+        currency: orderCurrency,
       },
     };
 
     const session = await stripe.checkout.sessions.create(sessionParams);
 
-    // Attach session ID to order
+    // Persist session ID to order
     if (session.id) {
       order.checkoutSessionId = session.id;
+      if (order.paymentStatus !== PaymentStatus.PAID) {
+        order.orderStatus = OrderStatus.PENDING_PAYMENT;
+      }
       await order.save();
     }
 

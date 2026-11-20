@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
 
     // Get all product IDs and SKUs belonging to vendor
     const products = await VendorProduct.find({
-      $or: [{ vendorId: payload.id }, { vendorId: "usr-demo-vendor" }],
+      vendorId: payload.id,
     }).select("_id sku name");
     
     const productIdentifiers = new Set<string>();

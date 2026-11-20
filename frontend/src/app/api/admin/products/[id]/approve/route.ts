@@ -13,23 +13,22 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const resolvedParams = await params;
     const { id } = resolvedParams;
 
-    let product = null;
-    try {
-      await connectDB();
-      product = await VendorProduct.findByIdAndUpdate(
-        id,
-        { $set: { status: "Active" } },
-        { new: true }
-      );
-    } catch (err: any) {
-      console.warn("Approve Product DB notice (using fallback handler):", err?.message || err);
+    await connectDB();
+    const product = await VendorProduct.findByIdAndUpdate(
+      id,
+      { $set: { status: "Active" } },
+      { new: true }
+    );
+
+    if (!product) {
+      return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
     return NextResponse.json({
       success: true,
-      product: product || { id, status: "Active" },
+      product,
     });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: err.message || "Failed to approve product" }, { status: 500 });
   }
 }

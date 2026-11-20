@@ -23,7 +23,6 @@ export async function POST(req: NextRequest) {
         console.error("Missing STRIPE_WEBHOOK_SECRET or stripe-signature header in production.");
         return NextResponse.json({ error: "Missing webhook secret or signature" }, { status: 400 });
       }
-      // Fail closed if signature verification is bypassed
       return NextResponse.json({ error: "Stripe webhook signature and secret are required" }, { status: 400 });
     }
 
@@ -44,138 +43,187 @@ export async function POST(req: NextRequest) {
 
     await connectDB();
 
-    // ── Atomic Webhook Idempotency Check ────────────────────────────────────
+    // ── Atomic Webhook Idempotency Check & Claim ─────────────────────────────
     // Prevents duplicate processing under concurrent webhook delivery/retries
-    const existingProcessed = await PaymentEvent.findOne({
-      stripeEventId: event.id,
-      processed: true,
-    });
-
-    if (existingProcessed) {
+    const existing = await PaymentEvent.findOne({ stripeEventId: event.id });
+    if (existing && (existing.status === "SUCCESS" || existing.processed === true)) {
       return NextResponse.json({ received: true, idempotent: true });
     }
+    if (existing && existing.status === "PROCESSING") {
+      return NextResponse.json({ received: true, processing: true });
+    }
 
-    // Upsert the event record
-    await PaymentEvent.findOneAndUpdate(
-      { stripeEventId: event.id },
-      {
-        $setOnInsert: {
+    try {
+      await PaymentEvent.findOneAndUpdate(
+        {
           stripeEventId: event.id,
-          eventType: event.type,
-          processed: false,
-          payload: event.data.object as any,
+          status: { $ne: "PROCESSING" },
+          processed: { $ne: true },
         },
-      },
-      { upsert: true, new: true }
-    );
-
-    switch (event.type) {
-      case "checkout.session.completed": {
-        const session = event.data.object as Stripe.Checkout.Session;
-        const orderId = session.metadata?.orderId || session.client_reference_id;
-        const paymentIntentId = typeof session.payment_intent === "string"
-          ? session.payment_intent
-          : session.payment_intent?.id;
-
-        if (orderId && session.payment_status === "paid") {
-          const query = mongoose.isValidObjectId(orderId)
-            ? { $or: [{ _id: orderId }, { orderId }] }
-            : { orderId };
-          const order = await Order.findOne(query);
-
-          if (order && order.paymentStatus !== PaymentStatus.PAID) {
-            order.paymentStatus = PaymentStatus.PAID;
-            order.orderStatus = OrderStatus.PROCESSING;
-            if (paymentIntentId) {
-              order.paymentIntentId = paymentIntentId;
-            }
-            await order.save();
-
-            // Dispatch customer & vendor notifications
-            await notifyOrderCreated(order).catch((e) => console.warn("Webhook notify error:", e));
-          }
-        }
-        break;
+        {
+          $set: {
+            status: "PROCESSING",
+            eventType: event.type,
+            payload: event.data.object as any,
+          },
+          $inc: { retryCount: 1 },
+        },
+        { upsert: true, new: true }
+      );
+    } catch (upsertErr: any) {
+      if (upsertErr?.code === 11000) {
+        return NextResponse.json({ received: true, concurrent: true });
       }
+      throw upsertErr;
+    }
 
-      case "payment_intent.succeeded": {
-        const intent = event.data.object as Stripe.PaymentIntent;
-        const orderId = intent.metadata?.orderId;
-        const paymentIntentId = intent.id;
+    let processedOrderId: string | undefined;
 
-        if (orderId && intent.status === "succeeded") {
-          const query = mongoose.isValidObjectId(orderId)
-            ? { $or: [{ _id: orderId }, { orderId }] }
-            : { orderId };
-          const order = await Order.findOne(query);
+    try {
+      switch (event.type) {
+        case "checkout.session.completed": {
+          const session = event.data.object as Stripe.Checkout.Session;
+          const orderId = session.metadata?.orderId || session.client_reference_id;
+          processedOrderId = orderId || undefined;
+          const paymentIntentId = typeof session.payment_intent === "string"
+            ? session.payment_intent
+            : session.payment_intent?.id;
 
-          if (order && order.paymentStatus !== PaymentStatus.PAID) {
-            // Verify payment amount matches expected order total
-            const expectedCents = Math.round(Number(order.grandTotal ?? order.totalAmount) * 100);
-            if (intent.amount >= expectedCents) {
+          if (orderId && session.payment_status === "paid") {
+            const query = mongoose.isValidObjectId(orderId)
+              ? { $or: [{ _id: orderId }, { orderId }] }
+              : { orderId };
+            const order = await Order.findOne(query);
+
+            if (order && order.paymentStatus !== PaymentStatus.PAID) {
+              if (session.amount_total != null) {
+                const expectedCents = Math.round(Number(order.grandTotal ?? order.totalAmount) * 100);
+                if (session.amount_total < expectedCents) {
+                  console.error(`Fraud warning: CheckoutSession amount ${session.amount_total} < expected ${expectedCents} for Order ${orderId}`);
+                  break;
+                }
+              }
               order.paymentStatus = PaymentStatus.PAID;
               order.orderStatus = OrderStatus.PROCESSING;
-              order.paymentIntentId = paymentIntentId;
+              if (paymentIntentId) {
+                order.paymentIntentId = paymentIntentId;
+              }
+              if (session.id) {
+                order.checkoutSessionId = session.id;
+              }
+              order.paidAt = new Date();
               await order.save();
 
               await notifyOrderCreated(order).catch((e) => console.warn("Webhook notify error:", e));
-            } else {
-              console.error(`Fraud warning: PaymentIntent amount ${intent.amount} < expected ${expectedCents} for Order ${orderId}`);
             }
           }
+          break;
         }
-        break;
-      }
 
-      case "payment_intent.payment_failed": {
-        const intent = event.data.object as Stripe.PaymentIntent;
-        const orderId = intent.metadata?.orderId;
+        case "payment_intent.succeeded": {
+          const intent = event.data.object as Stripe.PaymentIntent;
+          const orderId = intent.metadata?.orderId;
+          processedOrderId = orderId || undefined;
+          const paymentIntentId = intent.id;
 
-        if (orderId) {
-          const query = mongoose.isValidObjectId(orderId)
-            ? { $or: [{ _id: orderId }, { orderId }] }
-            : { orderId };
-          const order = await Order.findOne(query);
+          if (orderId && intent.status === "succeeded") {
+            const query = mongoose.isValidObjectId(orderId)
+              ? { $or: [{ _id: orderId }, { orderId }] }
+              : { orderId };
+            const order = await Order.findOne(query);
 
-          if (order && order.paymentStatus !== PaymentStatus.PAID) {
-            order.paymentStatus = PaymentStatus.FAILED;
-            await order.save();
+            if (order && order.paymentStatus !== PaymentStatus.PAID) {
+              // Verify payment amount matches expected order total
+              const expectedCents = Math.round(Number(order.grandTotal ?? order.totalAmount) * 100);
+              if (intent.amount >= expectedCents) {
+                order.paymentStatus = PaymentStatus.PAID;
+                order.orderStatus = OrderStatus.PROCESSING;
+                order.paymentIntentId = paymentIntentId;
+                order.paidAt = new Date();
+                await order.save();
+
+                await notifyOrderCreated(order).catch((e) => console.warn("Webhook notify error:", e));
+              } else {
+                console.error(`Fraud warning: PaymentIntent amount ${intent.amount} < expected ${expectedCents} for Order ${orderId}`);
+              }
+            }
           }
+          break;
         }
-        break;
-      }
 
-      case "payment_intent.canceled": {
-        const intent = event.data.object as Stripe.PaymentIntent;
-        const orderId = intent.metadata?.orderId;
+        case "payment_intent.payment_failed": {
+          const intent = event.data.object as Stripe.PaymentIntent;
+          const orderId = intent.metadata?.orderId;
+          processedOrderId = orderId || undefined;
 
-        if (orderId) {
-          const query = mongoose.isValidObjectId(orderId)
-            ? { $or: [{ _id: orderId }, { orderId }] }
-            : { orderId };
-          const order = await Order.findOne(query);
+          if (orderId) {
+            const query = mongoose.isValidObjectId(orderId)
+              ? { $or: [{ _id: orderId }, { orderId }] }
+              : { orderId };
+            const order = await Order.findOne(query);
 
-          if (order && order.paymentStatus !== PaymentStatus.PAID) {
-            order.paymentStatus = PaymentStatus.FAILED;
-            order.orderStatus = OrderStatus.CANCELLED;
-            await order.save();
+            if (order && order.paymentStatus !== PaymentStatus.PAID) {
+              order.paymentStatus = PaymentStatus.FAILED;
+              order.paymentFailureReason = intent.last_payment_error?.message || "Payment intent failed";
+              await order.save();
+            }
           }
+          break;
         }
-        break;
+
+        case "payment_intent.canceled": {
+          const intent = event.data.object as Stripe.PaymentIntent;
+          const orderId = intent.metadata?.orderId;
+          processedOrderId = orderId || undefined;
+
+          if (orderId) {
+            const query = mongoose.isValidObjectId(orderId)
+              ? { $or: [{ _id: orderId }, { orderId }] }
+              : { orderId };
+            const order = await Order.findOne(query);
+
+            if (order && order.paymentStatus !== PaymentStatus.PAID) {
+              order.paymentStatus = PaymentStatus.FAILED;
+              order.orderStatus = OrderStatus.CANCELLED;
+              await order.save();
+            }
+          }
+          break;
+        }
+
+        default:
+          break;
       }
 
-      default:
-        // Ignore unhandled event types
-        break;
+      // Mark event as SUCCESS
+      await PaymentEvent.findOneAndUpdate(
+        { stripeEventId: event.id },
+        {
+          $set: {
+            status: "SUCCESS",
+            processed: true,
+            processedAt: new Date(),
+            orderId: processedOrderId,
+          },
+        }
+      );
+
+      return NextResponse.json({ received: true });
+    } catch (handlerErr: any) {
+      // Mark event as FAILED with lastError for retry reconciliation
+      await PaymentEvent.findOneAndUpdate(
+        { stripeEventId: event.id },
+        {
+          $set: {
+            status: "FAILED",
+            lastError: handlerErr.message || String(handlerErr),
+            failedAt: new Date(),
+          },
+        }
+      ).catch(() => null);
+
+      throw handlerErr;
     }
-
-    // Mark event as processed (idempotency settled)
-    await PaymentEvent.findOneAndUpdate(
-      { stripeEventId: event.id },
-      { $set: { processed: true } }
-    );
-
-    return NextResponse.json({ received: true });
   } catch (error: any) {
     console.error("Stripe Webhook Handler Error:", error);
     return NextResponse.json({ error: error.message || "Webhook handler failed" }, { status: 500 });

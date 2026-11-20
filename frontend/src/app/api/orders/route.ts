@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { connectDB, safeFindProductById, safeDeductProductStock } from "@/lib/mongodb";
+import { connectDB, safeFindProductById, safeDeductProductStock, safeRestoreProductStock } from "@/lib/mongodb";
 import { Order, PaymentStatus, OrderStatus } from "@/models/Order";
 import { getUserFromToken } from "@/lib/authHelper";
 
@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // 1. Try to fetch from backend Order Service via API Gateway
+    // 1. Try to fetch from backend Order Service via API Gateway if configured
     const authHeader = req.headers.get("authorization");
     const token = authHeader || req.cookies.get("token")?.value;
     const gatewayUrl = process.env.API_GATEWAY_URL || process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, "");
@@ -64,10 +64,11 @@ export async function GET(req: NextRequest) {
                 country: o.shippingAddress?.country || ""
               },
               paymentStatus: o.paymentStatus || "PENDING",
-              orderStatus: o.status || o.orderStatus || "PENDING",
-              status: o.status || o.orderStatus || "PENDING",
+              orderStatus: o.status || o.orderStatus || "PENDING_PAYMENT",
+              status: o.status || o.orderStatus || "PENDING_PAYMENT",
               totalAmount: o.pricing?.total || o.totalAmount || 0,
               grandTotal: o.pricing?.total || o.grandTotal || 0,
+              currency: o.currency || "usd",
               createdAt: o.createdAt,
               updatedAt: o.updatedAt
             }));
@@ -75,7 +76,7 @@ export async function GET(req: NextRequest) {
           }
         }
       } catch (err) {
-        // Continue to local DB
+        // Fall back to local DB
       }
     }
 
@@ -117,14 +118,29 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ── Server-Authoritative Product Verification & Pricing ───────────────
-    // Never trust client prices, totals, or stock values
-    const verifiedItems = [];
-    let subtotal = 0;
+    // ── 1. Consolidate Duplicate Cart Items (Anti-Overselling Guard) ───────
+    // If cart contains multiple lines with the same productId, combine quantities
+    const consolidatedMap = new Map<string, number>();
 
     for (const rawItem of rawItems) {
-      const productId = String(rawItem.productId || rawItem.id || "");
-      const quantity = Math.max(1, Math.floor(Number(rawItem.quantity) || 1));
+      const productId = String(rawItem.productId || rawItem.id || "").trim();
+      const rawQty = rawItem.quantity;
+
+      // Reject non-integer, negative, or zero quantities
+      if (
+        typeof rawQty !== "number" ||
+        isNaN(rawQty) ||
+        !Number.isInteger(rawQty) ||
+        rawQty <= 0
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Invalid quantity for product '${productId}'. Whole positive numbers are required.`,
+          },
+          { status: 400 }
+        );
+      }
 
       if (!productId) {
         return NextResponse.json(
@@ -133,7 +149,15 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      // 1. Fetch authoritative product from database
+      const currentQty = consolidatedMap.get(productId) || 0;
+      consolidatedMap.set(productId, currentQty + rawQty);
+    }
+
+    // ── 2. Server-Authoritative Product Verification & Stock Check ─────────
+    const verifiedItems = [];
+    let subtotal = 0;
+
+    for (const [productId, quantity] of consolidatedMap.entries()) {
       const product = await safeFindProductById(productId);
       if (!product) {
         return NextResponse.json(
@@ -142,7 +166,6 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      // 2. Verify product active status
       if (!product.isActive) {
         return NextResponse.json(
           { success: false, error: `Product '${product.name}' is currently unavailable.` },
@@ -150,72 +173,114 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      // 3. Verify stock availability
+      // Check stock against total combined requested quantity
       if (product.stock < quantity) {
         return NextResponse.json(
           {
             success: false,
-            error: `Insufficient stock for product '${product.name}'. Requested: ${quantity}, Available: ${product.stock}.`
+            error: `Insufficient stock for product '${product.name}'. Requested: ${quantity}, Available: ${product.stock}.`,
           },
           { status: 400 }
         );
       }
 
-      // 4. Use server-authoritative price
       const itemPrice = Number(product.price);
       subtotal += itemPrice * quantity;
 
       verifiedItems.push({
         productId: product.id,
         name: product.name,
-        price: itemPrice, // Server-calculated authoritative price
+        price: itemPrice, // Server-authoritative catalog price
         quantity,
         image: product.image || "/iphone17.png",
       });
     }
 
-    // Server-calculated financial figures
+    // ── 3. Server-Calculated Financial Figures ─────────────────────────────
     const shippingCost = subtotal >= 100 ? 0 : 10;
     const tax = Math.round(subtotal * 0.05 * 100) / 100;
     const grandTotal = Math.round((subtotal + shippingCost + tax) * 100) / 100;
     const totalAmount = grandTotal;
 
-    const userId = decoded.id; // Strictly from verified JWT
+    const userId = decoded.id; // Strictly bound to authenticated customer
     const orderId = `ORD-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
 
-    const shippingAddress = {
-      street: String(body.shippingAddress?.street || "123 Main St").trim(),
-      city: String(body.shippingAddress?.city || "San Francisco").trim(),
-      state: String(body.shippingAddress?.state || "CA").trim(),
-      zipCode: String(body.shippingAddress?.zipCode || body.shippingAddress?.postalCode || "94105").trim(),
-      country: String(body.shippingAddress?.country || "US").trim(),
-    };
+    // Validate shipping address
+    const street = String(body.shippingAddress?.street || "").trim();
+    const city = String(body.shippingAddress?.city || "").trim();
+    const state = String(body.shippingAddress?.state || "").trim();
+    const zipCode = String(body.shippingAddress?.zipCode || body.shippingAddress?.postalCode || "").trim();
+    const country = String(body.shippingAddress?.country || "US").trim();
 
-    // ── Atomic Inventory Deduction ─────────────────────────────────────────
-    for (const item of verifiedItems) {
-      await safeDeductProductStock(item.productId, item.quantity);
+    if (!street || !city || !state || !zipCode) {
+      return NextResponse.json(
+        { success: false, error: "Complete shipping address (street, city, state, zipCode) is required." },
+        { status: 400 }
+      );
     }
 
-    // ── Save Order in MongoDB ──────────────────────────────────────────────
-    await connectDB();
+    const shippingAddress = { street, city, state, zipCode, country };
 
-    const newOrder = await Order.create({
-      orderId,
-      userId,
-      items: verifiedItems,
-      shippingAddress,
-      paymentStatus: PaymentStatus.PENDING, // Always starts PENDING on creation
-      orderStatus: OrderStatus.PENDING,
-      totalAmount,
-      shippingCost,
-      tax,
-      grandTotal,
-    });
+    // ── 4. Atomic Inventory Reservation with Compensation Rollback ─────────
+    const deductedItems: Array<{ productId: string; quantity: number }> = [];
 
-    const { notifyOrderCreated } = await import("@/lib/notifications");
-    await notifyOrderCreated(newOrder).catch((err) => console.warn("Notify error:", err));
+    for (const item of verifiedItems) {
+      const deductionSuccess = await safeDeductProductStock(item.productId, item.quantity);
+      if (!deductionSuccess) {
+        // Rollback all previously deducted items in this transaction
+        for (const previouslyDeducted of deductedItems) {
+          await safeRestoreProductStock(previouslyDeducted.productId, previouslyDeducted.quantity);
+        }
 
-    return NextResponse.json({ success: true, data: newOrder }, { status: 201 });
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Inventory reservation failed for product '${item.name}'. The requested quantity is no longer available.`,
+          },
+          { status: 409 }
+        );
+      }
+      deductedItems.push({ productId: item.productId, quantity: item.quantity });
+    }
+
+    // ── 5. Persist Order in MongoDB ─────────────────────────────────────────
+    try {
+      await connectDB();
+
+      const newOrder = await Order.create({
+        orderId,
+        userId,
+        items: verifiedItems,
+        shippingAddress,
+        paymentStatus: PaymentStatus.PENDING,
+        orderStatus: OrderStatus.PENDING_PAYMENT,
+        totalAmount,
+        shippingCost,
+        tax,
+        grandTotal,
+        currency: "usd",
+        paymentProvider: "stripe",
+      });
+
+      const { notifyOrderCreated } = await import("@/lib/notifications");
+      await notifyOrderCreated(newOrder).catch((err) => console.warn("Notify error:", err));
+
+      return NextResponse.json({ success: true, data: newOrder }, { status: 201 });
+    } catch (orderPersistErr: any) {
+      // Order persistence failed: Execute compensating rollback to restore inventory
+      console.error("Order persistence failed, rolling back inventory reservations:", orderPersistErr);
+      for (const item of deductedItems) {
+        await safeRestoreProductStock(item.productId, item.quantity);
+      }
+
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Database error creating order. Reserved inventory has been safely restored.",
+        },
+        { status: 500 }
+      );
+    }
   } catch (error: any) {
     console.error("Order creation error:", error);
     return NextResponse.json(

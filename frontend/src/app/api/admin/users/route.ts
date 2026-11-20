@@ -100,10 +100,10 @@ export async function POST(req: NextRequest) {
     const normalizedEmail = body.email.toLowerCase().trim();
     const name = (body.name || "").trim() || normalizedEmail.split("@")[0];
     const phone = (body.phone || "").trim() || "+1 (555) 000-1122";
-    const rawPassword = typeof body.password === "string" && body.password.trim() ? body.password.trim() : "Admin1234!";
+    const rawPassword = typeof body.password === "string" ? body.password.trim() : "";
 
-    if (rawPassword.length < 6) {
-      return NextResponse.json({ error: "Password must be at least 6 characters long" }, { status: 400 });
+    if (!rawPassword || rawPassword.length < 8) {
+      return NextResponse.json({ error: "Password is required and must be at least 8 characters long" }, { status: 400 });
     }
 
     const roleMapReverse: Record<string, "CUSTOMER" | "ADMIN" | "VENDOR"> = {
@@ -120,60 +120,31 @@ export async function POST(req: NextRequest) {
     const isVerified = body.status !== "Blocked";
     const membership = targetRole === "ADMIN" ? "SuperAdmin Tier 👑" : targetRole === "VENDOR" ? "Vendor Merchant 🚀" : "Standard Member ⭐";
 
-    // Hash password with bcrypt before persisting
-    const hashedPassword = await bcrypt.hash(rawPassword, 10);
+    // Hash password with bcrypt before persisting (salt cost 12)
+    const hashedPassword = await bcrypt.hash(rawPassword, 12);
 
-    let newUser = null;
-    try {
-      await connectDB();
+    await connectDB();
 
-      // Check if user already exists
-      const existingUser = await User.findOne({ email: normalizedEmail });
-      if (existingUser) {
-        return NextResponse.json(
-          { error: `A user with email "${normalizedEmail}" already exists in the database.` },
-          { status: 409 }
-        );
-      }
-
-      newUser = await User.create({
-        email: normalizedEmail,
-        name,
-        phone,
-        password: hashedPassword,
-        role: targetRole,
-        membership,
-        isVerified,
-      });
-    } catch (err: any) {
-      if (err?.code === 11000) {
-        return NextResponse.json(
-          { error: `A user with email "${normalizedEmail}" already exists in the database.` },
-          { status: 409 }
-        );
-      }
-      console.warn("Create User DB notice (syncing to in-memory fallback):", err?.message || err);
+    // Check if user already exists
+    const existingUser = await User.findOne({ email: normalizedEmail });
+    if (existingUser) {
+      return NextResponse.json(
+        { error: `A user with email "${normalizedEmail}" already exists.` },
+        { status: 409 }
+      );
     }
 
-    const assignedId = newUser ? newUser._id.toString() : `usr_${Date.now()}`;
+    const newUser = await User.create({
+      email: normalizedEmail,
+      name,
+      phone,
+      password: hashedPassword,
+      role: targetRole,
+      membership,
+      isVerified,
+    });
 
-    // Always sync with in-memory map for robust runtime continuity
-    if (global.inMemoryUsers) {
-      global.inMemoryUsers.set(normalizedEmail, {
-        id: assignedId,
-        _id: assignedId,
-        email: normalizedEmail,
-        password: hashedPassword,
-        name,
-        phone,
-        role: targetRole,
-        membership,
-        isVerified,
-        avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
-        address: "United States",
-        points: targetRole === "ADMIN" ? 9999 : 100,
-      });
-    }
+    const assignedId = newUser._id.toString();
 
     const created = {
       id: assignedId,

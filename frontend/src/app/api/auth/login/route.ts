@@ -1,19 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { connectDB, safeFindUserByEmail, safeSaveUserSession } from "@/lib/mongodb";
+import { safeFindUserByEmail, safeSaveUserSession } from "@/lib/mongodb";
 import { parseUserAgent, getRealClientIp, resolveGeoLocation } from "@/lib/deviceTracker";
-
-function getJwtSecret(): string {
-  const secret = process.env.JWT_SECRET || process.env.JWT_ACCESS_SECRET;
-  if (!secret) {
-    if (process.env.NODE_ENV === "production") {
-      throw new Error("CRITICAL: JWT_SECRET environment variable is not configured.");
-    }
-    return "dev_jwt_secret_must_be_configured_in_env_before_production_deployment";
-  }
-  return secret;
-}
+import { getJwtSecret } from "@/lib/authHelper";
 
 async function recordSession(req: NextRequest, userId: string, email: string, body: any) {
   try {
@@ -60,79 +50,6 @@ export async function POST(req: NextRequest) {
     const isHttps = req.nextUrl.protocol === "https:" || req.headers.get("x-forwarded-proto") === "https";
     const jwtSecret = getJwtSecret();
 
-    // 0. Environment-configured Administrator Provisioning (No default insecure credentials)
-    const envAdminEmail = process.env.ADMIN_EMAIL ? process.env.ADMIN_EMAIL.toLowerCase().trim() : null;
-    const envAdminPassword = process.env.ADMIN_PASSWORD;
-    const envAdminName = process.env.ADMIN_NAME || "System Administrator";
-
-    if (envAdminEmail && envAdminPassword && normalizedEmail === envAdminEmail && password === envAdminPassword) {
-      const userId = "usr-admin-master";
-      const token = jwt.sign(
-        { id: userId, userId, email: normalizedEmail, role: "ADMIN" },
-        jwtSecret,
-        { expiresIn: "7d" }
-      );
-
-      // Persist provisioned master admin to MongoDB
-      (async () => {
-        try {
-          await connectDB();
-          const { User } = await import("@/models/User");
-          const existingUser = await User.findOne({ email: normalizedEmail });
-          if (!existingUser) {
-            const hashedPassword = await bcrypt.hash(password, 12);
-            await User.create({
-              email: normalizedEmail,
-              password: hashedPassword,
-              name: envAdminName,
-              role: "ADMIN",
-              membership: "SuperAdmin Tier 👑",
-              isVerified: true,
-            });
-          } else if (existingUser.role !== "ADMIN") {
-            existingUser.role = "ADMIN";
-            await existingUser.save();
-          }
-        } catch {}
-      })().catch(() => null);
-
-      const userObj = {
-        id: userId,
-        email: normalizedEmail,
-        name: envAdminName,
-        role: "ADMIN" as const,
-        membership: "SuperAdmin Tier 👑",
-      };
-
-      const sessionId = await recordSession(req, userId, normalizedEmail, body);
-
-      const res = NextResponse.json({
-        success: true,
-        token,
-        sessionId,
-        user: userObj,
-      });
-
-      // Secure HttpOnly cookie for auth token
-      res.cookies.set("token", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production" || isHttps,
-        sameSite: "lax",
-        maxAge: 60 * 60 * 24 * 7,
-        path: "/",
-      });
-
-      res.cookies.set("session_id", sessionId, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production" || isHttps,
-        sameSite: "lax",
-        maxAge: 60 * 60 * 24 * 30,
-        path: "/",
-      });
-
-      return res;
-    }
-
     // 1. Authenticate with backend Auth Service via API Gateway if available
     const gatewayUrl = process.env.API_GATEWAY_URL || process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, "");
     if (gatewayUrl) {
@@ -157,10 +74,9 @@ export async function POST(req: NextRequest) {
 
             const sessionId = await recordSession(req, userId, data.user.email, body);
 
+            // Omit raw JWT from JSON response body; deliver securely in HttpOnly cookie
             const res = NextResponse.json({
               success: true,
-              token,
-              sessionId,
               user: userObj,
             });
 
@@ -188,7 +104,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 2. Query user from MongoDB
+    // 2. Query user from MongoDB (No default administrator creation during login)
     const user = await safeFindUserByEmail(normalizedEmail);
     if (!user || !user.password) {
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
@@ -225,10 +141,9 @@ export async function POST(req: NextRequest) {
 
     const sessionId = await recordSession(req, userId, user.email, body);
 
+    // Security: Do NOT expose raw JWT in JSON body; set in secure HttpOnly cookie
     const response = NextResponse.json({
       success: true,
-      token,
-      sessionId,
       user: userObj,
     });
 
