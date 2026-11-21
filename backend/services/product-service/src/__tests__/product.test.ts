@@ -1,26 +1,28 @@
 import request from 'supertest';
 import { app } from '../app.js';
 import jwt from 'jsonwebtoken';
-import { config } from '../config/env.js';
+const accessSecret = 'dev_access_secret_only_for_local_testing_min_32_chars';
+process.env.JWT_ACCESS_SECRET = accessSecret;
+globalThis.fetch = async () => new Response(JSON.stringify({ valid: true }), { status: 200 });
 import { Product } from '../models/Product.js';
 import { jest } from '@jest/globals';
 
 describe('Product Service API Endpoints', () => {
   const customerToken = jwt.sign(
-    { userId: 'cust_001', email: 'customer@example.com', role: 'CUSTOMER' },
-    config.jwtSecret,
+    { id: 'cust_001', userId: 'cust_001', email: 'customer@example.com', role: 'CUSTOMER', tokenType: 'access' },
+    accessSecret,
     { expiresIn: '1h' }
   );
 
   const vendorToken = jwt.sign(
-    { userId: 'vendor_771', email: 'vendor@example.com', role: 'VENDOR' },
-    config.jwtSecret,
+    { id: 'vendor_771', userId: 'vendor_771', email: 'vendor@example.com', role: 'VENDOR', tokenType: 'access' },
+    accessSecret,
     { expiresIn: '1h' }
   );
 
   const adminToken = jwt.sign(
-    { userId: 'admin_001', email: 'admin@example.com', role: 'ADMIN' },
-    config.jwtSecret,
+    { id: 'admin_001', userId: 'admin_001', email: 'admin@example.com', role: 'ADMIN', tokenType: 'access' },
+    accessSecret,
     { expiresIn: '1h' }
   );
 

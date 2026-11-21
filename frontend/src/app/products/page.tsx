@@ -8,7 +8,6 @@ import { ChevronRight, Home, RefreshCw, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 import { fetchProducts, GetProductsParams } from "@/lib/api";
-import { mockProducts } from "@/data/mock";
 import { Product } from "@/types";
 import { FilterSidebar, FilterState } from "@/components/ProductListing/FilterSidebar";
 import { ProductGrid } from "@/components/ProductListing/ProductGrid";
@@ -266,18 +265,18 @@ function ProductListingContent() {
       </div>
 
       {/* ── BOTTOM RECOMMENDATIONS ────────────────────────────────────────── */}
-      <div className="border-t border-gray-100 bg-[#F5F7FA] py-16">
+      {data?.products && data.products.length > 0 && <div className="border-t border-gray-100 bg-[#F5F7FA] py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <ProductCarousel 
-            title="You Might Also Like" 
-            subtitle="Curated just for you based on your browsing history"
-            label="Trending Recommendations"
-            products={mockProducts} 
+            title="More Products" 
+            subtitle="Explore the current catalog"
+            label="Catalog"
+            products={data.products} 
             viewAllHref="/products"
             dark={true}
           />
         </div>
-      </div>
+      </div>}
 
       {/* Mobile Drawer */}
       <FilterDrawer

@@ -63,7 +63,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     // 1. Authorization: Only VENDOR or ADMIN can create products
-    const decoded = getUserFromToken(req);
+    const decoded = await getUserFromToken(req);
     if (!decoded) {
       return NextResponse.json(
         { success: false, error: "Authentication required to create products" },

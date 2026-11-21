@@ -4,11 +4,14 @@ import { useSystemHealth } from "@/hooks/useAdminSettingsQuery";
 import { Activity, CheckCircle2, AlertTriangle, XCircle } from "lucide-react";
 
 export default function SystemHealth() {
-  const { data: services = [], isLoading } = useSystemHealth();
+  const { data: services = [], isLoading, isError } = useSystemHealth();
 
   if (isLoading) {
     return <div className="h-64 bg-slate-100 dark:bg-slate-800 rounded-3xl animate-pulse" />;
   }
+
+  if (isError) return <p role="alert">System health is unavailable.</p>;
+  if (services.length === 0) return <p>No system health data is available.</p>;
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -40,9 +43,6 @@ export default function SystemHealth() {
           </h3>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Realtime latency, uptime, and operational health of all 8 core platform microservices.</p>
         </div>
-        <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/40 px-2.5 py-0.5 rounded-full">
-          All Services Operational (99.98%)
-        </span>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">

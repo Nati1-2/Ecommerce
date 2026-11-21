@@ -1,23 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
+import { authTokens } from "@/lib/authTokens";
 
 export async function POST(req: NextRequest) {
   try {
     const authHeader = req.headers.get("authorization");
-    const token = authHeader || req.cookies.get("token")?.value;
+    const token = authHeader?.startsWith("Bearer ")
+      ? authHeader.slice(7).trim()
+      : req.cookies.get("token")?.value;
 
-    const gatewayUrl = process.env.API_GATEWAY_URL || process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, "") || "http://localhost:8000";
+    const gatewayUrl = process.env.API_GATEWAY_URL || process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, "");
     if (token) {
-      try {
-        await fetch(`${gatewayUrl}/api/v1/auth/logout`, {
+      if (gatewayUrl) {
+        const backendResponse = await fetch(`${gatewayUrl}/api/v1/auth/logout`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: token.startsWith("Bearer ") ? token : `Bearer ${token}`,
           },
         });
-      } catch (e) {
-        // Backend service unreachable, proceed with local logout
+        if (!backendResponse.ok) {
+          return NextResponse.json({ error: "Unable to revoke backend session" }, { status: 503 });
+        }
       }
+      await authTokens.revokeToken(token);
     }
 
     const response = NextResponse.json({ success: true, message: "Logged out successfully" });
@@ -39,7 +44,7 @@ export async function POST(req: NextRequest) {
     });
 
     return response;
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message || "Failed to logout" }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Unable to revoke session" }, { status: 503 });
   }
 }

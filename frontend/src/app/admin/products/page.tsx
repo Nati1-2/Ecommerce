@@ -32,7 +32,7 @@ export default function AdminProductsPage() {
     clearSelection,
   } = useAdminProductStore();
 
-  const { data: stats, isLoading: statsLoading } = useProductStats();
+  const { data: stats, isLoading: statsLoading, isError: statsError, refetch: refetchStats } = useProductStats();
   const { data: products = [], isLoading: productsLoading, isError, refetch } = useAdminProducts();
 
   const deleteProductMutation = useDeleteProduct();
@@ -50,15 +50,19 @@ export default function AdminProductsPage() {
     const matchesStatus = filters.statusFilter === "All" || p.status === filters.statusFilter;
     const matchesCategory = filters.categoryFilter === "All" || p.category === filters.categoryFilter;
     const matchesVendor = filters.vendorFilter === "All" || p.vendorStore === filters.vendorFilter;
+    const createdAt = new Date(p.createdAt);
+    const now = new Date();
+    const start = new Date(now);
+    if (filters.dateFilter === "Today") start.setHours(0, 0, 0, 0);
+    if (filters.dateFilter === "Week") start.setDate(now.getDate() - 7);
+    if (filters.dateFilter === "Month") start.setMonth(now.getMonth() - 1);
+    const matchesDate = filters.dateFilter === "All" ||
+      (Number.isFinite(createdAt.getTime()) && createdAt >= start && createdAt <= now);
 
-    return matchesSearch && matchesStatus && matchesCategory && matchesVendor;
+    return matchesSearch && matchesStatus && matchesCategory && matchesVendor && matchesDate;
   });
 
-  if (statsLoading || productsLoading || !stats) {
-    return <ProductSkeleton />;
-  }
-
-  if (isError) {
+  if (isError || statsError) {
     return (
       <div className="max-w-xl mx-auto my-12 p-8 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800 rounded-3xl text-center space-y-4">
         <AlertCircle className="w-12 h-12 text-rose-500 mx-auto" />
@@ -66,10 +70,10 @@ export default function AdminProductsPage() {
           Unable to Load Product Catalog
         </h3>
         <p className="text-xs text-rose-600 dark:text-rose-400">
-          The Product Service search cluster is currently synchronizing ElasticSearch indexes.
+          The product data could not be loaded. Please retry.
         </p>
         <button
-          onClick={() => refetch()}
+          onClick={() => { refetch(); refetchStats(); }}
           className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-md transition-colors inline-flex items-center gap-2"
         >
           <RefreshCw className="w-4 h-4" />
@@ -77,6 +81,10 @@ export default function AdminProductsPage() {
         </button>
       </div>
     );
+  }
+
+  if (statsLoading || productsLoading || !stats) {
+    return <ProductSkeleton />;
   }
 
   return (

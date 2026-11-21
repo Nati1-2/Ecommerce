@@ -2,6 +2,7 @@ import "./globals.css";
 import LayoutShell from "@/components/layout/LayoutShell";
 import { Providers } from "@/components/providers";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 
 const inter = { className: "font-sans" };
 
@@ -17,9 +18,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  await headers();
   return (
     <html lang="en" suppressHydrationWarning>
       <body

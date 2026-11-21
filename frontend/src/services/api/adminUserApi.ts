@@ -40,7 +40,7 @@ async function apiFetch<T>(url: string, options: RequestInit = {}): Promise<T> {
   return res.json();
 }
 
-let mockRoles: RolePermission[] = [
+const roles: RolePermission[] = [
   {
     id: "r1",
     name: "Admin",
@@ -55,12 +55,6 @@ let mockRoles: RolePermission[] = [
   },
   {
     id: "r3",
-    name: "Support Staff",
-    description: "Customer service tools for viewing orders, reviews, and customer tickets",
-    permissions: { products: true, orders: true, payments: false, users: true, analytics: false },
-  },
-  {
-    id: "r4",
     name: "Customer",
     description: "Standard marketplace buyer account",
     permissions: { products: false, orders: false, payments: false, users: false, analytics: false },
@@ -69,39 +63,18 @@ let mockRoles: RolePermission[] = [
 
 export const adminUserApi = {
   getUserStats: async (): Promise<UserStatsData> => {
-    try {
-      const data = await apiFetch<{ stats: UserStatsData }>("/api/admin/users/stats");
-      return data.stats;
-    } catch {
-      return {
-        totalUsers: 0,
-        usersGrowth: 0,
-        activeUsers: 0,
-        activeGrowth: 0,
-        blockedUsers: 0,
-        blockedChange: 0,
-        newUsersToday: 0,
-        todayGrowth: 0,
-      };
-    }
+    const data = await apiFetch<{ stats: UserStatsData }>("/api/admin/users/stats");
+    return data.stats;
   },
 
   getUsers: async (): Promise<AdminUser[]> => {
-    try {
-      const data = await apiFetch<{ users: AdminUser[] }>("/api/admin/users");
-      return data.users;
-    } catch {
-      return [];
-    }
+    const data = await apiFetch<{ users: AdminUser[] }>("/api/admin/users");
+    return data.users;
   },
 
   getUserById: async (id: string): Promise<AdminUser | undefined> => {
-    try {
-      const data = await apiFetch<{ user: AdminUser }>(`/api/admin/users/${id}`);
-      return data.user;
-    } catch {
-      return undefined;
-    }
+    const data = await apiFetch<{ user: AdminUser }>(`/api/admin/users/${id}`);
+    return data.user;
   },
 
   createUser: async (input: CreateUserInput): Promise<AdminUser> => {
@@ -175,22 +148,10 @@ export const adminUserApi = {
   },
 
   getUserActivity: async (userId: string): Promise<UserActivityEvent[]> => {
-    return [
-      {
-        id: `act_${Date.now()}`,
-        userId,
-        action: "Account Session Authenticated",
-        category: "login",
-        timestamp: "10 mins ago",
-        details: "Logged in via Desktop Client",
-        ipAddress: "192.168.1.80",
-        location: "United States",
-        browser: "Chrome (MacOS)",
-      },
-    ];
+    return [];
   },
 
   getRoles: async (): Promise<RolePermission[]> => {
-    return [...mockRoles];
+    return roles;
   },
 };

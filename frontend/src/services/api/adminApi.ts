@@ -52,14 +52,8 @@ export const adminApi = {
   },
 
   getSystemStatus: async (): Promise<SystemStatus> => {
-    const data = await apiFetch<any>("/api/admin/system-status");
-    return data.systemStatus || data.status || {
-      api: "Operational",
-      database: data.database?.status === "connected" ? "Connected" : "Disconnected",
-      redis: "Connected",
-      rabbitmq: "Connected",
-      microservices: [],
-    };
+    const data = await apiFetch<{ systemStatus: SystemStatus }>("/api/admin/system-status");
+    return data.systemStatus;
   },
 
   getMarketplaceHealth: async (): Promise<MarketplaceHealthData> => {

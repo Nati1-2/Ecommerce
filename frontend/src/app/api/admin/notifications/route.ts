@@ -5,6 +5,13 @@ import { Notification } from "@/models/Notification";
 import { VendorProfile } from "@/models/VendorProfile";
 import { VendorProduct } from "@/models/VendorProduct";
 import { Order } from "@/models/Order";
+import { z } from "zod";
+
+const notificationSchema = z.object({
+  title: z.string().trim().min(1).max(160),
+  message: z.string().trim().min(1).max(2000),
+  type: z.string().trim().min(1).max(40).default("announcement"),
+});
 
 function getRelativeTimeStr(date: Date | string): string {
   const timeDiff = Date.now() - new Date(date).getTime();
@@ -18,7 +25,7 @@ function getRelativeTimeStr(date: Date | string): string {
 }
 
 export async function GET(req: NextRequest) {
-  const auth = requireAdmin(req);
+  const auth = await requireAdmin(req);
   if ("error" in auth) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
@@ -100,27 +107,30 @@ export async function GET(req: NextRequest) {
         severity: "success",
       });
     }
-  } catch (err: any) {
-    console.warn("Admin notifications DB notice:", err?.message || err);
+  } catch (err) {
+    console.error("Admin notifications query failed:", err);
+    return NextResponse.json({ error: "Notifications are unavailable" }, { status: 503 });
   }
 
   return NextResponse.json({ success: true, notifications });
 }
 
 export async function POST(req: NextRequest) {
-  const auth = requireAdmin(req);
+  const auth = await requireAdmin(req);
   if ("error" in auth) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
   try {
-    const { title, message, type = "announcement" } = await req.json();
+    const parsed = notificationSchema.safeParse(await req.json());
+    if (!parsed.success) return NextResponse.json({ error: "Invalid notification" }, { status: 400 });
+    const { title, message, type } = parsed.data;
     await connectDB();
 
     const created = await Notification.create({
       recipientId: "ADMIN",
-      title: title || "Platform Announcement",
-      message: message || "",
+      title,
+      message,
       type,
       read: false,
     });
@@ -136,7 +146,8 @@ export async function POST(req: NextRequest) {
         type: created.type,
       },
     });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err) {
+    console.error("Admin notification creation failed:", err);
+    return NextResponse.json({ error: "Notification could not be created" }, { status: 503 });
   }
 }

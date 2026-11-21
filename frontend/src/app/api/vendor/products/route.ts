@@ -5,7 +5,7 @@ import { requireVendor } from "@/lib/authHelper";
 
 // GET /api/vendor/products — list vendor's own products
 export async function GET(req: NextRequest) {
-  const auth = requireVendor(req);
+  const auth = await requireVendor(req);
   if ("error" in auth) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
 
 // POST /api/vendor/products — create a new product
 export async function POST(req: NextRequest) {
-  const auth = requireVendor(req);
+  const auth = await requireVendor(req);
   if ("error" in auth) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }

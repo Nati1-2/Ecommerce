@@ -5,7 +5,7 @@ import { requireVendor } from "@/lib/authHelper";
 
 // POST /api/vendor/products/bulk — bulk operations on vendor products
 export async function POST(req: NextRequest) {
-  const auth = requireVendor(req);
+  const auth = await requireVendor(req);
   if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
   const { payload } = auth;
 

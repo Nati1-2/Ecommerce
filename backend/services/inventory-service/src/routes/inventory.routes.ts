@@ -12,14 +12,14 @@ router.get('/:productId', InventoryController.getInventory);
 router.use(authenticate);
 
 // Low stock items list - Admin & Vendor
-router.get('/admin/low-stock', authorize('admin', 'vendor'), InventoryController.getLowStock);
+router.get('/admin/low-stock', authorize('ADMIN', 'VENDOR'), InventoryController.getLowStock);
 
 // Replenish stock - Admin & Vendor
-router.post('/replenish', authorize('admin', 'vendor'), InventoryController.replenish);
+router.post('/replenish', authorize('ADMIN', 'VENDOR'), InventoryController.replenish);
 
 // Internal/Gateway reservation, release, and deduction endpoints
-router.post('/reserve', authorize('admin', 'vendor', 'customer'), InventoryController.reserve);
-router.post('/release', authorize('admin', 'vendor', 'customer'), InventoryController.release);
-router.post('/deduct', authorize('admin', 'vendor', 'customer'), InventoryController.deduct);
+router.post('/reserve', authorize('ADMIN', 'VENDOR', 'CUSTOMER'), InventoryController.reserve);
+router.post('/release', authorize('ADMIN', 'VENDOR', 'CUSTOMER'), InventoryController.release);
+router.post('/deduct', authorize('ADMIN', 'VENDOR', 'CUSTOMER'), InventoryController.deduct);
 
 export default router;

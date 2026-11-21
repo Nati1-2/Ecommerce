@@ -8,7 +8,7 @@ export const authorize = (...roles: string[]) => {
     }
 
     if (!roles.includes(req.user.role)) {
-      res.status(430).json({ 
+      res.status(403).json({ 
         success: false, 
         message: `Role Forbidden: Required one of [${roles.join(', ')}], actual: '${req.user.role}'` 
       });

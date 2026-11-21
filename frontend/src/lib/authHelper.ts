@@ -1,82 +1,43 @@
 import { NextRequest } from "next/server";
-import { authTokens } from "./authTokens.ts";
+import { authTokens, getJwtSecret } from "./authTokens.ts";
 
-export function getJwtSecret(): string {
-  const secret = process.env.JWT_SECRET || process.env.JWT_ACCESS_SECRET;
-  if (!secret) {
-    if (process.env.NODE_ENV === "production") {
-      throw new Error("CRITICAL: JWT_SECRET environment variable is not configured.");
-    }
-    return "dev_secret_only_for_local_development_testing_min_32_chars";
-  }
-  return secret;
-}
+export { getJwtSecret };
 
 export interface TokenPayload {
   id: string;
   email: string;
-  role: "CUSTOMER" | "VENDOR" | "ADMIN" | string;
+  role: "CUSTOMER" | "VENDOR" | "ADMIN";
 }
 
-export function getUserFromToken(req: NextRequest): TokenPayload | null {
-  try {
-    const authHeader = req.headers.get("authorization");
-    let token = "";
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-      token = authHeader.substring(7).trim();
-    } else {
-      const tokenCookie = req.cookies.get("token");
-      token = tokenCookie?.value?.trim() || "";
-    }
-
-    if (!token || token === "undefined" || token === "null") {
-      return null;
-    }
-
-    const verified = authTokens.verifyAccessToken(token);
-    if (!verified) return null;
-
-    const id = verified.id || verified.userId;
-    if (!id) return null;
-
-    return {
-      id: String(id),
-      email: verified.email ? String(verified.email) : "",
-      role: verified.role || "CUSTOMER",
-    };
-  } catch (err) {
-    return null;
-  }
+export async function getUserFromToken(req: NextRequest): Promise<TokenPayload | null> {
+  const authHeader = req.headers.get("authorization");
+  const token = authHeader?.startsWith("Bearer ")
+    ? authHeader.slice(7).trim()
+    : req.cookies.get("token")?.value?.trim();
+  if (!token || token === "undefined" || token === "null") return null;
+  const verified = await authTokens.verifyAccessToken(token);
+  return verified ? { id: verified.id, email: verified.email, role: verified.role } : null;
 }
 
 export const getTokenPayload = getUserFromToken;
 
-export function requireAuth(req: NextRequest): { payload: TokenPayload } | { error: string; status: number } {
-  const payload = getTokenPayload(req);
-  if (!payload) {
-    return { error: "Authentication required", status: 401 };
-  }
-  return { payload };
+type AuthResult = { payload: TokenPayload } | { error: string; status: number };
+
+export async function requireAuth(req: NextRequest): Promise<AuthResult> {
+  const payload = await getTokenPayload(req);
+  return payload ? { payload } : { error: "Authentication required", status: 401 };
 }
 
-export function requireVendor(req: NextRequest): { payload: TokenPayload } | { error: string; status: number } {
-  const payload = getTokenPayload(req);
-  if (!payload) {
-    return { error: "Authentication required", status: 401 };
-  }
-  if (payload.role !== "VENDOR" && payload.role !== "ADMIN") {
-    return { error: "Forbidden: Vendor access required", status: 403 };
-  }
-  return { payload };
+export async function requireVendor(req: NextRequest): Promise<AuthResult> {
+  const auth = await requireAuth(req);
+  if ("error" in auth) return auth;
+  return auth.payload.role === "VENDOR" || auth.payload.role === "ADMIN"
+    ? auth : { error: "Forbidden: Vendor access required", status: 403 };
 }
 
-export function requireAdmin(req: NextRequest): { payload: TokenPayload } | { error: string; status: number } {
-  const payload = getTokenPayload(req);
-  if (!payload) {
-    return { error: "Authentication required", status: 401 };
-  }
-  if (payload.role !== "ADMIN") {
-    return { error: "Forbidden: Administrator access required", status: 403 };
-  }
-  return { payload };
+export async function requireAdmin(req: NextRequest): Promise<AuthResult> {
+  const auth = await requireAuth(req);
+  if ("error" in auth) return auth;
+  return auth.payload.role === "ADMIN"
+    ? auth : { error: "Forbidden: Administrator access required", status: 403 };
 }

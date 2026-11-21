@@ -81,10 +81,12 @@ describe('Inventory Service Integration Tests', () => {
       const env = envMod.env;
 
       generateToken = (role = 'vendor', id = 'user-123') => {
-        return jwt.sign({ id, email: 'test@example.com', role }, env.JWT_SECRET);
+        return jwt.sign({ id, email: 'test@example.com', role: role.toUpperCase(), tokenType: 'access' },
+          process.env.JWT_ACCESS_SECRET || 'dev_access_secret_only_for_local_testing_min_32_chars', { expiresIn: '1h' });
       };
 
       token = generateToken('vendor');
+      globalThis.fetch = async () => new Response(JSON.stringify({ valid: true }), { status: 200 });
       adminToken = generateToken('admin');
 
       // Dynamically import to ensure mock module registry is active
@@ -124,6 +126,7 @@ describe('Inventory Service Integration Tests', () => {
 
       const res = await request(app)
         .get(`/api/v1/inventory/${testProductId}`)
+        .set('Authorization', `Bearer ${token}`)
         .expect(200);
 
       expect(res.body.success).toBe(true);
@@ -148,6 +151,7 @@ describe('Inventory Service Integration Tests', () => {
 
       const res = await request(app)
         .get(`/api/v1/inventory/${testProductId}`)
+        .set('Authorization', `Bearer ${token}`)
         .expect(200);
 
       expect(res.body.success).toBe(true);
@@ -203,7 +207,7 @@ describe('Inventory Service Integration Tests', () => {
         .post('/api/v1/inventory/replenish')
         .set('Authorization', `Bearer ${customerToken}`)
         .send(payload)
-        .expect(430); // Role Forbidden
+        .expect(403); // Role Forbidden
     });
   });
 

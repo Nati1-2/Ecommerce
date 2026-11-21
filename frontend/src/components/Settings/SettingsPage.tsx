@@ -22,18 +22,20 @@ import { AnimatePresence, motion } from "framer-motion";
 export default function SettingsPage() {
   const { activeTab, setSettings } = useSettingsStore();
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     // Fetch initial settings
-    settingsApi.getSettings().then((data) => {
-      setSettings(data);
-      setIsLoading(false);
-    });
+    settingsApi.getSettings()
+      .then((data) => setSettings(data))
+      .catch((error: unknown) => setLoadError(error instanceof Error ? error.message : "Settings are unavailable."))
+      .finally(() => setIsLoading(false));
   }, [setSettings]);
 
   const renderActiveTab = () => {
     if (isLoading) return <SettingsSkeleton />;
+    if (loadError) return <p role="alert" className="p-8 text-red-600">{loadError}</p>;
 
     switch (activeTab) {
       case "account": return <AccountSettings />;

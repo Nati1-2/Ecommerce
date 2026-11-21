@@ -14,7 +14,7 @@ export interface IVendorProduct extends Document {
   stock: number;
   warehouseLocation: string;
   lowStockThreshold: number;
-  status: "Active" | "Draft" | "Paused" | "Pending";
+  status: "Active" | "Draft" | "Paused" | "Pending" | "Rejected";
   approvalMessage?: string;
   images: string[];
   variants: {
@@ -54,7 +54,7 @@ const vendorProductSchema = new Schema<IVendorProduct>(
     lowStockThreshold: { type: Number, default: 5 },
     status: {
       type: String,
-      enum: ["Active", "Draft", "Paused", "Pending"],
+      enum: ["Active", "Draft", "Paused", "Pending", "Rejected"],
       default: "Draft",
     },
     approvalMessage: { type: String },

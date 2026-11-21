@@ -3,38 +3,20 @@
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import Hero from "@/components/home/Hero";
-import { CategorySection } from "@/components/home/CategorySection";
 import { BrandSection } from "@/components/home/BrandSection";
 import { ProductGridSection } from "@/components/home/ProductCard";
-import { FlashSale } from "@/components/home/FlashSale";
-import { ProductCarousel } from "@/components/home/ProductCarousel";
 import { PromoBanner } from "@/components/home/PromoBanner";
-import { ReviewsSection } from "@/components/home/ReviewsSection";
 import { Newsletter } from "@/components/home/Newsletter";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { fetchProducts } from "@/lib/api";
 import { reportError } from "@/lib/errorHandler";
 import { Product } from "@/types";
-import {
-  mockCategories,
-  mockProducts,
-  mockFlashSaleProducts,
-  mockNewArrivals,
-  mockBestSellers,
-  mockRecommendations,
-  mockReviews,
-} from "@/data/mock";
-
-import { useAuthStore } from "@/store/auth";
 
 export default function HomePage() {
   const { setTheme, theme } = useTheme();
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  const [featuredProducts, setFeaturedProducts] = useState<Product[]>(mockProducts);
-  const [flashSaleProducts, setFlashSaleProducts] = useState<Product[]>(mockFlashSaleProducts);
-  const [newArrivals, setNewArrivals] = useState<Product[]>(mockNewArrivals);
-  const [bestSellers, setBestSellers] = useState<Product[]>(mockBestSellers);
-  const [recommendations, setRecommendations] = useState<Product[]>(mockRecommendations);
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [productsLoading, setProductsLoading] = useState(true);
+  const [productsError, setProductsError] = useState(false);
 
   useEffect(() => {
     // Strictly enforce light mode on home page once mounted
@@ -51,24 +33,12 @@ export default function HomePage() {
         const data = await fetchProducts({ limit: 20 });
         if (!isMounted) return;
 
-        if (data && data.products && data.products.length > 0) {
-          // Avoid re-rendering initial mock products to prevent UI animation flickering
-          const isSameMockData =
-            data.products.length === mockProducts.length &&
-            data.products[0]?.id === mockProducts[0]?.id &&
-            data.products[1]?.id === mockProducts[1]?.id;
-
-          if (!isSameMockData) {
-            setFeaturedProducts(data.products);
-            setFlashSaleProducts(data.products.slice(0, 4));
-            setNewArrivals(data.products.slice(0, 8));
-            setBestSellers(data.products.slice(0, 8));
-            setRecommendations(data.products.slice(0, 8));
-          }
-        }
+        setFeaturedProducts(data.products);
       } catch (err) {
         reportError(err, { location: "HomePage.loadBackendProducts" });
-        console.warn("Home page backend fetch error:", err);
+        if (isMounted) setProductsError(true);
+      } finally {
+        if (isMounted) setProductsLoading(false);
       }
     }
 
@@ -86,11 +56,6 @@ export default function HomePage() {
         <Hero />
       </ErrorBoundary>
 
-      {/* 2. Categories */}
-      <ErrorBoundary name="Categories">
-        <CategorySection categories={mockCategories} />
-      </ErrorBoundary>
-
       {/* 3. Top Brands */}
       <ErrorBoundary name="Top Brands">
         <BrandSection />
@@ -98,30 +63,15 @@ export default function HomePage() {
 
       {/* 4. Featured Products */}
       <ErrorBoundary name="Featured Products">
-        <ProductGridSection
+        {productsLoading ? <p className="p-8" role="status">Loading products...</p> : productsError ?
+          <p className="p-8 text-red-600" role="alert">Products are unavailable. Please try again later.</p> :
+          featuredProducts.length === 0 ? <p className="p-8">No products are available yet.</p> : <ProductGridSection
           title="Featured Products"
-          subtitle="Hand-picked for you based on quality and value"
-          label="Editor's Choice"
+          subtitle="Explore the current catalog"
+          label="Products"
           products={featuredProducts}
           viewAllHref="/products"
-        />
-      </ErrorBoundary>
-
-      {/* 5. Flash Sale */}
-      <ErrorBoundary name="Flash Sale">
-        <FlashSale products={flashSaleProducts} />
-      </ErrorBoundary>
-
-      {/* 6. New Arrivals Carousel */}
-      <ErrorBoundary name="New Arrivals">
-        <ProductCarousel
-          title="New Arrivals"
-          subtitle="The latest products just landed"
-          label="Just In"
-          products={newArrivals}
-          viewAllHref="/products"
-          dark={true}
-        />
+        />}
       </ErrorBoundary>
 
       {/* 7. Promo Banners */}
@@ -129,33 +79,6 @@ export default function HomePage() {
         <PromoBanner />
       </ErrorBoundary>
 
-      {/* 8. Best Sellers Grid */}
-      <ErrorBoundary name="Best Sellers">
-        <ProductGridSection
-          title="Best Sellers"
-          subtitle="Our most popular products loved by thousands"
-          label="Trending"
-          products={bestSellers}
-          viewAllHref="/products"
-        />
-      </ErrorBoundary>
-
-      {/* 9. Recommendations Carousel */}
-      <ErrorBoundary name="Recommendations">
-        <ProductCarousel
-          title={isAuthenticated ? "Because You Viewed..." : "Recommended For You"}
-          subtitle={isAuthenticated ? "Personalized picks based on your recent activity" : "Top trending picks curated for new shoppers"}
-          label="AI Recommendations"
-          products={recommendations}
-          viewAllHref="/products"
-          dark={true}
-        />
-      </ErrorBoundary>
-
-      {/* 10. Customer Reviews */}
-      <ErrorBoundary name="Customer Reviews">
-        <ReviewsSection reviews={mockReviews} />
-      </ErrorBoundary>
 
       {/* 11. Newsletter */}
       <ErrorBoundary name="Newsletter">

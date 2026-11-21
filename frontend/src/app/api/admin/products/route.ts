@@ -3,10 +3,54 @@ import { connectDB } from "@/lib/mongodb";
 import { requireAdmin } from "@/lib/authHelper";
 import { VendorProduct } from "@/models/VendorProduct";
 import { VendorProfile } from "@/models/VendorProfile";
-import { REAL_PRODUCTS } from "@/lib/realDataset";
+import { z } from "zod";
+import mongoose from "mongoose";
+
+const updateSchema = z.object({
+  id: z.string().refine(mongoose.isValidObjectId),
+  status: z.enum(["Rejected", "Pending"]),
+  message: z.string().max(1000).optional(),
+});
+
+export async function PATCH(req: NextRequest) {
+  const auth = await requireAdmin(req);
+  if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  const parsed = updateSchema.safeParse(await req.json().catch(() => null));
+  if (!parsed.success) return NextResponse.json({ error: "Invalid product update" }, { status: 400 });
+  try {
+    await connectDB();
+    const product = await VendorProduct.findByIdAndUpdate(parsed.data.id, {
+      status: parsed.data.status,
+      approvalMessage: parsed.data.message || "",
+    }, { new: true, runValidators: true });
+    return product
+      ? NextResponse.json({ success: true, product })
+      : NextResponse.json({ error: "Product not found" }, { status: 404 });
+  } catch {
+    return NextResponse.json({ error: "Unable to update product" }, { status: 503 });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  const auth = await requireAdmin(req);
+  if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
+  const id = new URL(req.url).searchParams.get("id");
+  if (!id || !mongoose.isValidObjectId(id)) {
+    return NextResponse.json({ error: "Invalid product ID" }, { status: 400 });
+  }
+  try {
+    await connectDB();
+    const product = await VendorProduct.findByIdAndDelete(id);
+    return product
+      ? NextResponse.json({ success: true })
+      : NextResponse.json({ error: "Product not found" }, { status: 404 });
+  } catch {
+    return NextResponse.json({ error: "Unable to delete product" }, { status: 503 });
+  }
+}
 
 export async function GET(req: NextRequest) {
-  const auth = requireAdmin(req);
+  const auth = await requireAdmin(req);
   if ("error" in auth) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
@@ -35,7 +79,7 @@ export async function GET(req: NextRequest) {
             name: p.name,
             image:
               p.images?.[0] ||
-              "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=300&q=80",
+              "",
             vendorId: p.vendorId,
             vendorName: store?.storeName || "Vendor Store",
             sku: p.sku,
@@ -45,7 +89,7 @@ export async function GET(req: NextRequest) {
             stock: p.stock ?? 0,
             sales: p.salesCount || 0,
             revenue: p.revenueGenerated || 0,
-            views: (p as any).views || p.salesCount * 4 || 120,
+            views: (p as any).views ?? 0,
             status: statusMap[p.status] || "Pending",
             createdAt: p.createdAt ? p.createdAt.toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
             description: p.description || "",
@@ -54,22 +98,10 @@ export async function GET(req: NextRequest) {
       );
     }
   } catch (err: any) {
-    console.warn("Admin Products DB notice:", err?.message || err);
+    return NextResponse.json({ error: "Unable to load products" }, { status: 503 });
   }
 
-  // Merge DB products with real baseline products
-  const productMap = new Map<string, any>();
-  for (const p of REAL_PRODUCTS) {
-    productMap.set(p.sku.toLowerCase(), {
-      ...p,
-      image: p.images[0] || "",
-    });
-  }
-  for (const dbP of dbProducts) {
-    productMap.set(dbP.sku.toLowerCase(), dbP);
-  }
-
-  const products = Array.from(productMap.values()).map((p) => ({
+  const products = dbProducts.map((p) => ({
     ...p,
     vendorStore: p.vendorStore || p.vendorName || "Merchant Store",
     vendorName: p.vendorName || p.vendorStore || "Merchant Store",
@@ -78,12 +110,12 @@ export async function GET(req: NextRequest) {
     msrp: p.msrp || p.discountPrice || p.price,
     variants: p.variants || [],
     qualityCheck: p.qualityCheck || {
-      imagesUploaded: true,
-      descriptionComplete: true,
-      categorySelected: true,
-      priceValid: true,
+      imagesUploaded: Boolean(p.image),
+      descriptionComplete: Boolean(p.description),
+      categorySelected: Boolean(p.category),
+      priceValid: p.price >= 0,
       inventoryAvailable: (p.stock ?? 0) > 0,
-      policyCompliant: true,
+      policyCompliant: false,
     },
   }));
 

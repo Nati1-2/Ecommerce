@@ -18,7 +18,7 @@ function getRelativeTimeStr(date: Date | string): string {
 
 // GET /api/vendor/notifications — real notifications for authenticated vendor
 export async function GET(req: NextRequest) {
-  const auth = requireVendor(req);
+  const auth = await requireVendor(req);
   if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
   const { payload } = auth;
 

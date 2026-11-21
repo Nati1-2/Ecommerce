@@ -1,9 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server.js";
 
 const PROTECTED_PREFIXES = ["/admin", "/vendor", "/checkout", "/payment", "/profile", "/account", "/orders"];
 
 function getJwtSecret(): string {
-  return process.env.JWT_SECRET || process.env.JWT_ACCESS_SECRET || "";
+  const secret = process.env.JWT_ACCESS_SECRET || (process.env.NODE_ENV === "production" ? "" : "dev_access_secret_only_for_local_testing_min_32_chars");
+  return process.env.NODE_ENV === "production" && secret.length < 32 ? "" : secret;
 }
 
 /**
@@ -13,11 +14,13 @@ function getJwtSecret(): string {
 async function verifyJwtSignature(
   token: string,
   secret: string
-): Promise<{ role?: string; id?: string; email?: string } | null> {
+): Promise<{ role: string; id: string; email: string } | null> {
   try {
     const parts = token.split(".");
     if (parts.length !== 3) return null;
     const [headerB64, payloadB64, signatureB64] = parts;
+    const header = JSON.parse(atob(headerB64.replace(/-/g, "+").replace(/_/g, "/")));
+    if (header.alg !== "HS256" || (header.typ && header.typ !== "JWT")) return null;
 
     // Decode payload
     const payloadJson = JSON.parse(
@@ -25,7 +28,10 @@ async function verifyJwtSignature(
     );
 
     // Validate expiration
-    if (payloadJson.exp && payloadJson.exp * 1000 < Date.now()) {
+    if (typeof payloadJson.exp !== "number" || payloadJson.exp * 1000 <= Date.now() ||
+        payloadJson.tokenType !== "access" || typeof payloadJson.id !== "string" ||
+        !payloadJson.id || typeof payloadJson.email !== "string" ||
+        !["CUSTOMER", "VENDOR", "ADMIN"].includes(payloadJson.role)) {
       return null;
     }
 
@@ -61,7 +67,28 @@ export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Add enterprise security headers
-  const response = NextResponse.next();
+  const nonce = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16))));
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-nonce", nonce);
+
+  // Content-Security-Policy (CSP)
+  const cspHeader = `
+    default-src 'self';
+    script-src 'self' 'nonce-${nonce}' https://js.stripe.com;
+    style-src 'self' 'nonce-${nonce}';
+    style-src-attr 'unsafe-inline';
+    img-src 'self' blob: data: https://images.unsplash.com https://*.stripe.com;
+    font-src 'self';
+    connect-src 'self' https://api.stripe.com https://m.stripe.network;
+    frame-src 'self' https://js.stripe.com https://hooks.stripe.com;
+    object-src 'none';
+    base-uri 'self';
+    form-action 'self';
+    frame-ancestors 'none';
+  `.replace(/\s{2,}/g, " ").trim();
+
+  requestHeaders.set("Content-Security-Policy", cspHeader);
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
   response.headers.set("X-Frame-Options", "DENY");
   response.headers.set("X-Content-Type-Options", "nosniff");
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
@@ -72,22 +99,6 @@ export async function middleware(req: NextRequest) {
     "Permissions-Policy",
     "camera=(), microphone=(), geolocation=(), browsing-topics=()"
   );
-
-  // Content-Security-Policy (CSP)
-  const cspHeader = `
-    default-src 'self';
-    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com;
-    style-src 'self' 'unsafe-inline';
-    img-src 'self' blob: data: https://images.unsplash.com https://*.stripe.com;
-    font-src 'self';
-    connect-src 'self' http://localhost:8000 http://127.0.0.1:8000 https://api.stripe.com;
-    frame-src 'self' https://js.stripe.com https://hooks.stripe.com;
-    object-src 'none';
-    base-uri 'self';
-    form-action 'self';
-    frame-ancestors 'none';
-  `.replace(/\s{2,}/g, " ").trim();
-
   response.headers.set("Content-Security-Policy", cspHeader);
 
   // Check protected route access
@@ -108,8 +119,22 @@ export async function middleware(req: NextRequest) {
     // Cryptographic JWT signature verification
     const secret = getJwtSecret();
     const payload = await verifyJwtSignature(token, secret);
+    let accepted = false;
+    if (payload) {
+      try {
+        const check = await fetch(new URL("/api/auth/token-status", req.url), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token }),
+          cache: "no-store",
+        });
+        accepted = check.ok && (await check.json()).valid === true;
+      } catch {
+        accepted = false;
+      }
+    }
 
-    if (!payload) {
+    if (!accepted || !payload) {
       const loginUrl = new URL("/login", req.url);
       loginUrl.searchParams.set("redirect", pathname);
       loginUrl.searchParams.set("error", "invalid_or_expired_session");

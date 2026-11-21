@@ -41,10 +41,12 @@ describe('Notification Service Integration Tests', () => {
       const env = envMod.env;
 
       const generateToken = (role = 'customer', id = 'user-cust-123') => {
-        return jwt.sign({ id, email: 'customer@example.com', role }, env.JWT_SECRET);
+        return jwt.sign({ id, email: 'customer@example.com', role: role.toUpperCase(), tokenType: 'access' },
+          process.env.JWT_ACCESS_SECRET || 'dev_access_secret_only_for_local_testing_min_32_chars', { expiresIn: '1h' });
       };
 
       token = generateToken('customer', 'user-cust-123');
+      globalThis.fetch = async () => new Response(JSON.stringify({ valid: true }), { status: 200 });
       adminToken = generateToken('admin', 'admin-789');
 
       const appMod = await import('../app.js');

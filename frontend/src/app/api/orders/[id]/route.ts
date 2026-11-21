@@ -22,7 +22,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const decoded = getUserFromToken(req);
+    const decoded = await getUserFromToken(req);
     if (!decoded) {
       return NextResponse.json(
         { success: false, error: "Authentication required to view order details. Please log in." },

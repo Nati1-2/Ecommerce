@@ -5,7 +5,7 @@ import { getUserFromToken } from "@/lib/authHelper";
 
 export async function GET(req: NextRequest) {
   try {
-    const decoded = getUserFromToken(req);
+    const decoded = await getUserFromToken(req);
     if (!decoded) {
       return NextResponse.json(
         { success: false, error: "Authentication required to view orders. Please log in." },
@@ -100,7 +100,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const decoded = getUserFromToken(req);
+    const decoded = await getUserFromToken(req);
     if (!decoded) {
       return NextResponse.json(
         { success: false, error: "Authentication required to create orders. Please log in first." },

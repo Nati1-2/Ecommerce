@@ -6,7 +6,7 @@ import { User } from "@/models/User";
 import { Order } from "@/models/Order";
 
 export async function GET(req: NextRequest) {
-  const auth = requireAdmin(req);
+  const auth = await requireAdmin(req);
   if ("error" in auth) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
@@ -20,11 +20,9 @@ export async function GET(req: NextRequest) {
       dbUsers.map(async (u) => {
         let totalOrders = 0;
         let totalSpent = 0;
-        try {
-          const userOrders = await Order.find({ userId: u._id.toString() }).select("grandTotal totalAmount");
-          totalOrders = userOrders.length;
-          totalSpent = userOrders.reduce((sum, o) => sum + (o.grandTotal || o.totalAmount || 0), 0);
-        } catch {}
+        const userOrders = await Order.find({ userId: u._id.toString() }).select("grandTotal totalAmount");
+        totalOrders = userOrders.length;
+        totalSpent = userOrders.reduce((sum, o) => sum + (o.grandTotal || o.totalAmount || 0), 0);
 
         const roleMap: Record<string, string> = {
           ADMIN: "Admin",
@@ -36,56 +34,29 @@ export async function GET(req: NextRequest) {
           id: u._id.toString(),
           name: u.name || u.email.split("@")[0],
           email: u.email,
-          avatar: u.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+          avatar: u.avatar || "",
           phone: u.phone || "N/A",
           role: roleMap[u.role] || "Customer",
           status: u.isVerified !== false ? "Active" : "Pending Verification",
-          location: u.address || "United States",
+          location: u.address || "",
           totalOrders: totalOrders,
           totalSpent: Math.round(totalSpent * 100) / 100,
           createdAt: u.createdAt ? u.createdAt.toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
-          lastLogin: "Recent",
+          lastLogin: "",
           lastLoginIp: "N/A",
           lastLoginLocation: "N/A",
         };
       })
     );
   } catch (err: any) {
-    console.warn("Admin Users API DB notice:", err?.message || err);
+    return NextResponse.json({ error: "Unable to load users" }, { status: 503 });
   }
 
-  // Merge DB users with real baseline user directory
-  const userMap = new Map<string, any>();
-  const { REAL_USERS } = require("@/lib/realDataset");
-  for (const ru of REAL_USERS) {
-    userMap.set(ru.email.toLowerCase(), {
-      id: ru.id,
-      name: ru.name,
-      email: ru.email,
-      avatar: ru.avatar,
-      phone: ru.phone,
-      role: ru.role === "ADMIN" ? "Admin" : ru.role === "VENDOR" ? "Vendor" : "Customer",
-      status: ru.isVerified ? "Active" : "Pending Verification",
-      location: ru.address,
-      totalOrders: ru.totalOrders,
-      totalSpent: ru.totalSpent,
-      createdAt: ru.createdAt,
-      lastLogin: "Active Today",
-      lastLoginIp: "104.28.19.45",
-      lastLoginLocation: ru.address.split(",")[0] || "United States",
-    });
-  }
-  for (const u of users) {
-    userMap.set(u.email.toLowerCase(), u);
-  }
-
-  const finalUsers = Array.from(userMap.values());
-
-  return NextResponse.json({ success: true, users: finalUsers });
+  return NextResponse.json({ success: true, users });
 }
 
 export async function POST(req: NextRequest) {
-  const auth = requireAdmin(req);
+  const auth = await requireAdmin(req);
   if ("error" in auth) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }

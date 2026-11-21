@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { adminDevicesApi, DeviceFilterParams } from "@/services/api/adminDevicesApi";
 
 export function useAdminDevices(
@@ -23,12 +23,3 @@ export function useAdminDevices(
   });
 }
 
-export function useSimulateDeviceTraffic() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: adminDevicesApi.simulateTraffic,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-devices"] });
-    },
-  });
-}

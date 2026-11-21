@@ -8,7 +8,8 @@ import { validateProductionEnv } from '../../frontend/src/lib/envCheck.ts';
 const TEST_SECRET = 'test_secret_for_automated_security_verification_min_32_characters';
 
 describe('P0 Security & Authorization Tests', () => {
-  it('rejects forged / tampered tokens', () => {
+  const clear = async () => false;
+  it('rejects forged / tampered tokens', async () => {
     const validToken = authTokens.generateAccessToken({
       id: 'usr-1',
       email: 'user@example.com',
@@ -19,28 +20,28 @@ describe('P0 Security & Authorization Tests', () => {
     const parts = validToken.split('.');
     const tampered = `${parts[0]}.${Buffer.from(JSON.stringify({ id: 'usr-1', role: 'ADMIN' })).toString('base64url')}.${parts[2]}`;
 
-    const decoded = authTokens.verifyAccessToken(tampered);
+    const decoded = await authTokens.verifyAccessToken(tampered, clear);
     assert.strictEqual(decoded, null, 'Tampered token must fail cryptographic signature verification');
   });
 
-  it('prevents role elevation: token signed with wrong secret is rejected', () => {
+  it('prevents role elevation: token signed with wrong secret is rejected', async () => {
     const forgedAdminToken = jwt.sign(
       { id: 'attacker-1', email: 'attacker@evil.com', role: 'ADMIN' },
       'wrong_attacker_secret_key'
     );
 
-    const verified = authTokens.verifyAccessToken(forgedAdminToken);
+    const verified = await authTokens.verifyAccessToken(forgedAdminToken, clear);
     assert.strictEqual(verified, null, 'Attacker token with forged secret must be rejected');
   });
 
-  it('enforces least-privilege role matrix (CUSTOMER != ADMIN, CUSTOMER != VENDOR)', () => {
+  it('enforces least-privilege role matrix (CUSTOMER != ADMIN, CUSTOMER != VENDOR)', async () => {
     const customerToken = authTokens.generateAccessToken({
       id: 'cust-123',
       email: 'customer@store.com',
       role: 'CUSTOMER',
     });
 
-    const payload = authTokens.verifyAccessToken(customerToken);
+    const payload = await authTokens.verifyAccessToken(customerToken, clear);
     assert.notStrictEqual(payload, null);
     assert.strictEqual(payload?.role, 'CUSTOMER');
     assert.notStrictEqual(payload?.role, 'ADMIN', 'Customer must not have ADMIN role');
@@ -276,21 +277,25 @@ describe('P1 Environment Configuration Validation Tests', () => {
   it('detects missing critical environment variables in production mode', () => {
     const prevEnv = process.env.NODE_ENV;
     const prevMongo = process.env.MONGODB_URI;
-    const prevJwt = process.env.JWT_SECRET;
+    const prevAccess = process.env.JWT_ACCESS_SECRET;
+    const prevRefresh = process.env.JWT_REFRESH_SECRET;
 
     try {
       delete process.env.MONGODB_URI;
-      delete process.env.JWT_SECRET;
+      delete process.env.JWT_ACCESS_SECRET;
+      delete process.env.JWT_REFRESH_SECRET;
       process.env.NODE_ENV = 'production';
 
       const validation = validateProductionEnv();
       assert.strictEqual(validation.valid, false);
       assert.ok(validation.missing.includes('MONGODB_URI'));
-      assert.ok(validation.missing.includes('JWT_SECRET'));
+      assert.ok(validation.missing.includes('JWT_ACCESS_SECRET'));
+      assert.ok(validation.missing.includes('JWT_REFRESH_SECRET'));
     } finally {
       process.env.NODE_ENV = prevEnv;
       if (prevMongo) process.env.MONGODB_URI = prevMongo;
-      if (prevJwt) process.env.JWT_SECRET = prevJwt;
+      if (prevAccess) process.env.JWT_ACCESS_SECRET = prevAccess;
+      if (prevRefresh) process.env.JWT_REFRESH_SECRET = prevRefresh;
     }
   });
 });

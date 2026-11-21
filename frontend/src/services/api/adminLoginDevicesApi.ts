@@ -43,10 +43,4 @@ export const adminLoginDevicesApi = {
     });
   },
 
-  simulateAdminAction: async (): Promise<{ success: boolean; message: string }> => {
-    return apiFetch<{ success: boolean; message: string }>("/api/admin/admin-devices", {
-      method: "POST",
-      body: JSON.stringify({ action: "simulate_action" }),
-    });
-  },
 };

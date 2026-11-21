@@ -28,8 +28,6 @@ export default function AdminSettingsPage() {
   const activeSection = useAdminSettingsStore((state) => state.activeSection);
   const { data: settings, isLoading, isError, refetch } = useSystemSettings();
 
-  if (isLoading || !settings) return <SettingsSkeleton />;
-
   if (isError) {
     return (
       <div className="max-w-xl mx-auto my-12 p-8 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800 rounded-3xl text-center space-y-4">
@@ -38,7 +36,7 @@ export default function AdminSettingsPage() {
           Unable to Load System Settings
         </h3>
         <p className="text-xs text-rose-600 dark:text-rose-400">
-          The Configuration Service microservice encountered a timeout retrieving cluster environment variables.
+          Persistent system settings are not configured yet.
         </p>
         <button
           onClick={() => refetch()}
@@ -50,6 +48,8 @@ export default function AdminSettingsPage() {
       </div>
     );
   }
+
+  if (isLoading || !settings) return <SettingsSkeleton />;
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-24">

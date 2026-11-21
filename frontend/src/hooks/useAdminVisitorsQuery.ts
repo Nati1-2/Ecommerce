@@ -28,16 +28,6 @@ export function useAdminVisitors(
   });
 }
 
-export function useSimulateVisitorHit() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: adminVisitorsApi.simulateHit,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-visitors"] });
-    },
-  });
-}
-
 export function useClearVisitorLogs() {
   const queryClient = useQueryClient();
   return useMutation({

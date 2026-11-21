@@ -338,21 +338,19 @@ export async function safeSaveUserSession(sessionData: {
     return true;
   } catch (err: any) {
     if (process.env.NODE_ENV === "production") {
-      console.warn("Session recording warning:", err?.message || err);
+      throw new Error("Unable to persist login session");
     }
   }
 
-  if (process.env.NODE_ENV !== "production") {
-    const memSession = {
-      ...sessionData,
-      loginAt: new Date().toISOString(),
-      lastActive: new Date().toISOString(),
-      revoked: false,
-    };
-    global.inMemoryUserSessions!.unshift(memSession);
-    if (global.inMemoryUserSessions!.length > 100) {
-      global.inMemoryUserSessions = global.inMemoryUserSessions!.slice(0, 100);
-    }
+  const memSession = {
+    ...sessionData,
+    loginAt: new Date().toISOString(),
+    lastActive: new Date().toISOString(),
+    revoked: false,
+  };
+  global.inMemoryUserSessions!.unshift(memSession);
+  if (global.inMemoryUserSessions!.length > 100) {
+    global.inMemoryUserSessions = global.inMemoryUserSessions!.slice(0, 100);
   }
   return true;
 }

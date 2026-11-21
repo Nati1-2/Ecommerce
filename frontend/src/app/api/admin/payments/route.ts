@@ -2,10 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import { requireAdmin } from "@/lib/authHelper";
 import { Order } from "@/models/Order";
-import { REAL_PAYMENTS_DATA } from "@/lib/realDataset";
 
 export async function GET(req: NextRequest) {
-  const auth = requireAdmin(req);
+  const auth = await requireAdmin(req);
   if ("error" in auth) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
@@ -30,21 +29,18 @@ export async function GET(req: NextRequest) {
     ]);
     pendingPayoutsAmount = pendingStats[0]?.total || 0;
   } catch (err: any) {
-    console.warn("Admin Payments DB notice:", err?.message || err);
+    return NextResponse.json({ error: "Unable to load payment data" }, { status: 503 });
   }
 
   return NextResponse.json({
     success: true,
     payments: {
-      totalTransactions: Math.max(total, REAL_PAYMENTS_DATA.totalTransactions),
-      successfulPayments: Math.max(successful, REAL_PAYMENTS_DATA.successfulPayments),
-      failedPayments: Math.max(failed, REAL_PAYMENTS_DATA.failedPayments),
-      refundsProcessed: Math.max(refunded, REAL_PAYMENTS_DATA.refundsProcessed),
-      pendingPayoutsAmount: Math.max(
-        Math.round(pendingPayoutsAmount * 100) / 100,
-        REAL_PAYMENTS_DATA.pendingPayoutsAmount
-      ),
-      gatewayStatus: "Online",
+      totalTransactions: total,
+      successfulPayments: successful,
+      failedPayments: failed,
+      refundsProcessed: refunded,
+      pendingPayoutsAmount: Math.round(pendingPayoutsAmount * 100) / 100,
+      gatewayStatus: "Unknown",
     },
   });
 }

@@ -1,219 +1,95 @@
-import {
-  AdminReviewModel,
-  ReviewStatsData,
-  ModerationResult,
-  ReportedReviewCase,
-  ProductReviewPerformance,
-  VendorReviewPerformance,
-  FeedbackSentimentData,
+import type {
+  AdminReviewModel, ReviewStatsData, ModerationResult, ReportedReviewCase,
+  ProductReviewPerformance, VendorReviewPerformance, FeedbackSentimentData,
   ReviewStatus,
 } from "@/types/adminReview";
 
-function getToken(): string {
-  if (typeof window === "undefined") return "";
-  return localStorage.getItem("auth_token") || "";
-}
-
 async function apiFetch<T>(url: string, options: RequestInit = {}): Promise<T> {
-  const token = getToken();
   const res = await fetch(url, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-      ...options.headers,
-    },
+    ...options, headers: { "Content-Type": "application/json", ...options.headers },
   });
-
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
-    throw new Error(err.error || `Request failed: ${res.status}`);
+    const body = await res.json().catch(() => null);
+    throw new Error(body?.error || `Request failed: ${res.status}`);
   }
-
   return res.json();
 }
 
-let mockReviewsFallback: AdminReviewModel[] = [
-  {
-    id: "rev_70101",
-    customerName: "Sarah Connor",
-    customerEmail: "sarah.c@gmail.com",
-    customerAvatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
-    isVerifiedBuyer: true,
-    productName: "Apex Smart Watch Ultra",
-    productSku: "APX-WCH-ULT",
-    productImage: "https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?auto=format&fit=crop&w=150&q=80",
-    vendorStore: "Apex Tech Wearables Store",
-    rating: 5,
-    comment: "Incredible watch, battery life is outstanding!",
-    images: [],
-    status: "Published",
-    createdAt: "2026-08-05",
-  },
-  {
-    id: "rev_70102",
-    customerName: "John Connor",
-    customerEmail: "john.c@gmail.com",
-    customerAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
-    isVerifiedBuyer: true,
-    productName: "Sonic Bass Pro Wireless Headphones",
-    productSku: "SNC-HDP-BSS",
-    productImage: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=150&q=80",
-    vendorStore: "Apex Tech Wearables Store",
-    rating: 4,
-    comment: "Great sound quality, ANC is decent.",
-    images: [],
-    status: "Published",
-    createdAt: "2026-08-04",
-  },
-];
+async function getReviews(): Promise<AdminReviewModel[]> {
+  const data = await apiFetch<{ reviews: Array<AdminReviewModel & { vendorName?: string }> }>("/api/admin/reviews");
+  return data.reviews.map((review) => ({
+    ...review,
+    customerAvatar: review.customerAvatar || "",
+    customerEmail: review.customerEmail || "",
+    isVerifiedBuyer: Boolean(review.isVerifiedBuyer),
+    productSku: review.productSku || "",
+    images: review.images || [],
+    vendorStore: review.vendorStore || review.vendorName || "",
+  }));
+}
+
+async function updateReview(id: string, status: ReviewStatus): Promise<AdminReviewModel> {
+  await apiFetch("/api/admin/reviews", {
+    method: "PATCH", body: JSON.stringify({ id, status }),
+  });
+  const review = (await getReviews()).find((item) => item.id === id);
+  if (!review) throw new Error("Updated review not found");
+  return review;
+}
 
 export const adminReviewApi = {
   getReviewStats: async (): Promise<ReviewStatsData> => {
-    try {
-      const data = await apiFetch<{ reviews: any[] }>("/api/admin/reviews");
-      const list = data.reviews || [];
-      const totalRating = list.reduce((sum, r) => sum + (r.rating || 5), 0);
-      const avgRating = list.length ? Math.round((totalRating / list.length) * 10) / 10 : 0;
-      return {
-        totalReviews: list.length,
-        totalGrowth: 0,
-        avgRating,
-        pendingCount: list.filter((r) => r.status === "Pending").length,
-        reportedCount: list.filter((r) => r.status === "Reported").length,
-        removedCount: list.filter((r) => r.status === "Removed").length,
-      };
-    } catch {
-      return {
-        totalReviews: 0,
-        totalGrowth: 0,
-        avgRating: 0,
-        pendingCount: 0,
-        reportedCount: 0,
-        removedCount: 0,
-      };
-    }
-  },
-
-  getReviews: async (): Promise<AdminReviewModel[]> => {
-    try {
-      const data = await apiFetch<{ reviews: any[] }>("/api/admin/reviews");
-      return (data.reviews || []).map((r) => ({
-        id: r.id,
-        customerName: r.customerName || "Customer",
-        customerEmail: r.customerEmail || "",
-        customerAvatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
-        isVerifiedBuyer: true,
-        productName: r.productName || "Marketplace Product",
-        productSku: "PROD-SKU",
-        productImage: r.productImage || "https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?auto=format&fit=crop&w=150&q=80",
-        vendorStore: r.vendorName || "Vendor Store",
-        rating: r.rating || 5,
-        comment: r.comment || "Great product!",
-        images: [],
-        status: r.status === "Published" ? "Published" : r.status || "Published",
-        createdAt: r.createdAt || "Just now",
-      }));
-    } catch {
-      return [];
-    }
-  },
-
-  getReviewById: async (id: string): Promise<AdminReviewModel | undefined> => {
-    const list = await adminReviewApi.getReviews();
-    return list.find((r) => r.id === id);
-  },
-
-  approveReview: async (id: string): Promise<AdminReviewModel> => {
-    await apiFetch("/api/admin/reviews", {
-      method: "PATCH",
-      body: JSON.stringify({ id, status: "Published" }),
-    });
-    const list = await adminReviewApi.getReviews();
-    const r = list.find((rev) => rev.id === id);
-    return r || mockReviewsFallback[0];
-  },
-
-  removeReview: async (id: string, reason: string): Promise<AdminReviewModel> => {
-    await apiFetch("/api/admin/reviews", {
-      method: "PATCH",
-      body: JSON.stringify({ id, status: "Removed" }),
-    });
-    const list = await adminReviewApi.getReviews();
-    const r = list.find((rev) => rev.id === id);
-    return r || mockReviewsFallback[0];
-  },
-
-  getAIRiskScore: async (reviewId: string): Promise<ModerationResult> => {
+    const list = await getReviews();
     return {
-      reviewId,
-      riskScore: 4,
-      riskLevel: "Low",
-      spamProbability: 2,
-      fakeProbability: 1,
-      offensiveLanguageDetected: false,
-      duplicateContent: false,
-      flags: [],
+      totalReviews: list.length, totalGrowth: 0,
+      avgRating: list.length ? Math.round(list.reduce((sum, item) => sum + item.rating, 0) / list.length * 10) / 10 : 0,
+      pendingCount: list.filter((item) => item.status === "Pending").length,
+      reportedCount: list.filter((item) => item.status === "Reported").length,
+      removedCount: list.filter((item) => item.status === "Removed").length,
     };
   },
-
-  getReports: async (): Promise<ReportedReviewCase[]> => {
-    return [];
+  getReviews,
+  getReviewById: async (id: string): Promise<AdminReviewModel | undefined> =>
+    (await getReviews()).find((review) => review.id === id),
+  approveReview: async (id: string): Promise<AdminReviewModel> => updateReview(id, "Published"),
+  removeReview: async (id: string, _reason: string): Promise<AdminReviewModel> => updateReview(id, "Removed"),
+  getAIRiskScore: async (_reviewId: string): Promise<ModerationResult> => {
+    throw new Error("AI risk scoring is not configured.");
   },
-
-  dismissReport: async (reportId: string): Promise<boolean> => {
-    return true;
+  getReports: async (): Promise<ReportedReviewCase[]> => [],
+  dismissReport: async (_reportId: string): Promise<boolean> => {
+    throw new Error("Review reporting is not connected to a persistent service.");
   },
-
   getProductRatings: async (): Promise<ProductReviewPerformance[]> => {
-    return [
-      { productName: "Apex Smart Watch Ultra", vendorStore: "Apex Tech Wearables", rating: 4.9, totalReviews: 1240, salesCount: 3420 },
-      { productName: "Sonic Bass Pro Headphones", vendorStore: "Apex Tech Wearables", rating: 4.8, totalReviews: 890, salesCount: 4890 },
-    ];
+    const list = await getReviews();
+    const groups = new Map<string, AdminReviewModel[]>();
+    for (const review of list) groups.set(review.productName, [...(groups.get(review.productName) || []), review]);
+    return [...groups].map(([productName, reviews]) => ({
+      productName, vendorStore: reviews[0].vendorStore,
+      rating: Math.round(reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length * 10) / 10,
+      totalReviews: reviews.length, salesCount: 0,
+    }));
   },
-
   getVendorRatings: async (): Promise<VendorReviewPerformance[]> => {
-    return [
-      { vendorStore: "Apex Tech Wearables Store", avgRating: 4.9, totalReviews: 45000, complaintCount: 12, status: "Top Rated" },
-    ];
+    const list = await getReviews();
+    const groups = new Map<string, AdminReviewModel[]>();
+    for (const review of list) groups.set(review.vendorStore, [...(groups.get(review.vendorStore) || []), review]);
+    return [...groups].map(([vendorStore, reviews]) => ({
+      vendorStore,
+      avgRating: Math.round(reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length * 10) / 10,
+      totalReviews: reviews.length, complaintCount: reviews.filter((review) => review.rating <= 2).length,
+      status: "",
+    }));
   },
-
-  getFeedbackSentiment: async (): Promise<FeedbackSentimentData> => {
-    return {
-      positiveKeywords: [
-        { word: "fast shipping", count: 1420 },
-        { word: "build quality", count: 1180 },
-        { word: "excellent audio", count: 950 },
-      ],
-      negativeKeywords: [
-        { word: "delayed delivery", count: 240 },
-      ],
-      commonComplaints: ["Courier shipping delays during peak season"],
-      suggestions: ["Add express 1-day shipping option for electronics"],
-    };
-  },
-
+  getFeedbackSentiment: async (): Promise<FeedbackSentimentData> => ({
+    positiveKeywords: [], negativeKeywords: [], commonComplaints: [], suggestions: [],
+  }),
   bulkApproveReviews: async (ids: string[]): Promise<boolean> => {
-    await Promise.all(
-      ids.map((id) =>
-        apiFetch("/api/admin/reviews", {
-          method: "PATCH",
-          body: JSON.stringify({ id, status: "Published" }),
-        })
-      )
-    );
+    await Promise.all(ids.map((id) => updateReview(id, "Published")));
     return true;
   },
-
   bulkRemoveReviews: async (ids: string[]): Promise<boolean> => {
-    await Promise.all(
-      ids.map((id) =>
-        apiFetch("/api/admin/reviews", {
-          method: "PATCH",
-          body: JSON.stringify({ id, status: "Removed" }),
-        })
-      )
-    );
+    await Promise.all(ids.map((id) => updateReview(id, "Removed")));
     return true;
   },
 };

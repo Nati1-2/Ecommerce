@@ -5,10 +5,9 @@ import { Order } from "@/models/Order";
 import { User } from "@/models/User";
 import { VendorProduct } from "@/models/VendorProduct";
 import { VendorProfile } from "@/models/VendorProfile";
-import { REAL_ORDERS } from "@/lib/realDataset";
 
 export async function GET(req: NextRequest) {
-  const auth = requireAdmin(req);
+  const auth = await requireAdmin(req);
   if ("error" in auth) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
@@ -123,19 +122,10 @@ export async function GET(req: NextRequest) {
       );
     }
   } catch (err: any) {
-    console.warn("Admin Orders DB notice:", err?.message || err);
+    return NextResponse.json({ error: "Unable to load orders" }, { status: 503 });
   }
 
-  // Merge DB orders with real baseline orders
-  const orderMap = new Map<string, any>();
-  for (const o of REAL_ORDERS) {
-    orderMap.set(o.orderNumber, o);
-  }
-  for (const dbO of dbOrders) {
-    orderMap.set(dbO.orderNumber, dbO);
-  }
-
-  const orders = Array.from(orderMap.values()).map((o) => ({
+  const orders = dbOrders.map((o) => ({
     ...o,
     vendorStore: o.vendorStore || o.vendorName || "Merchant Store",
     vendorName: o.vendorName || o.vendorStore || "Merchant Store",

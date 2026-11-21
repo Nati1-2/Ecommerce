@@ -6,7 +6,7 @@ import { getUserFromToken } from "@/lib/authHelper";
 
 export async function GET(req: NextRequest) {
   try {
-    const decoded = getUserFromToken(req);
+    const decoded = await getUserFromToken(req);
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get("userId") || decoded?.id;
 
@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const decoded = getUserFromToken(req);
+    const decoded = await getUserFromToken(req);
     if (!decoded) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

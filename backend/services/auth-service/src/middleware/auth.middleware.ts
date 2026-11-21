@@ -9,7 +9,7 @@ declare global {
   }
 }
 
-export const requireAuth = (req: Request, res: Response, next: NextFunction): void => {
+export const requireAuth = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     res.status(401).json({ success: false, errors: [{ message: 'Authentication required' }] });
@@ -18,7 +18,7 @@ export const requireAuth = (req: Request, res: Response, next: NextFunction): vo
 
   const token = authHeader.split(' ')[1];
   try {
-    const payload = JWTUtils.verifyAccessToken(token);
+    const payload = await JWTUtils.verifyAccessToken(token);
     req.user = payload;
     next();
   } catch (error) {

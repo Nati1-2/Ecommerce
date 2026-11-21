@@ -6,7 +6,7 @@ import { requireVendor } from "@/lib/authHelper";
 
 // GET /api/vendor/metrics — live computed metrics strictly from MongoDB
 export async function GET(req: NextRequest) {
-  const auth = requireVendor(req);
+  const auth = await requireVendor(req);
   if ("error" in auth) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }

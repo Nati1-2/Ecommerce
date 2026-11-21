@@ -10,3 +10,5 @@ export * from './events/EventTypes.js';
 export * from './middleware/errorHandler.js';
 export * from './middleware/currentUser.js';
 export * from './middleware/requireAuth.js';
+export { verifyToken } from './security/tokenVerification.js';
+export type { VerifiedToken } from './security/tokenVerification.js';

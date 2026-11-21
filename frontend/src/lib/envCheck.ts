@@ -12,7 +12,8 @@ export interface EnvValidationResult {
 export function validateProductionEnv(): EnvValidationResult {
   const criticalEnvVars = [
     "MONGODB_URI",
-    "JWT_SECRET",
+    "JWT_ACCESS_SECRET",
+    "JWT_REFRESH_SECRET",
   ];
 
   const paymentEnvVars = [
@@ -21,7 +22,12 @@ export function validateProductionEnv(): EnvValidationResult {
     "STRIPE_WEBHOOK_SECRET",
   ];
 
-  const missingCritical = criticalEnvVars.filter((key) => !process.env[key]);
+  const missingCritical = criticalEnvVars.filter((key) =>
+    !process.env[key] || (key.startsWith("JWT_") && process.env.NODE_ENV === "production" && process.env[key]!.length < 32)
+  );
+  if (process.env.JWT_ACCESS_SECRET && process.env.JWT_ACCESS_SECRET === process.env.JWT_REFRESH_SECRET) {
+    missingCritical.push("JWT_REFRESH_SECRET (must differ from JWT_ACCESS_SECRET)");
+  }
   const missingPayment = paymentEnvVars.filter((key) => !process.env[key]);
 
   const warnings: string[] = [];

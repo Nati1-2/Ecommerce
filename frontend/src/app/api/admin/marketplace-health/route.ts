@@ -5,10 +5,9 @@ import { VendorProfile } from "@/models/VendorProfile";
 import { VendorProduct } from "@/models/VendorProduct";
 import { Order } from "@/models/Order";
 import { Review } from "@/models/Review";
-import { REAL_MARKETPLACE_HEALTH } from "@/lib/realDataset";
 
 export async function GET(req: NextRequest) {
-  const auth = requireAdmin(req);
+  const auth = await requireAdmin(req);
   if ("error" in auth) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
@@ -28,17 +27,17 @@ export async function GET(req: NextRequest) {
     customerComplaints = await Review.countDocuments({ rating: { $lte: 2 } });
     refundRequests = await Order.countDocuments({ paymentStatus: "REFUNDED" });
   } catch (err: any) {
-    console.warn("Marketplace Health DB notice:", err?.message || err);
+    return NextResponse.json({ error: "Unable to load marketplace health" }, { status: 503 });
   }
 
   return NextResponse.json({
     success: true,
     health: {
-      activeVendors: Math.max(activeVendors, REAL_MARKETPLACE_HEALTH.activeVendors),
-      pendingVendors: Math.max(pendingVendors, REAL_MARKETPLACE_HEALTH.pendingVendors),
-      pendingProducts: Math.max(pendingProducts, REAL_MARKETPLACE_HEALTH.pendingProducts),
-      customerComplaints: Math.max(customerComplaints, REAL_MARKETPLACE_HEALTH.customerComplaints),
-      refundRequests: Math.max(refundRequests, REAL_MARKETPLACE_HEALTH.refundRequests),
+      activeVendors,
+      pendingVendors,
+      pendingProducts,
+      customerComplaints,
+      refundRequests,
     },
   });
 }

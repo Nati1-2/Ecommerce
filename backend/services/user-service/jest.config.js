@@ -1,6 +1,7 @@
 export default {
   preset: 'ts-jest',
   testEnvironment: 'node',
+  testPathIgnorePatterns: ['/dist/', '/node_modules/'],
   extensionsToTreatAsEsm: ['.ts'],
   moduleNameMapper: {
     '^(\\..*)\\.js$': '$1'

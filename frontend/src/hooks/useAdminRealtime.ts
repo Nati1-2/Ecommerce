@@ -61,40 +61,8 @@ export function useAdminRealtime() {
       });
     }
 
-    // Fallback periodic simulation for live demo
-    const interval = setInterval(() => {
-      if (Math.random() < 0.15) {
-        const events = [
-          {
-            type: "NEW_VENDOR" as const,
-            title: "New Vendor Registration",
-            message: "Nati Tech Solutions submitted store onboarding application",
-            severity: "info" as const,
-          },
-          {
-            type: "LARGE_ORDER" as const,
-            title: "Large Order Created",
-            message: "Enterprise order ORD-2026-9812 created for $8,990.00",
-            severity: "success" as const,
-          },
-          {
-            type: "PAYMENT_FAILED" as const,
-            title: "Payment Warning",
-            message: "Stripe payout batch #PO-8812 experienced a 0.2% retry delay",
-            severity: "warning" as const,
-          },
-        ];
-        const event = events[Math.floor(Math.random() * events.length)];
-        addNotification({
-          ...event,
-          timestamp: "Just now",
-        });
-      }
-    }, 15000);
-
     return () => {
       if (socket) socket.disconnect();
-      clearInterval(interval);
     };
   }, [addNotification, showToast]);
 }

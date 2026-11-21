@@ -16,26 +16,26 @@ export default function SystemMonitor({ status }: Props) {
   const coreServices = [
     {
       name: "API Gateway Runtime",
-      val: safeStatus.api || "Operational",
-      subtext: "Next.js Edge & App Router",
+      val: safeStatus.api || "Unknown",
+      subtext: "Next.js application",
       icon: Server,
     },
     {
       name: "MongoDB Database",
-      val: safeStatus.database || "Connected",
-      subtext: latency ? `${latency}ms roundtrip ping` : "Direct Replica Set",
+      val: safeStatus.database || "Unknown",
+      subtext: latency ? `${latency}ms roundtrip ping` : "Database connection",
       icon: Database,
     },
     {
       name: "Cache & Session Layer",
-      val: safeStatus.redis || "Connected",
-      subtext: "Redis Cluster Active",
+      val: safeStatus.redis || "Unknown",
+      subtext: "Status not monitored",
       icon: Cpu,
     },
     {
       name: "Event Bus & Message Queue",
-      val: safeStatus.rabbitmq || "Connected",
-      subtext: "RabbitMQ Realtime PubSub",
+      val: safeStatus.rabbitmq || "Unknown",
+      subtext: "Status not monitored",
       icon: MessageSquare,
     },
   ];

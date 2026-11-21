@@ -7,7 +7,6 @@ import {
   RefreshCw,
   Play,
   Pause,
-  PlusCircle,
   LayoutList,
   Layers,
   X,
@@ -31,8 +30,6 @@ interface DeviceFilterBarProps {
   isAutoRefresh: boolean;
   setIsAutoRefresh: (val: boolean) => void;
   onRefresh: () => void;
-  onSimulateTraffic: () => void;
-  isSimulating: boolean;
   isFetching: boolean;
 }
 
@@ -50,8 +47,6 @@ export default function DeviceFilterBar({
   isAutoRefresh,
   setIsAutoRefresh,
   onRefresh,
-  onSimulateTraffic,
-  isSimulating,
   isFetching,
 }: DeviceFilterBarProps) {
   const deviceTypeOptions = [
@@ -160,16 +155,6 @@ export default function DeviceFilterBar({
             <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? "animate-spin text-blue-600" : ""}`} />
           </button>
 
-          <button
-            type="button"
-            onClick={onSimulateTraffic}
-            disabled={isSimulating}
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm hover:shadow active:scale-98 transition-all disabled:opacity-50 cursor-pointer"
-            title="Inject simulated real-time device traffic activity"
-          >
-            <PlusCircle className="w-3.5 h-3.5" />
-            <span>{isSimulating ? "Streaming..." : "Simulate Traffic"}</span>
-          </button>
         </div>
       </div>
 

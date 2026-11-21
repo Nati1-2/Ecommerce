@@ -1,5 +1,6 @@
 import { User, IUser } from '../models/User.js';
 import { JWTUtils, TokenPayload } from '../utils/jwt.js';
+import { revokeToken } from '../models/RevokedToken.js';
 
 export class TokenService {
   static generateTokens(user: IUser): { accessToken: string; refreshToken: string } {
@@ -12,7 +13,7 @@ export class TokenService {
     };
 
     const accessToken = JWTUtils.generateAccessToken(payload);
-    const refreshToken = JWTUtils.generateRefreshToken({ userId: user._id.toString() });
+    const refreshToken = JWTUtils.generateRefreshToken(payload);
 
     return { accessToken, refreshToken };
   }
@@ -27,7 +28,7 @@ export class TokenService {
   }
 
   static async refreshTokens(oldRefreshToken: string): Promise<{ accessToken: string; refreshToken: string; user: IUser }> {
-    const decoded = JWTUtils.verifyRefreshToken(oldRefreshToken);
+    const decoded = await JWTUtils.verifyRefreshToken(oldRefreshToken);
     const user = await User.findById(decoded.userId);
 
     if (!user || user.refreshToken !== oldRefreshToken || user.status === 'BLOCKED') {
@@ -35,9 +36,14 @@ export class TokenService {
     }
 
     const newTokens = this.generateTokens(user);
-    user.refreshToken = newTokens.refreshToken;
-    await user.save();
+    const rotated = await User.findOneAndUpdate(
+      { _id: user._id, refreshToken: oldRefreshToken },
+      { $set: { refreshToken: newTokens.refreshToken } },
+      { new: true }
+    );
+    if (!rotated) throw new Error('Refresh token has already been rotated');
+    await revokeToken(oldRefreshToken);
 
-    return { accessToken: newTokens.accessToken, refreshToken: newTokens.refreshToken, user };
+    return { accessToken: newTokens.accessToken, refreshToken: newTokens.refreshToken, user: rotated };
   }
 }

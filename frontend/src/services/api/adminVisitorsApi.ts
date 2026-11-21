@@ -45,12 +45,6 @@ export const adminVisitorsApi = {
     return apiFetch<VisitorApiResponse>(`/api/admin/visitors${queryString}`);
   },
 
-  simulateHit: async (): Promise<{ success: boolean; message: string }> => {
-    return apiFetch<{ success: boolean; message: string }>("/api/admin/visitors", {
-      method: "POST",
-    });
-  },
-
   clearLogs: async (): Promise<{ success: boolean; message: string }> => {
     return apiFetch<{ success: boolean; message: string }>("/api/admin/visitors", {
       method: "DELETE",

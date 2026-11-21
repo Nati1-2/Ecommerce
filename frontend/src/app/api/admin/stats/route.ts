@@ -5,10 +5,9 @@ import { User } from "@/models/User";
 import { VendorProfile } from "@/models/VendorProfile";
 import { VendorProduct } from "@/models/VendorProduct";
 import { Order } from "@/models/Order";
-import { REAL_PLATFORM_STATS } from "@/lib/realDataset";
 
 export async function GET(req: NextRequest) {
-  const auth = requireAdmin(req);
+  const auth = await requireAdmin(req);
   if ("error" in auth) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
@@ -18,7 +17,6 @@ export async function GET(req: NextRequest) {
   let productCount = 0;
   let orderCount = 0;
   let totalRevenue = 0;
-  let isDbConnected = false;
 
   // Growth calculation
   let usersGrowth = 0;
@@ -29,7 +27,6 @@ export async function GET(req: NextRequest) {
 
   try {
     await connectDB();
-    isDbConnected = true;
 
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
@@ -55,7 +52,7 @@ export async function GET(req: NextRequest) {
       usersPrevMonth > 0
         ? Math.round(((usersThisMonth - usersPrevMonth) / usersPrevMonth) * 1000) / 10
         : usersThisMonth > 0
-        ? 14.2
+        ? 100
         : 0;
 
     const vendorsThisMonth = await VendorProfile.countDocuments({ createdAt: { $gte: thirtyDaysAgo } });
@@ -64,7 +61,7 @@ export async function GET(req: NextRequest) {
       vendorsPrevMonth > 0
         ? Math.round(((vendorsThisMonth - vendorsPrevMonth) / vendorsPrevMonth) * 1000) / 10
         : vendorsThisMonth > 0
-        ? 8.5
+        ? 100
         : 0;
 
     const productsThisMonth = await VendorProduct.countDocuments({ createdAt: { $gte: thirtyDaysAgo } });
@@ -73,7 +70,7 @@ export async function GET(req: NextRequest) {
       productsPrevMonth > 0
         ? Math.round(((productsThisMonth - productsPrevMonth) / productsPrevMonth) * 1000) / 10
         : productsThisMonth > 0
-        ? 18.4
+        ? 100
         : 0;
 
     const ordersThisMonth = await Order.countDocuments({ createdAt: { $gte: thirtyDaysAgo } });
@@ -82,7 +79,7 @@ export async function GET(req: NextRequest) {
       ordersPrevMonth > 0
         ? Math.round(((ordersThisMonth - ordersPrevMonth) / ordersPrevMonth) * 1000) / 10
         : ordersThisMonth > 0
-        ? 12.6
+        ? 100
         : 0;
 
     const revThisMonth = await Order.aggregate([
@@ -96,28 +93,27 @@ export async function GET(req: NextRequest) {
     const revThis = revThisMonth[0]?.total || 0;
     const revPrev = revPrevMonth[0]?.total || 0;
     revenueGrowth =
-      revPrev > 0 ? Math.round(((revThis - revPrev) / revPrev) * 1000) / 10 : revThis > 0 ? 15.8 : 0;
+      revPrev > 0 ? Math.round(((revThis - revPrev) / revPrev) * 1000) / 10 : revThis > 0 ? 100 : 0;
   } catch (err: any) {
-    console.warn("Admin Stats DB notice:", err?.message || err);
+    return NextResponse.json({ error: "Unable to load platform statistics" }, { status: 503 });
   }
 
-  // Populate with real-world aggregate stats if lower than enterprise baseline
   const stats = {
-    users: Math.max(userCount, REAL_PLATFORM_STATS.users),
-    usersGrowth: usersGrowth || REAL_PLATFORM_STATS.usersGrowth,
-    vendors: Math.max(vendorCount, REAL_PLATFORM_STATS.vendors),
-    vendorsGrowth: vendorsGrowth || REAL_PLATFORM_STATS.vendorsGrowth,
-    products: Math.max(productCount, REAL_PLATFORM_STATS.products),
-    productsGrowth: productsGrowth || REAL_PLATFORM_STATS.productsGrowth,
-    orders: Math.max(orderCount, REAL_PLATFORM_STATS.orders),
-    ordersGrowth: ordersGrowth || REAL_PLATFORM_STATS.ordersGrowth,
-    revenue: Math.max(totalRevenue, REAL_PLATFORM_STATS.revenue),
-    revenueGrowth: revenueGrowth || REAL_PLATFORM_STATS.revenueGrowth,
+    users: userCount,
+    usersGrowth,
+    vendors: vendorCount,
+    vendorsGrowth,
+    products: productCount,
+    productsGrowth,
+    orders: orderCount,
+    ordersGrowth,
+    revenue: totalRevenue,
+    revenueGrowth,
   };
 
   return NextResponse.json({
     success: true,
-    isFallback: !isDbConnected,
+    isFallback: false,
     stats,
   });
 }

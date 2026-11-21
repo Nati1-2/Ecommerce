@@ -6,9 +6,8 @@ import {
   Radio,
   RefreshCw,
   AlertCircle,
-  Sparkles,
 } from "lucide-react";
-import { useAdminDevices, useSimulateDeviceTraffic } from "@/hooks/useAdminDevicesQuery";
+import { useAdminDevices } from "@/hooks/useAdminDevicesQuery";
 import { DeviceSession } from "@/types/deviceTraffic";
 import DeviceStatsCards from "@/components/AdminDevices/DeviceStatsCards";
 import DeviceFilterBar from "@/components/AdminDevices/DeviceFilterBar";
@@ -25,7 +24,6 @@ export default function AdminDevicesTrafficPage() {
   const [viewMode, setViewMode] = useState<"devices" | "activities">("devices");
   const [isAutoRefresh, setIsAutoRefresh] = useState(true);
   const [selectedDevice, setSelectedDevice] = useState<DeviceSession | null>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Poll every 5s if auto refresh active
   const refetchInterval = isAutoRefresh ? 5000 : false;
@@ -39,19 +37,6 @@ export default function AdminDevicesTrafficPage() {
     },
     refetchInterval
   );
-
-  const simulateMutation = useSimulateDeviceTraffic();
-
-  const handleSimulate = async () => {
-    try {
-      await simulateMutation.mutateAsync();
-      setToastMessage("⚡ Live Device Traffic Event streamed successfully!");
-      setTimeout(() => setToastMessage(null), 3000);
-    } catch (err: any) {
-      setToastMessage("Could not simulate traffic event: " + (err?.message || "Error"));
-      setTimeout(() => setToastMessage(null), 3000);
-    }
-  };
 
   if (isLoading) {
     return <DeviceTrafficSkeleton />;
@@ -80,12 +65,12 @@ export default function AdminDevicesTrafficPage() {
   const stats = data?.stats || {
     activeDevicesCount: 0,
     totalEventsToday: 0,
-    mobileShare: 50,
-    desktopShare: 40,
-    tabletShare: 10,
-    topDeviceModel: "Apple iPhone 15 Pro Max",
+    mobileShare: 0,
+    desktopShare: 0,
+    tabletShare: 0,
+    topDeviceModel: "",
     uniqueIpsCount: 0,
-    avgResponseLatency: 24,
+    avgResponseLatency: 0,
   };
 
   const devices = data?.devices || [];
@@ -121,14 +106,6 @@ export default function AdminDevicesTrafficPage() {
         </div>
       </div>
 
-      {/* Floating Feedback Toast */}
-      {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl border border-slate-700 text-xs font-bold flex items-center gap-2 animate-in slide-in-from-bottom-5">
-          <Sparkles className="w-4 h-4 text-emerald-400" />
-          <span>{toastMessage}</span>
-        </div>
-      )}
-
       {/* KPI Stats Cards */}
       <DeviceStatsCards stats={stats} totalDevicesCount={devices.length} />
 
@@ -147,8 +124,6 @@ export default function AdminDevicesTrafficPage() {
         isAutoRefresh={isAutoRefresh}
         setIsAutoRefresh={setIsAutoRefresh}
         onRefresh={() => refetch()}
-        onSimulateTraffic={handleSimulate}
-        isSimulating={simulateMutation.isPending}
         isFetching={isFetching}
       />
 

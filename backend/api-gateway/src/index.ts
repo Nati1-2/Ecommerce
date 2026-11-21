@@ -3,19 +3,13 @@ import cors from 'cors';
 import helmet from 'helmet';
 import proxy from 'express-http-proxy';
 import rateLimit from 'express-rate-limit';
-import jwt from 'jsonwebtoken';
+import { verifyToken } from '@ecom/shared';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 8000;
-const JWT_SECRET = process.env.JWT_SECRET || process.env.JWT_ACCESS_SECRET || (process.env.NODE_ENV === 'production' ? '' : 'dev_secret_only_for_local_development_testing_min_32_chars');
-
-if (process.env.NODE_ENV === 'production' && !JWT_SECRET) {
-  console.error('FATAL: JWT_SECRET environment variable is missing in production.');
-  process.exit(1);
-}
 
 // ── Security & Middleware ──────────────────────────────────────────────────
 app.use(helmet());
@@ -77,12 +71,12 @@ app.use('/api/v1/auth/login', authLimiter);
 app.use('/api/v1/auth/register', authLimiter);
 
 // ── Authentication Middleware ──────────────────────────────────────────────
-const extractUserContext = (req: express.Request, _res: express.Response, next: express.NextFunction) => {
+const extractUserContext = async (req: express.Request, res: express.Response, next: express.NextFunction): Promise<void> => {
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.split(' ')[1];
     try {
-      const decoded = jwt.verify(token, JWT_SECRET) as { id?: string; userId?: string; email: string; role: string };
+      const decoded = await verifyToken(token);
       const userId = decoded.id || decoded.userId;
       if (userId) {
         req.headers['x-user-id'] = userId;
@@ -93,8 +87,9 @@ const extractUserContext = (req: express.Request, _res: express.Response, next: 
       if (decoded.role) {
         req.headers['x-user-role'] = decoded.role;
       }
-    } catch (err) {
-      // Invalid token, context will not be injected
+    } catch {
+      res.status(401).json({ success: false, errors: [{ message: 'Invalid or unchecked token' }] });
+      return;
     }
   }
   next();

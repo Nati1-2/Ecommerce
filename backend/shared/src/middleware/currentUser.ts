@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { verifyToken } from '../security/tokenVerification.js';
 
 export interface UserPayload {
   id: string;
@@ -14,22 +15,22 @@ declare global {
   }
 }
 
-export const currentUser = (
+export const currentUser = async (
   req: Request,
-  _res: Response,
+  res: Response,
   next: NextFunction
-): void => {
-  const userId = req.headers['x-user-id'] as string;
-  const userEmail = req.headers['x-user-email'] as string;
-  const userRole = req.headers['x-user-role'] as 'CUSTOMER' | 'VENDOR' | 'ADMIN';
-
-  if (userId && userEmail && userRole) {
-    req.currentUser = {
-      id: userId,
-      email: userEmail,
-      role: userRole,
-    };
+): Promise<void> => {
+  const auth = req.headers.authorization;
+  if (!auth) return next();
+  if (!auth.startsWith('Bearer ')) {
+    res.status(401).json({ error: 'Invalid authorization header' });
+    return;
   }
-
-  next();
+  try {
+    const verified = await verifyToken(auth.slice(7));
+    req.currentUser = { id: verified.id, email: verified.email, role: verified.role };
+    next();
+  } catch {
+    res.status(401).json({ error: 'Invalid or unchecked token' });
+  }
 };

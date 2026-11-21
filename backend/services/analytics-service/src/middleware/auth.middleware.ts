@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
-import { env } from '../config/env.js';
+import { verifyToken } from '@ecom/shared';
 
 export interface AuthenticatedUser {
   id: string;
@@ -12,7 +11,7 @@ export interface AuthRequest extends Request {
   user?: AuthenticatedUser;
 }
 
-export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction): void => {
+export const authenticateToken = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : req.cookies?.token;
 
@@ -22,7 +21,7 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
   }
 
   try {
-    const decoded = jwt.verify(token, env.JWT_SECRET) as AuthenticatedUser;
+    const decoded = await verifyToken(token);
     req.user = decoded;
     next();
   } catch (error) {

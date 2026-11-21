@@ -19,12 +19,11 @@ app.get('/health', (_req, res) => {
 });
 
 // ── Routes ──
-app.use('/', productRoutes);
-app.use('/categories', categoryRoutes);
 app.use('/api/v1/categories', categoryRoutes);
-
-app.use('/products', productRoutes);
 app.use('/api/v1/products', productRoutes);
+app.use('/categories', categoryRoutes);
+app.use('/products', productRoutes);
+app.use('/', productRoutes);
 
 // ── Error Middleware ──
 app.use(errorMiddleware);

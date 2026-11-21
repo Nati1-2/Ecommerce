@@ -37,7 +37,7 @@ jobs:
         run: npx tsc --noEmit
 
       - name: Dependency Vulnerability Audit
-        run: npm audit --audit-level=critical || true
+        run: npm audit --audit-level=critical
 
       - name: Build Verification
         run: npm run build

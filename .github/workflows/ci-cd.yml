@@ -104,33 +104,3 @@ jobs:
           path: 'backend/**/coverage/'
         if: always()
 
-  # ============================================
-  # Deploy (Production)
-  # ============================================
-  deploy:
-    name: Deploy to Production
-    runs-on: ubuntu-latest
-    needs: [test]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    environment: production
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Deploy notification
-        run: echo "🚀 Deploying to production..."
-
-      # Add your deployment steps here:
-      # - SSH to server and pull latest images
-      # - Use kubectl for Kubernetes deployment
-      # - Use AWS ECS/Fargate task definitions
-      # Example:
-      # - name: Deploy to server
-      #   uses: appleboy/ssh-action@v1
-      #   with:
-      #     host: ${{ secrets.DEPLOY_HOST }}
-      #     username: ${{ secrets.DEPLOY_USER }}
-      #     key: ${{ secrets.DEPLOY_KEY }}
-      #     script: |
-      #       cd /opt/ecommerce
-      #       docker-compose pull
-      #       docker-compose up -d

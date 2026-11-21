@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import crypto from "node:crypto";
+import { authTokens } from "@/lib/authTokens";
 import { safeFindUserByEmail, safeSaveUserSession } from "@/lib/mongodb";
 import { parseUserAgent, getRealClientIp, resolveGeoLocation } from "@/lib/deviceTracker";
 import { getJwtSecret } from "@/lib/authHelper";
@@ -16,7 +17,7 @@ async function recordSession(req: NextRequest, userId: string, email: string, bo
       brandHint: body?.clientBrand,
       gpu: body?.clientGpu,
     });
-    const sessionId = "sess_" + Math.random().toString(36).substring(2, 11) + "_" + Date.now();
+    const sessionId = crypto.randomUUID();
     await safeSaveUserSession({
       sessionId,
       userId,
@@ -32,8 +33,7 @@ async function recordSession(req: NextRequest, userId: string, email: string, bo
     });
     return sessionId;
   } catch (e) {
-    console.warn("Session recording notice:", e);
-    return "sess_" + Date.now();
+    throw e;
   }
 }
 
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
 
     const normalizedEmail = String(email).toLowerCase().trim();
     const isHttps = req.nextUrl.protocol === "https:" || req.headers.get("x-forwarded-proto") === "https";
-    const jwtSecret = getJwtSecret();
+    getJwtSecret();
 
     // 1. Authenticate with backend Auth Service via API Gateway if available
     const gatewayUrl = process.env.API_GATEWAY_URL || process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, "");
@@ -73,6 +73,9 @@ export async function POST(req: NextRequest) {
             };
 
             const sessionId = await recordSession(req, userId, data.user.email, body);
+            const sessionToken = authTokens.generateAccessToken({
+              id: String(userId), email: data.user.email, role: data.user.role, sessionId,
+            });
 
             // Omit raw JWT from JSON response body; deliver securely in HttpOnly cookie
             const res = NextResponse.json({
@@ -80,11 +83,11 @@ export async function POST(req: NextRequest) {
               user: userObj,
             });
 
-            res.cookies.set("token", token, {
+            res.cookies.set("token", sessionToken, {
               httpOnly: true,
               secure: process.env.NODE_ENV === "production" || isHttps,
               sameSite: "lax",
-              maxAge: 60 * 60 * 24 * 7,
+              maxAge: 60 * 15,
               path: "/",
             });
 
@@ -125,11 +128,6 @@ export async function POST(req: NextRequest) {
     }
 
     const userId = user.id || user._id;
-    const token = jwt.sign(
-      { id: userId, userId, email: user.email, role: user.role },
-      jwtSecret,
-      { expiresIn: "7d" }
-    );
 
     const userObj = {
       id: userId,
@@ -140,6 +138,9 @@ export async function POST(req: NextRequest) {
     };
 
     const sessionId = await recordSession(req, userId, user.email, body);
+    const token = authTokens.generateAccessToken({
+      id: String(userId), email: user.email, role: user.role, sessionId,
+    });
 
     // Security: Do NOT expose raw JWT in JSON body; set in secure HttpOnly cookie
     const response = NextResponse.json({
@@ -151,7 +152,7 @@ export async function POST(req: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production" || isHttps,
       sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7,
+      maxAge: 60 * 15,
       path: "/",
     });
 

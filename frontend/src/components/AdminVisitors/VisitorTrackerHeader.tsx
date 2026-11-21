@@ -5,13 +5,12 @@ import {
   Globe,
   Radio,
   RefreshCw,
-  PlusCircle,
   Trash2,
   Download,
   CheckCircle2,
   Calendar,
 } from "lucide-react";
-import { useSimulateVisitorHit, useClearVisitorLogs } from "@/hooks/useAdminVisitorsQuery";
+import { useClearVisitorLogs } from "@/hooks/useAdminVisitorsQuery";
 import { VisitorLogItem, VisitorTimeframe } from "@/types/adminVisitors";
 import VisitorCalendarPicker from "./VisitorCalendarPicker";
 
@@ -45,7 +44,6 @@ export default function VisitorTrackerHeader({
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
 
-  const simulateMutation = useSimulateVisitorHit();
   const clearMutation = useClearVisitorLogs();
 
   const timeframeOptions: { label: string; value: VisitorTimeframe; desc: string }[] = [
@@ -55,17 +53,6 @@ export default function VisitorTrackerHeader({
     { label: "Monthly (30d)", value: "monthly", desc: "Past 30 days" },
     { label: "Yearly (1y)", value: "yearly", desc: "Past 365 days" },
   ];
-
-  const handleSimulate = async () => {
-    try {
-      await simulateMutation.mutateAsync();
-      setToastMsg("Simulated live visitor recorded in database!");
-      setTimeout(() => setToastMsg(null), 3000);
-    } catch {
-      setToastMsg("Failed to simulate visitor");
-      setTimeout(() => setToastMsg(null), 3000);
-    }
-  };
 
   const handleClear = async () => {
     try {
@@ -176,17 +163,6 @@ export default function VisitorTrackerHeader({
               title="Refresh Data"
             >
               <RefreshCw className={`w-4 h-4 ${isFetching ? "animate-spin text-blue-600" : ""}`} />
-            </button>
-
-            {/* Simulate Hit */}
-            <button
-              onClick={handleSimulate}
-              disabled={simulateMutation.isPending}
-              className="px-3.5 py-2 rounded-2xl text-xs font-bold bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-colors flex items-center gap-2"
-              title="Generate a test simulated visitor hit stored in MongoDB"
-            >
-              <PlusCircle className="w-3.5 h-3.5" />
-              <span>{simulateMutation.isPending ? "Sending..." : "Simulate Visit"}</span>
             </button>
 
             {/* Export CSV */}

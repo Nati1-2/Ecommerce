@@ -42,15 +42,15 @@ const UserAnalytics = dynamic(() => import("@/components/AdminDashboard/UserAnal
 export default function AdminDashboardPage() {
   const { activeTimeframe } = useAdminDashboardStore();
 
-  const { data: stats, isLoading: statsLoading, refetch: refetchStats, isFetching: isStatsFetching } = usePlatformStats();
-  const { data: systemStatus, isLoading: statusLoading, refetch: refetchStatus } = useSystemStatus();
-  const { data: health, isLoading: healthLoading, refetch: refetchHealth } = useMarketplaceHealth();
-  const { data: vendors = [], isLoading: vendorsLoading, refetch: refetchVendors } = useAdminVendors();
-  const { data: products = [], isLoading: productsLoading, refetch: refetchProducts } = useAdminProducts();
-  const { data: orders = [], isLoading: ordersLoading, refetch: refetchOrders } = useAdminOrders();
-  const { data: payments, isLoading: paymentsLoading, refetch: refetchPayments } = useAdminPayments();
-  const { data: activities = [], isLoading: activitiesLoading, refetch: refetchActivities } = useAdminActivities();
-  const { data: analytics, isLoading: analyticsLoading, refetch: refetchAnalytics } = useAdminAnalytics(activeTimeframe);
+  const { data: stats, isLoading: statsLoading, isError: statsError, refetch: refetchStats, isFetching: isStatsFetching } = usePlatformStats();
+  const { data: systemStatus, isLoading: statusLoading, isError: statusError, refetch: refetchStatus } = useSystemStatus();
+  const { data: health, isLoading: healthLoading, isError: healthError, refetch: refetchHealth } = useMarketplaceHealth();
+  const { data: vendors = [], isLoading: vendorsLoading, isError: vendorsError, refetch: refetchVendors } = useAdminVendors();
+  const { data: products = [], isLoading: productsLoading, isError: productsError, refetch: refetchProducts } = useAdminProducts();
+  const { data: orders = [], isLoading: ordersLoading, isError: ordersError, refetch: refetchOrders } = useAdminOrders();
+  const { data: payments, isLoading: paymentsLoading, isError: paymentsError, refetch: refetchPayments } = useAdminPayments();
+  const { data: activities = [], isLoading: activitiesLoading, isError: activitiesError, refetch: refetchActivities } = useAdminActivities();
+  const { data: analytics, isLoading: analyticsLoading, isError: analyticsError, refetch: refetchAnalytics } = useAdminAnalytics(activeTimeframe);
 
   const approveVendorMutation = useApproveVendor();
   const approveProductMutation = useApproveProduct();
@@ -61,16 +61,12 @@ export default function AdminDashboardPage() {
     if (el) el.scrollIntoView({ behavior: "smooth" });
   };
 
-  const isAllLoading =
-    statsLoading &&
-    statusLoading &&
-    healthLoading &&
-    vendorsLoading &&
-    productsLoading &&
-    ordersLoading &&
-    paymentsLoading &&
-    activitiesLoading &&
-    analyticsLoading;
+  const isAnyLoading =
+    statsLoading || statusLoading || healthLoading || vendorsLoading || productsLoading ||
+    ordersLoading || paymentsLoading || activitiesLoading || analyticsLoading;
+  const hasError =
+    statsError || statusError || healthError || vendorsError || productsError ||
+    ordersError || paymentsError || activitiesError || analyticsError;
 
   const handleRetryAll = () => {
     refetchStats();
@@ -84,8 +80,17 @@ export default function AdminDashboardPage() {
     refetchAnalytics();
   };
 
-  if (isAllLoading) {
+  if (isAnyLoading && !hasError) {
     return <DashboardSkeleton />;
+  }
+
+  if (hasError) {
+    return (
+      <div className="mx-auto max-w-xl p-6 text-center">
+        <p role="alert">Unable to load live admin data. Please retry.</p>
+        <button onClick={handleRetryAll} className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-white">Retry</button>
+      </div>
+    );
   }
 
   const safeStats = stats || {
@@ -102,10 +107,10 @@ export default function AdminDashboardPage() {
   };
 
   const safeSystemStatus = systemStatus || {
-    api: "Operational",
-    database: "Connected",
-    redis: "Connected",
-    rabbitmq: "Connected",
+    api: "Unknown",
+    database: "Disconnected",
+    redis: "Unknown",
+    rabbitmq: "Unknown",
     microservices: [],
   };
 
@@ -123,7 +128,7 @@ export default function AdminDashboardPage() {
     failedPayments: 0,
     refundsProcessed: 0,
     pendingPayoutsAmount: 0,
-    gatewayStatus: "Online" as const,
+    gatewayStatus: "Offline" as const,
   };
 
   const safeAnalytics = {
@@ -132,8 +137,8 @@ export default function AdminDashboardPage() {
     userGrowthData: Array.isArray(analytics?.userGrowthData) ? analytics.userGrowthData : [],
   };
 
-  const isDbConnected = safeSystemStatus.database === "Connected" || (safeSystemStatus as any).database?.status === "connected";
-  const dbLatency = (safeSystemStatus as any)?.dbLatencyMs ?? 0;
+  const isDbConnected = safeSystemStatus.database === "Connected";
+  const dbLatency = 0;
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-16">

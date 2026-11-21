@@ -1,18 +1,20 @@
 import request from 'supertest';
 import { app } from '../app.js';
 import jwt from 'jsonwebtoken';
-import { config } from '../config/env.js';
+const accessSecret = 'dev_access_secret_only_for_local_testing_min_32_chars';
+process.env.JWT_ACCESS_SECRET = accessSecret;
+globalThis.fetch = async () => new Response(JSON.stringify({ valid: true }), { status: 200 });
 
 describe('User Service API Endpoints', () => {
   const customerToken = jwt.sign(
-    { userId: 'auth_usr_991', email: 'customer@example.com', role: 'CUSTOMER' },
-    config.jwtSecret,
+    { id: 'auth_usr_991', userId: 'auth_usr_991', email: 'customer@example.com', role: 'CUSTOMER', tokenType: 'access' },
+    accessSecret,
     { expiresIn: '1h' }
   );
 
   const adminToken = jwt.sign(
-    { userId: 'admin_usr_001', email: 'admin@example.com', role: 'ADMIN' },
-    config.jwtSecret,
+    { id: 'admin_usr_001', userId: 'admin_usr_001', email: 'admin@example.com', role: 'ADMIN', tokenType: 'access' },
+    accessSecret,
     { expiresIn: '1h' }
   );
 

@@ -8,7 +8,7 @@ import { getStripeClient } from "@/lib/stripe";
 export async function POST(req: NextRequest) {
   try {
     // 1. Enforce Authentication
-    const decoded = getUserFromToken(req);
+    const decoded = await getUserFromToken(req);
     if (!decoded) {
       return NextResponse.json(
         { success: false, error: "Authentication required to initiate payment. Please log in first." },

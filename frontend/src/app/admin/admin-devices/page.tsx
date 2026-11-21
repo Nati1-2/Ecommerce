@@ -7,7 +7,6 @@ import {
   ShieldAlert,
   LogOut,
   RefreshCw,
-  PlusCircle,
   AlertCircle,
   Sparkles,
   Lock,
@@ -16,7 +15,6 @@ import {
   useAdminLoginDevices,
   useRevokeAdminDevice,
   useRevokeAllOtherAdminDevices,
-  useSimulateAdminAction,
 } from "@/hooks/useAdminLoginDevicesQuery";
 import AdminDeviceStats from "@/components/AdminLoginDevices/AdminDeviceStats";
 import AdminDeviceList from "@/components/AdminLoginDevices/AdminDeviceList";
@@ -26,7 +24,6 @@ export default function AdminLoginDevicesPage() {
   const { data, isLoading, isError, error, refetch, isFetching } = useAdminLoginDevices();
   const revokeMutation = useRevokeAdminDevice();
   const revokeAllMutation = useRevokeAllOtherAdminDevices();
-  const simulateMutation = useSimulateAdminAction();
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [confirmRevokeAll, setConfirmRevokeAll] = useState(false);
@@ -52,15 +49,6 @@ export default function AdminLoginDevicesPage() {
       showToast(res.message || "All other admin sessions terminated.");
     } catch (err: any) {
       showToast("Error revoking sessions: " + (err?.message || "Failed"));
-    }
-  };
-
-  const handleSimulate = async () => {
-    try {
-      const res = await simulateMutation.mutateAsync();
-      showToast(res.message || "Simulated admin action logged.");
-    } catch (err: any) {
-      showToast("Simulation error: " + (err?.message || "Failed"));
     }
   };
 
@@ -99,12 +87,12 @@ export default function AdminLoginDevicesPage() {
   }
 
   const stats = data?.stats || {
-    activeAdminSessions: 3,
-    totalDevicesCount: 4,
-    trustedDevicesCount: 4,
+    activeAdminSessions: 0,
+    totalDevicesCount: 0,
+    trustedDevicesCount: 0,
     failedLoginsToday: 0,
-    totalAdminActions24h: 142,
-    mfaEnforcementRate: 100,
+    totalAdminActions24h: 0,
+    mfaEnforcementRate: 0,
   };
 
   const devices = data?.devices || [];
@@ -142,17 +130,6 @@ export default function AdminLoginDevicesPage() {
             title="Refresh Security Feed"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? "animate-spin text-blue-600" : ""}`} />
-          </button>
-
-          <button
-            type="button"
-            onClick={handleSimulate}
-            disabled={simulateMutation.isPending}
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl border border-slate-200 transition-all cursor-pointer shadow-2xs"
-            title="Simulate Administrative Action"
-          >
-            <PlusCircle className="w-3.5 h-3.5" />
-            <span>Simulate Action</span>
           </button>
 
           {confirmRevokeAll ? (

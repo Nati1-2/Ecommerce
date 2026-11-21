@@ -5,7 +5,7 @@ import { requireVendor } from "@/lib/authHelper";
 
 // PUT /api/vendor/reviews/[id]/reply — post a vendor reply to a review
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const auth = requireVendor(req);
+  const auth = await requireVendor(req);
   if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
   const { payload } = auth;
 

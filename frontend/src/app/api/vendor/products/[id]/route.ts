@@ -5,7 +5,7 @@ import { requireVendor } from "@/lib/authHelper";
 
 // GET /api/vendor/products/[id]
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const auth = requireVendor(req);
+  const auth = await requireVendor(req);
   if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
   const { payload } = auth;
 
@@ -34,7 +34,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
 // PUT /api/vendor/products/[id]
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const auth = requireVendor(req);
+  const auth = await requireVendor(req);
   if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
   const { payload } = auth;
 
@@ -116,7 +116,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
 // DELETE /api/vendor/products/[id]
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const auth = requireVendor(req);
+  const auth = await requireVendor(req);
   if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
   const { payload } = auth;
 

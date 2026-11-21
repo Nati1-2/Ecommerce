@@ -47,10 +47,4 @@ export const adminDevicesApi = {
     return apiFetch<DeviceTrafficResponse>(`/api/admin/devices${qs}`);
   },
 
-  simulateTraffic: async (): Promise<{ success: boolean; message: string }> => {
-    return apiFetch<{ success: boolean; message: string }>("/api/admin/devices", {
-      method: "POST",
-      body: JSON.stringify({}),
-    });
-  },
 };

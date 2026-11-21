@@ -75,7 +75,7 @@ export interface DeviceSession {
   userAgent: string;
   location: DeviceLocation;
   status: "online" | "idle" | "exited";
-  connectionType: "5G Ultra" | "WiFi 6E" | "Fiber" | "4G LTE";
+  connectionType: "5G Ultra" | "WiFi 6E" | "Fiber" | "4G LTE" | "Unknown";
   durationSeconds: number;
   lastActive: string;
   firstSeen: string;

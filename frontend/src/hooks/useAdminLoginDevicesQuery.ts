@@ -32,12 +32,3 @@ export function useRevokeAllOtherAdminDevices() {
   });
 }
 
-export function useSimulateAdminAction() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: adminLoginDevicesApi.simulateAdminAction,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-login-devices"] });
-    },
-  });
-}

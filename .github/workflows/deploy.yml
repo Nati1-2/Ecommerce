@@ -1,68 +1,93 @@
 name: Production Deployment (CD)
 
 on:
-  push:
+  workflow_run:
+    workflows: ["Continuous Integration (CI)"]
+    types: [completed]
     branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-deployment
+  cancel-in-progress: false
 
 jobs:
   deploy:
-    name: Deploy to Production & Health Check
     runs-on: ubuntu-latest
-
+    environment: production
     steps:
-      - name: 📥 Checkout Code
-        uses: actions/checkout@v4
-
-      - name: ⚙️ Setup Node.js 20.x
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20.x
-          cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: 📦 Install Dependencies
-        working-directory: ./frontend
-        run: npm ci --legacy-peer-deps
-
-      - name: 🔍 TypeScript Verification
-        working-directory: ./frontend
-        run: npx tsc --noEmit
-
-      - name: 🏗️ Build Production Bundle
-        working-directory: ./frontend
+      - name: Require successful CI on main
         env:
-          MONGODB_URI: ${{ secrets.MONGODB_URI }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
-          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
-          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
-          NEXT_TELEMETRY_DISABLED: 1
-        run: npm run build
+          CI_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          CI_BRANCH: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          if [ "$CI_CONCLUSION" != "success" ] || [ "$CI_BRANCH" != "main" ]; then
+            echo "::error::Production deployment requires successful CI on main"
+            exit 1
+          fi
 
-      - name: 🚀 Deploy to Vercel Production
-        uses: amondnet/vercel-action@v25
-        if: env.VERCEL_TOKEN != ''
+      - name: Check required deployment secrets
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          for name in VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Required deployment secret ${name} is missing"
+              exit 1
+            fi
+          done
+
+      - name: Checkout the commit validated by CI
+        uses: actions/checkout@v4
         with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod'
-          working-directory: ./frontend
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
 
-      - name: 🏥 Post-Deployment Health Check
+      - name: Verify checkout and current main
         env:
-          PRODUCTION_URL: ${{ secrets.PRODUCTION_URL }}
+          CI_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
-          echo "Verifying application deployment and health status..."
-          TARGET_URL="${PRODUCTION_URL:-https://natistore.vercel.app}"
-          curl -s -f "$TARGET_URL/api/health" || echo "Health check ping complete"
+          test "$(git rev-parse HEAD)" = "$CI_SHA"
+          test "$(git ls-remote https://github.com/${{ github.repository }}.git refs/heads/main | cut -f1)" = "$CI_SHA"
 
-      - name: 📢 Deployment Status Notification
-        if: always()
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Deploy the validated commit
+        id: vercel
+        working-directory: frontend
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          CI_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
-          echo "### 🚀 Production Deployment Report" >> $GITHUB_STEP_SUMMARY
-          echo "- **Branch**: \`main\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **Commit**: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **Target**: Production Environment" >> $GITHUB_STEP_SUMMARY
+          url=$(vercel deploy --prod --yes --token "$VERCEL_TOKEN" --build-env NEXT_PUBLIC_DEPLOYMENT_COMMIT="$CI_SHA")
+          test -n "$url"
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: Verify production health and commit
+        env:
+          DEPLOYMENT_URL: ${{ steps.vercel.outputs.url }}
+          CI_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          response=$(curl --fail --silent --show-error --retry 3 --retry-delay 5 --max-time 30 "$DEPLOYMENT_URL/api/health")
+          echo "$response" | jq -e --arg sha "$CI_SHA" '.status == "healthy" and .mongodb == "connected" and .commit == $sha'
+
+      - name: Report verified deployment
+        env:
+          DEPLOYMENT_URL: ${{ steps.vercel.outputs.url }}
+          CI_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          echo "### Verified production deployment" >> "$GITHUB_STEP_SUMMARY"
+          echo "Commit: $CI_SHA" >> "$GITHUB_STEP_SUMMARY"
+          echo "URL: $DEPLOYMENT_URL" >> "$GITHUB_STEP_SUMMARY"

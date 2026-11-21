@@ -14,6 +14,7 @@ export default function ProductFilters({ selectedCount, onBulkApprove, onBulkDel
   // Fetch products to derive dynamic categories
   const { data: products = [] } = useAdminProducts();
   const categories = Array.from(new Set(products.map((p) => p.category))).sort();
+  const vendors = Array.from(new Set(products.map((p) => p.vendorStore).filter(Boolean))).sort();
 
   const {
     filters,
@@ -75,10 +76,9 @@ export default function ProductFilters({ selectedCount, onBulkApprove, onBulkDel
             className="px-3 py-2 text-xs font-semibold bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-600"
           >
             <option value="All">All Vendors</option>
-            <option value="Apex Tech Labs">Apex Tech Labs</option>
-            <option value="Quantum Sound Audio">Quantum Sound Audio</option>
-            <option value="Hyperion Ergonomics">Hyperion Ergonomics</option>
-            <option value="Nati Wearable Tech">Nati Wearable Tech</option>
+            {vendors.map((vendor) => (
+              <option key={vendor} value={vendor}>{vendor}</option>
+            ))}
           </select>
 
           {/* Date Filter */}

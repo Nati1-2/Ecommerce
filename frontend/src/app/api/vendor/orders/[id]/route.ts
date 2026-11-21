@@ -8,7 +8,7 @@ const ALLOWED_STATUSES = new Set(["PENDING", "PROCESSING", "SHIPPED", "DELIVERED
 
 // PATCH /api/vendor/orders/[id] — update order status
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const auth = requireVendor(req);
+  const auth = await requireVendor(req);
   if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
   const { payload } = auth;
 

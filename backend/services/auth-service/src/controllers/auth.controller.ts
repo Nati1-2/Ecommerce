@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthService } from '../services/auth.service.js';
 import { TokenService } from '../services/token.service.js';
+import { revokeToken } from '../models/RevokedToken.js';
 import {
   registerSchema,
   loginSchema,
@@ -42,6 +43,8 @@ export class AuthController {
     try {
       if (req.user) {
         await AuthService.logout(req.user.userId);
+        const token = req.headers.authorization?.slice(7);
+        if (token) await revokeToken(token);
       }
       res.clearCookie('refreshToken');
       res.json({ success: true, message: 'Logged out successfully' });

@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
-import { env } from '../config/env.js';
+import { verifyToken } from '@ecom/shared';
 
 export interface AuthenticatedUser {
   id: string;
@@ -12,20 +11,7 @@ export interface AuthRequest extends Request {
   user?: AuthenticatedUser;
 }
 
-export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction): void => {
-  const headerUserId = req.headers['x-user-id'] as string;
-  const headerUserEmail = req.headers['x-user-email'] as string;
-  const headerUserRole = req.headers['x-user-role'] as string;
-
-  if (headerUserId && headerUserEmail) {
-    req.user = {
-      id: headerUserId,
-      email: headerUserEmail,
-      role: headerUserRole || 'CUSTOMER',
-    };
-    return next();
-  }
-
+export const authenticateToken = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : req.cookies?.token;
 
@@ -35,11 +21,11 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
   }
 
   try {
-    const decoded = jwt.verify(token, env.JWT_SECRET) as any;
+    const decoded = await verifyToken(token);
     req.user = {
       id: decoded.id || decoded.userId,
       email: decoded.email,
-      role: decoded.role || 'CUSTOMER',
+      role: decoded.role,
     };
     next();
   } catch (error) {

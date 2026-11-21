@@ -42,7 +42,7 @@ async function apiFetch<T>(url: string, options: RequestInit = {}): Promise<T> {
 
 export const adminOrderApi = {
   getOrderStats: async (): Promise<OrderStatsData> => {
-    try {
+    {
       const data = await apiFetch<{ orders: any[] }>("/api/admin/orders");
       const list = data.orders || [];
       const totalRev = list.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
@@ -62,58 +62,43 @@ export const adminOrderApi = {
         totalRevenue: Math.round(totalRev * 100) / 100,
         revenueGrowth: 0,
       };
-    } catch {
-      return {
-        totalOrders: 0,
-        totalGrowth: 0,
-        todayOrders: 0,
-        todayGrowth: 0,
-        pendingOrders: 0,
-        completedOrders: 0,
-        cancelledOrders: 0,
-        cancelledChange: 0,
-        totalRevenue: 0,
-        revenueGrowth: 0,
-      };
     }
   },
 
   getOrders: async (): Promise<AdminOrderModel[]> => {
-    try {
+    {
       const data = await apiFetch<{ orders: any[] }>("/api/admin/orders");
       return (data.orders || []).map((o) => ({
         id: o.id,
-        customerName: o.customerName || "Customer",
+        customerName: o.customerName || "",
         customerEmail: o.customerEmail || "",
         customerAvatar: o.customerAvatar || "",
         customerPhone: o.customerPhone || "",
-        shippingAddress: o.shippingAddress || "Direct Fulfillment",
-        vendorStore: o.vendorName || "Direct Merchant",
+        shippingAddress: o.shippingAddress || "",
+        vendorStore: o.vendorName || "",
         vendorId: o.vendorId || "",
         products: (o.products || o.items || []).map((item: any) => ({
-          id: item.id || item.productId || "prod_1",
-          name: item.name || item.productName || "Order Item",
+          id: item.id || item.productId || "",
+          name: item.name || item.productName || "",
           image: item.image || item.productImage || "",
-          quantity: item.quantity || 1,
+          quantity: item.quantity ?? 0,
           price: item.price || item.unitPrice || 0,
-          variant: item.variant || "Standard",
+          variant: item.variant || "",
         })),
         amount: o.totalAmount || 0,
         subtotal: o.subtotal || o.totalAmount || 0,
         tax: o.tax || 0.0,
         shippingFee: o.shippingFee || 0.0,
         discount: o.discount || 0.0,
-        paymentStatus: o.paymentStatus || "Paid",
-        orderStatus: o.status || "Processing",
-        paymentMethod: o.paymentMethod || "Stripe Card",
-        stripeChargeId: o.stripeChargeId || (o.orderNumber ? `ch_${o.orderNumber}` : `ch_${o.id}`),
-        carrier: o.carrier || "Standard Carrier",
-        trackingNumber: o.trackingNumber || `TRK-${o.orderNumber || o.id}`,
-        estimatedDelivery: o.estimatedDelivery || "2-4 Business Days",
-        createdAt: o.createdAt || new Date().toISOString(),
+        paymentStatus: o.paymentStatus || "PENDING",
+        orderStatus: o.status || "PENDING",
+        paymentMethod: o.paymentMethod || "",
+        stripeChargeId: o.stripeChargeId || "",
+        carrier: o.carrier || "",
+        trackingNumber: o.trackingNumber || "",
+        estimatedDelivery: o.estimatedDelivery || "",
+        createdAt: o.createdAt || "",
       }));
-    } catch {
-      return [];
     }
   },
 
@@ -123,83 +108,50 @@ export const adminOrderApi = {
   },
 
   updateOrderStatus: async (id: string, newStatus: OrderStatus): Promise<AdminOrderModel> => {
-    const list = await adminOrderApi.getOrders();
-    const o = list.find((order) => order.id === id);
-    if (o) o.orderStatus = newStatus;
-    if (!o) throw new Error("Order not found");
-    return o;
+    throw new Error("Order status updates are not connected to the order service.");
   },
 
   processRefund: async (id: string, amount: number, reason: string): Promise<AdminOrderModel> => {
-    const list = await adminOrderApi.getOrders();
-    const o = list.find((order) => order.id === id);
-    if (o) {
-      o.orderStatus = "Refunded";
-      o.paymentStatus = "Refunded";
-    }
-    if (!o) throw new Error("Order not found");
-    return o;
+    throw new Error("Refund processing requires a connected payment service.");
   },
 
   resolveDispute: async (disputeId: string, resolution: "Refund" | "Dismiss"): Promise<boolean> => {
-    return true;
+    throw new Error("Dispute resolution is not connected to the payment service.");
   },
 
   updateTracking: async (id: string, carrier: string, trackingNumber: string): Promise<AdminOrderModel> => {
-    const list = await adminOrderApi.getOrders();
-    const o = list.find((order) => order.id === id);
-    if (o) {
-      o.carrier = carrier;
-      o.trackingNumber = trackingNumber;
-    }
-    if (!o) throw new Error("Order not found");
-    return o;
+    throw new Error("Tracking updates are not connected to the order service.");
   },
 
   cancelOrder: async (id: string): Promise<AdminOrderModel> => {
-    const list = await adminOrderApi.getOrders();
-    const o = list.find((order) => order.id === id);
-    if (o) o.orderStatus = "Cancelled";
-    if (!o) throw new Error("Order not found");
-    return o;
+    throw new Error("Order cancellation is not connected to the order service.");
   },
 
   bulkUpdateStatus: async (ids: string[], status: OrderStatus): Promise<boolean> => {
-    return true;
+    throw new Error("Bulk order updates are not connected to the order service.");
   },
 
   getVendorDistribution: async (): Promise<VendorOrderDistributionPoint[]> => {
-    try {
+    {
       const data = await apiFetch<{ vendors: any[] }>("/api/admin/vendors");
       return (data.vendors || []).map((v) => ({
         vendor: v.storeName,
         orders: v.orders || v.sales || 0,
         revenue: v.revenue || 0,
       }));
-    } catch {
-      return [];
     }
   },
 
   getPaymentSummary: async (): Promise<PaymentSummaryData> => {
-    try {
+    {
       const data = await apiFetch<{ payments: any }>("/api/admin/payments");
       const p = data.payments || {};
       return {
         successfulPayments: p.successfulPayments || 0,
-        successfulAmount: p.pendingPayoutsAmount || 0,
+        successfulAmount: 0,
         failedPayments: p.failedPayments || 0,
         pendingPayments: 0,
         refundedPayments: p.refundsProcessed || 0,
-        refundedAmount: 0,
-      };
-    } catch {
-      return {
-        successfulPayments: 0,
-        successfulAmount: 0,
-        failedPayments: 0,
-        pendingPayments: 0,
-        refundedPayments: 0,
         refundedAmount: 0,
       };
     }

@@ -7,7 +7,7 @@ import { getUserFromToken } from "@/lib/authHelper";
 
 export async function PUT(req: NextRequest) {
   try {
-    const decoded = getUserFromToken(req);
+    const decoded = await getUserFromToken(req);
     if (!decoded) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

@@ -13,7 +13,7 @@ import {
 
 export async function GET(req: NextRequest) {
   try {
-    const user = getUserFromToken(req);
+    const user = await getUserFromToken(req);
     if (!user) {
       return NextResponse.json(
         { error: "Unauthorized: Invalid or missing token" },
@@ -152,7 +152,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const user = getUserFromToken(req);
+    const user = await getUserFromToken(req);
     if (!user) {
       return NextResponse.json(
         { error: "Unauthorized: Invalid or missing token" },
@@ -230,7 +230,7 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
-    const user = getUserFromToken(req);
+    const user = await getUserFromToken(req);
     if (!user) {
       return NextResponse.json(
         { error: "Unauthorized" },

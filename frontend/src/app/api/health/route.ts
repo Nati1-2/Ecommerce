@@ -27,6 +27,7 @@ export async function GET() {
       timestamp: new Date().toISOString(),
       uptimeSeconds: Math.floor(process.uptime()),
       service: "nati-store-ecommerce-api",
+      commit: process.env.NEXT_PUBLIC_DEPLOYMENT_COMMIT || null,
     },
     { status: statusCode }
   );

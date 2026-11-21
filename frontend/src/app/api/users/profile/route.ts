@@ -6,7 +6,7 @@ import { getUserFromToken } from "@/lib/authHelper";
 
 export async function GET(req: NextRequest) {
   try {
-    const decoded = getUserFromToken(req);
+    const decoded = await getUserFromToken(req);
     if (!decoded) {
       return NextResponse.json({ error: "Unauthorized: Invalid or missing token" }, { status: 401 });
     }
@@ -89,7 +89,7 @@ export async function GET(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   try {
-    const decoded = getUserFromToken(req);
+    const decoded = await getUserFromToken(req);
     if (!decoded) {
       return NextResponse.json({ error: "Unauthorized: Invalid or missing token" }, { status: 401 });
     }

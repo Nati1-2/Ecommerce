@@ -7,7 +7,7 @@ import { requireVendor } from "@/lib/authHelper";
 
 // GET /api/vendor/profile — returns vendor profile + live computed metrics
 export async function GET(req: NextRequest) {
-  const auth = requireVendor(req);
+  const auth = await requireVendor(req);
   if ("error" in auth) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
@@ -67,7 +67,7 @@ export async function GET(req: NextRequest) {
 
 // PUT /api/vendor/profile — update store profile / settings
 export async function PUT(req: NextRequest) {
-  const auth = requireVendor(req);
+  const auth = await requireVendor(req);
   if ("error" in auth) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });
   }

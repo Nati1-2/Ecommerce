@@ -236,33 +236,38 @@ function getFilteredMockProducts(params: GetProductsParams): ProductsResponse {
 export async function fetchProducts(params: GetProductsParams): Promise<ProductsResponse> {
   const parseProductsData = (data: any): ProductsResponse | null => {
     let rawList: any[] = [];
+    let recognized = false;
     let total = 0;
     let page = params.page || 1;
     let totalPages = 1;
 
     if (data?.products && Array.isArray(data.products)) {
+      recognized = true;
       rawList = data.products;
       total = data.total ?? rawList.length;
       page = data.page ?? page;
       totalPages = data.totalPages ?? Math.max(1, Math.ceil(total / (params.limit || 8)));
     } else if (data?.success && data?.data) {
       if (Array.isArray(data.data.products)) {
+        recognized = true;
         rawList = data.data.products;
         total = data.data.total ?? rawList.length;
         page = data.data.page ?? page;
         totalPages = data.data.totalPages ?? Math.max(1, Math.ceil(total / (params.limit || 8)));
       } else if (Array.isArray(data.data)) {
+        recognized = true;
         rawList = data.data;
         total = data.data.length;
         totalPages = Math.max(1, Math.ceil(total / (params.limit || 8)));
       }
     } else if (Array.isArray(data)) {
+      recognized = true;
       rawList = data;
       total = data.length;
       totalPages = Math.max(1, Math.ceil(total / (params.limit || 8)));
     }
 
-    if (rawList.length > 0) {
+    if (recognized) {
       return {
         products: rawList.map(normalizeProduct),
         total,
@@ -291,7 +296,7 @@ export async function fetchProducts(params: GetProductsParams): Promise<Products
     if (res.ok) {
       const data = await res.json();
       const parsed = parseProductsData(data);
-      if (parsed && parsed.products.length > 0) return parsed;
+      if (parsed) return parsed;
     }
   } catch (err) {
     console.warn("Express Gateway fetchProducts unavailable, trying Next.js API route:", err);
@@ -316,7 +321,7 @@ export async function fetchProducts(params: GetProductsParams): Promise<Products
     if (res.ok) {
       const data = await res.json();
       const parsed = parseProductsData(data);
-      if (parsed && parsed.products.length > 0) return parsed;
+      if (parsed) return parsed;
     }
   } catch (err) {
     console.warn("Next.js internal /api/products unavailable:", err);

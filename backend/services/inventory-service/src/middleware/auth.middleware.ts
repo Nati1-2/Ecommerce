@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
-import { env } from '../config/env.js';
+import { verifyToken } from '@ecom/shared';
 import { logger } from '../utils/logger.js';
 
 interface UserPayload {
@@ -17,22 +16,7 @@ declare global {
   }
 }
 
-export const authenticate = (req: Request, res: Response, next: NextFunction): void => {
-  // 1. Check Gateway Headers
-  const gatewayUserId = req.headers['x-user-id'];
-  const gatewayUserEmail = req.headers['x-user-email'];
-  const gatewayUserRole = req.headers['x-user-role'];
-
-  if (gatewayUserId && gatewayUserEmail && gatewayUserRole) {
-    req.user = {
-      id: gatewayUserId as string,
-      email: gatewayUserEmail as string,
-      role: gatewayUserRole as string
-    };
-    return next();
-  }
-
-  // 2. Local JWT Token extraction (fallback, e.g. direct dev testing)
+export const authenticate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const authHeader = req.headers.authorization;
   const token = authHeader?.startsWith('Bearer ') 
     ? authHeader.split(' ')[1] 
@@ -44,7 +28,7 @@ export const authenticate = (req: Request, res: Response, next: NextFunction): v
   }
 
   try {
-    const decoded = jwt.verify(token, env.JWT_SECRET) as UserPayload;
+    const decoded = await verifyToken(token);
     req.user = decoded;
     next();
   } catch (error) {
