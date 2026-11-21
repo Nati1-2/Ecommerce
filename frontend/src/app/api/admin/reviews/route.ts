@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
 
     reviews = await Promise.all(
       dbReviews.map(async (r) => {
-        let storeName = "";
+        const storeName = "";
         if (r.productId) {
           const product = await VendorProduct.findById(r.productId).select("name");
           if (product?.name) r.productName = product.name;

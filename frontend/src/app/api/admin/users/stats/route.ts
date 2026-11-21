@@ -15,8 +15,8 @@ export async function GET(req: NextRequest) {
   let newUsersToday = 0;
   let usersGrowth = 0;
   let activeGrowth = 0;
-  let blockedChange = 0;
-  let todayGrowth = 0;
+  const blockedChange = 0;
+  const todayGrowth = 0;
 
   try {
     await connectDB();

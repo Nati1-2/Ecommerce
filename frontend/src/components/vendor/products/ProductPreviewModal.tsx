@@ -10,10 +10,10 @@ interface Props {
 }
 
 export default function ProductPreviewModal({ product, onClose }: Props) {
-  if (!product) return null;
+  const [selectedImage, setSelectedImage] = useState(product?.images?.[0] || "");
+  const [selectedVariant, setSelectedVariant] = useState(product?.variants?.[0]?.id || "");
 
-  const [selectedImage, setSelectedImage] = useState(product.images?.[0] || "");
-  const [selectedVariant, setSelectedVariant] = useState(product.variants?.[0]?.id || "");
+  if (!product) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">

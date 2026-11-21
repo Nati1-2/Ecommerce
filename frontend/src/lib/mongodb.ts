@@ -29,6 +29,7 @@ interface MongooseCache {
   promise: Promise<typeof mongoose> | null;
 }
 
+/* eslint-disable no-var */
 declare global {
   var mongooseCache: MongooseCache | undefined;
   var inMemoryUsers: Map<string, any> | undefined;
@@ -45,6 +46,7 @@ declare global {
   var inMemoryVisitorLogs: any[] | undefined;
   var inMemorySeeded: boolean | undefined;
 }
+/* eslint-enable no-var */
 
 let cached = global.mongooseCache;
 

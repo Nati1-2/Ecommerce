@@ -11,9 +11,9 @@ interface Props {
 }
 
 export default function StockModal({ item, onClose, onSave }: Props) {
-  if (!item) return null;
+  const [stock, setStock] = useState(item?.availableStock ?? 0);
 
-  const [stock, setStock] = useState(item.availableStock);
+  if (!item) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

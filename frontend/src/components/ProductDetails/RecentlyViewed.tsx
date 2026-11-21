@@ -16,10 +16,10 @@ export default function RecentlyViewed({ currentProductId, onQuickView }: Recent
   useEffect(() => {
     // 1. Get existing viewed product IDs from localStorage
     const saved = localStorage.getItem("nati-recently-viewed");
-    let viewedIds: string[] = saved ? JSON.parse(saved) : [];
+    const viewedIds: string[] = saved ? JSON.parse(saved) : [];
 
     // Filter viewed IDs to make sure they correspond to active items
-    let viewedProducts = viewedIds
+    const viewedProducts = viewedIds
       .map((id) => mockProducts.find((p) => p.id === id))
       .filter((p): p is Product => !!p && p.id !== currentProductId);
 

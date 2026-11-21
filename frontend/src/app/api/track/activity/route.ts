@@ -368,7 +368,7 @@ export async function GET(req: NextRequest) {
 
   const clicks = getClicksStore();
 
-  let filtered = clicks.filter((item) => {
+  const filtered = clicks.filter((item) => {
     if (searchQuery) {
       const match =
         item.elementText.toLowerCase().includes(searchQuery) ||
