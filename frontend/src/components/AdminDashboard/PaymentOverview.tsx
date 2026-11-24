@@ -21,13 +21,13 @@ export default function PaymentOverview({ data }: Props) {
     failedPayments: 0,
     refundsProcessed: 0,
     pendingPayoutsAmount: 0,
-    gatewayStatus: "Online",
+    gatewayStatus: "Offline",
   };
 
   const successRate =
     (safeData.totalTransactions ?? 0) > 0
       ? Math.round(((safeData.successfulPayments ?? 0) / (safeData.totalTransactions ?? 1)) * 1000) / 10
-      : 100;
+      : 0;
 
   return (
     <div className="bg-white dark:bg-slate-900 p-6 sm:p-7 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-6">

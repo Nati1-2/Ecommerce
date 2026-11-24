@@ -35,7 +35,7 @@ export default function RevenueChart({ data, totalUsers }: Props) {
   const conversionRate =
     totalUsers && totalUsers > 0
       ? `${((totalPeriodSales / totalUsers) * 100).toFixed(2)}%`
-      : "3.4%";
+      : "0.00%";
 
   return (
     <div className="bg-white dark:bg-slate-900 p-6 sm:p-7 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-6">

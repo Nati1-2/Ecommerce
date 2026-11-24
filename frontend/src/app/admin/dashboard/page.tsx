@@ -138,7 +138,7 @@ export default function AdminDashboardPage() {
   };
 
   const isDbConnected = safeSystemStatus.database === "Connected";
-  const dbLatency = 0;
+  const dbLatency = safeSystemStatus.dbLatencyMs ?? 0;
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-16">

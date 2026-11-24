@@ -52,8 +52,16 @@ export const adminApi = {
   },
 
   getSystemStatus: async (): Promise<SystemStatus> => {
-    const data = await apiFetch<{ systemStatus: SystemStatus }>("/api/admin/system-status");
-    return data.systemStatus;
+    const data = await apiFetch<{
+      systemStatus: SystemStatus;
+      telemetry?: { dbLatencyMs?: number; heapUsedMB?: number; uptimeSeconds?: number };
+    }>("/api/admin/system-status");
+    return {
+      ...data.systemStatus,
+      dbLatencyMs: data.telemetry?.dbLatencyMs,
+      heapUsedMB: data.telemetry?.heapUsedMB,
+      uptimeSeconds: data.telemetry?.uptimeSeconds,
+    };
   },
 
   getMarketplaceHealth: async (): Promise<MarketplaceHealthData> => {

@@ -148,24 +148,26 @@ export const adminAnalyticsApi = {
 
   getCustomerFunnel: async (): Promise<FunnelStage[]> => {
     try {
-      const data = await apiFetch<{ stats: any }>("/api/admin/stats");
-      const st = data.stats || {};
-      const totalUsers = Math.max(st.users || 0, 1);
-      const totalProducts = st.products || 0;
-      const totalOrders = st.orders || 0;
+      const [statsData, visitorsData] = await Promise.all([
+        apiFetch<{ stats: any }>("/api/admin/stats"),
+        apiFetch<{ stats: any; visitors: any[] }>("/api/admin/visitors?limit=100").catch(() => null),
+      ]);
+      const st = statsData.stats || {};
+      const visits = visitorsData?.stats?.totalVisits ?? 0;
+      const logs = visitorsData?.visitors || [];
+      const views = logs.filter((l: any) => typeof l.path === "string" && l.path.includes("/product")).length;
+      const cart = logs.filter((l: any) => typeof l.path === "string" && l.path.includes("/cart")).length;
+      const checkout = logs.filter((l: any) => typeof l.path === "string" && l.path.includes("/checkout")).length;
+      const purchased = st.orders || 0;
 
-      const visits = totalUsers * 12 + 10;
-      const views = totalProducts * 20 + visits;
-      const cart = Math.round(views * 0.4);
-      const checkout = Math.round(cart * 0.6);
-      const purchased = totalOrders || Math.round(checkout * 0.7);
+      const pct = (num: number, den: number) => (den > 0 ? Math.min(100, Math.round((num / den) * 100)) : 0);
 
       return [
-        { stage: "Storefront Visits", count: visits, conversionRate: 100, dropoffRate: 0 },
-        { stage: "Product Page Views", count: views, conversionRate: 85, dropoffRate: 15 },
-        { stage: "Add to Cart", count: cart, conversionRate: Math.round((cart / views) * 100), dropoffRate: 100 - Math.round((cart / views) * 100) },
-        { stage: "Initiate Checkout", count: checkout, conversionRate: Math.round((checkout / cart) * 100), dropoffRate: 100 - Math.round((checkout / cart) * 100) },
-        { stage: "Purchase Completed", count: purchased, conversionRate: Math.round((purchased / checkout) * 100), dropoffRate: 100 - Math.round((purchased / checkout) * 100) },
+        { stage: "Storefront Visits", count: visits, conversionRate: visits > 0 ? 100 : 0, dropoffRate: 0 },
+        { stage: "Product Page Views", count: views, conversionRate: pct(views, visits), dropoffRate: visits > 0 ? 100 - pct(views, visits) : 0 },
+        { stage: "Add to Cart", count: cart, conversionRate: pct(cart, views), dropoffRate: views > 0 ? 100 - pct(cart, views) : 0 },
+        { stage: "Initiate Checkout", count: checkout, conversionRate: pct(checkout, cart), dropoffRate: cart > 0 ? 100 - pct(checkout, cart) : 0 },
+        { stage: "Purchase Completed", count: purchased, conversionRate: pct(purchased, checkout), dropoffRate: checkout > 0 ? 100 - pct(purchased, checkout) : 0 },
       ];
     } catch {
       return [];
@@ -177,12 +179,12 @@ export const adminAnalyticsApi = {
       const data = await apiFetch<{ vendors: any[] }>("/api/admin/vendors");
       return (data.vendors || []).map((v) => ({
         vendor: v.storeName,
-        logo: v.logo || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=150&q=80",
+        logo: v.logo || "",
         sales: v.sales || 0,
         orders: v.orders || 0,
         revenue: v.revenue || 0,
-        growth: 12.4,
-        rating: v.rating || 5.0,
+        growth: 0,
+        rating: v.rating || 0,
       }));
     } catch {
       return [];
@@ -199,7 +201,7 @@ export const adminAnalyticsApi = {
         vendor: p.vendorName,
         sales: p.sales || 0,
         revenue: p.revenue || 0,
-        views: p.views || (p.sales || 0) * 4,
+        views: p.views ?? 0,
         status: (p.sales || 0) > 0 ? "top" : "worst",
       }));
     } catch {
@@ -209,14 +211,15 @@ export const adminAnalyticsApi = {
 
   getGeoAnalytics: async (): Promise<GeoMetric[]> => {
     try {
-      const data = await apiFetch<{ orders: any[] }>("/api/admin/orders");
-      const orders = data.orders || [];
-      const totalSales = orders.length || 1;
-      return [
-        { region: "North America", country: "United States & Canada", sales: totalSales, customers: Math.ceil(totalSales * 0.8), sharePercentage: 75 },
-        { region: "Europe", country: "United Kingdom & Germany", sales: Math.floor(totalSales * 0.2), customers: Math.ceil(totalSales * 0.15), sharePercentage: 20 },
-        { region: "Asia Pacific", country: "Japan & Australia", sales: Math.floor(totalSales * 0.05), customers: 1, sharePercentage: 5 },
-      ];
+      const data = await apiFetch<{ stats: any }>("/api/admin/visitors?limit=1");
+      const countries = data.stats?.topCountries || [];
+      return countries.map((c: any) => ({
+        region: c.countryCode || c.country || "Unknown",
+        country: c.country || "Unknown",
+        sales: c.count || 0,
+        customers: c.count || 0,
+        sharePercentage: c.percentage || 0,
+      }));
     } catch {
       return [];
     }
@@ -224,13 +227,16 @@ export const adminAnalyticsApi = {
 
   getMarketingAnalytics: async (): Promise<TrafficSource[]> => {
     try {
-      const data = await apiFetch<{ stats: any }>("/api/admin/stats");
-      const visits = (data.stats?.users || 1) * 15;
-      return [
-        { channel: "Direct Navigation", visitors: Math.round(visits * 0.5), conversions: Math.round(visits * 0.04), cac: 0.0, roas: 14.2, share: 50 },
-        { channel: "Organic Search", visitors: Math.round(visits * 0.3), conversions: Math.round(visits * 0.025), cac: 0.0, roas: 9.8, share: 30 },
-        { channel: "Social Referral", visitors: Math.round(visits * 0.2), conversions: Math.round(visits * 0.015), cac: 4.5, roas: 5.6, share: 20 },
-      ];
+      const data = await apiFetch<{ stats: any }>("/api/admin/visitors?limit=1");
+      const sources = data.stats?.sourceBreakdown || [];
+      return sources.map((s: any) => ({
+        channel: s.name || s.type || "Direct",
+        visitors: s.count || 0,
+        conversions: 0,
+        cac: 0,
+        roas: 0,
+        share: s.percentage || 0,
+      }));
     } catch {
       return [];
     }
@@ -278,13 +284,30 @@ export const adminAnalyticsApi = {
 
   getRealtimeStats: async (): Promise<RealtimeStats> => {
     try {
-      const data = await apiFetch<{ stats: any }>("/api/admin/stats");
-      const st = data.stats || {};
+      const [statsData, visitorsData, ordersData] = await Promise.all([
+        apiFetch<{ stats: any }>("/api/admin/stats"),
+        apiFetch<{ stats: any }>("/api/admin/visitors?limit=1").catch(() => null),
+        apiFetch<{ orders: any[] }>("/api/admin/orders").catch(() => null),
+      ]);
+      const st = statsData.stats || {};
+      const orders = ordersData?.orders || [];
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+      const oneMinuteAgo = Date.now() - 60_000;
+
+      const revenueToday = orders
+        .filter((o: any) => o.createdAt && new Date(o.createdAt).getTime() >= startOfToday.getTime())
+        .reduce((sum: number, o: any) => sum + (o.totalAmount || 0), 0);
+
+      const ordersPerMin = orders.filter(
+        (o: any) => o.createdAt && new Date(o.createdAt).getTime() >= oneMinuteAgo
+      ).length;
+
       return {
-        activeVisitors: Math.max((st.users || 1) * 3, 4),
-        ordersPerMin: Math.max(Math.round((st.orders || 1) / 10), 1),
-        revenueToday: Math.round((st.revenue || 0) * 0.08 * 100) / 100,
-        activeSellers: st.vendors || 1,
+        activeVisitors: visitorsData?.stats?.liveActive ?? 0,
+        ordersPerMin,
+        revenueToday: Math.round(revenueToday * 100) / 100,
+        activeSellers: st.vendors ?? 0,
       };
     } catch {
       return { activeVisitors: 0, ordersPerMin: 0, revenueToday: 0, activeSellers: 0 };

@@ -24,6 +24,9 @@ export interface SystemStatus {
   redis: string;
   rabbitmq: string;
   microservices: ServiceHealth[];
+  dbLatencyMs?: number;
+  heapUsedMB?: number;
+  uptimeSeconds?: number;
 }
 
 export interface AdminVendor {

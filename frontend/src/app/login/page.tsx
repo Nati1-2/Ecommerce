@@ -39,6 +39,7 @@ function LoginContent() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [mounted, setMounted] = useState(false);
+  const [sessionChecked, setSessionChecked] = useState(false);
 
   const user = useAuthStore((s) => s.user);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -48,10 +49,80 @@ function LoginContent() {
 
   const searchParams = useSearchParams();
   const redirectParam = searchParams.get("redirect");
+  const errorParam = searchParams.get("error");
+
+  const clearStaleAuth = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("auth_token");
+      document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; max-age=0";
+    }
+    useAuthStore.setState({ user: null, accessToken: null, isAuthenticated: false });
+  };
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    let cancelled = false;
+
+    const initAuth = async () => {
+      if (errorParam === "invalid_or_expired_session") {
+        clearStaleAuth();
+        if (!cancelled) {
+          setError("Your session has expired. Please sign in again.");
+          setMounted(true);
+          setSessionChecked(true);
+        }
+        return;
+      }
+
+      if (errorParam === "unauthorized_admin") {
+        if (!cancelled) {
+          setError("Administrator access is required for that page.");
+          setMounted(true);
+          setSessionChecked(true);
+        }
+        return;
+      }
+
+      if (errorParam === "unauthorized_vendor") {
+        if (!cancelled) {
+          setError("Vendor access is required for that page.");
+          setMounted(true);
+          setSessionChecked(true);
+        }
+        return;
+      }
+
+      const state = useAuthStore.getState();
+      if (state.isAuthenticated && state.user && state.accessToken) {
+        try {
+          const res = await fetch("/api/auth/token-status", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token: state.accessToken }),
+            cache: "no-store",
+          });
+          const data = await res.json().catch(() => null);
+          if (!res.ok || !data?.valid) {
+            clearStaleAuth();
+          } else if (redirectParam && redirectParam.startsWith("/") && redirectParam !== "/login") {
+            window.location.replace(redirectParam);
+            return;
+          }
+        } catch {
+          clearStaleAuth();
+        }
+      }
+
+      if (!cancelled) {
+        setMounted(true);
+        setSessionChecked(true);
+      }
+    };
+
+    initAuth();
+    return () => {
+      cancelled = true;
+    };
+  }, [errorParam, redirectParam]);
 
   const redirectByRole = (userRole: string) => {
     let target = "/dashboard";
@@ -71,15 +142,6 @@ function LoginContent() {
       router.push(target);
     }
   };
-
-  // If already authenticated and there is a redirect parameter, navigate automatically
-  useEffect(() => {
-    if (mounted && isAuthenticated && user) {
-      if (redirectParam && redirectParam.startsWith("/") && redirectParam !== "/login") {
-        window.location.href = redirectParam;
-      }
-    }
-  }, [mounted, isAuthenticated, user, redirectParam]);
 
   const handleDemoLogin = async () => {
     setLoading(true);
@@ -244,8 +306,17 @@ function LoginContent() {
     }
   };
 
+  // Wait for hydration and session verification to avoid login form blink
+  if (!mounted || !sessionChecked) {
+    return (
+      <div className="min-h-[calc(100vh-140px)] flex items-center justify-center bg-white text-gray-500 font-semibold text-sm">
+        Loading Sign In...
+      </div>
+    );
+  }
+
   // If already authenticated and mounted, display "Already Signed In" screen
-  if (mounted && isAuthenticated && user) {
+  if (isAuthenticated && user) {
     return (
       <div className="min-h-[calc(100vh-140px)] bg-white text-gray-900 flex flex-col items-center justify-start py-8 sm:py-14 px-4 sm:px-6 relative select-none font-sans">
         <div className="w-full max-w-md bg-white/95 backdrop-blur-xl p-8 rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/40 space-y-6 text-center">
